@@ -2,7 +2,7 @@
 
 An auditable, bilingual public-company issuer-underwriting skill and research-support engine. / 一套可审计、可复用、支持中英文输出的上市公司基本面与投资研究框架。
 
-- **Release:** Friday V1
+- **Release:** V1
 - **Current scope:** SEC-reporting, US GAAP, non-financial public companies
 - **Positioning:** issuer-level research and IC pre-read support, not an automated trading system
 
