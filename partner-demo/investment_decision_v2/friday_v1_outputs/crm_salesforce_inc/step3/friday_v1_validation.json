@@ -1,0 +1,155 @@
+{
+  "status": "PASS",
+  "company": {
+    "cik": "0001108524",
+    "name": "Salesforce, Inc.",
+    "ticker": "CRM",
+    "exchange": "NYSE"
+  },
+  "report_id": "RPT-85BFC216BB6722",
+  "contract_hash": "8dfc89cf7c951809e4db27df5a7ee7b7aeeee770a035cdf199102a20fc2f093b",
+  "check_count": 28,
+  "failure_count": 0,
+  "checks": [
+    {
+      "check_id": "contract-schema",
+      "status": "PASS",
+      "detail": "Shared contract validation passed."
+    },
+    {
+      "check_id": "hard-stops",
+      "status": "PASS",
+      "detail": "Hard Stops=0."
+    },
+    {
+      "check_id": "contract-hash",
+      "status": "PASS",
+      "detail": "Stored hash matches the canonical validated object."
+    },
+    {
+      "check_id": "date-financial_statement_date",
+      "status": "PASS",
+      "detail": "financial_statement_date=2026-04-30"
+    },
+    {
+      "check_id": "date-market_price_date",
+      "status": "PASS",
+      "detail": "market_price_date=2026-07-15"
+    },
+    {
+      "check_id": "date-share_count_date",
+      "status": "PASS",
+      "detail": "share_count_date=2026-05-21"
+    },
+    {
+      "check_id": "date-subsequent_event_index_review_through",
+      "status": "PASS",
+      "detail": "subsequent_event_index_review_through=2026-07-16"
+    },
+    {
+      "check_id": "market-cap-reproduction",
+      "status": "PASS",
+      "detail": "market_cap=136773000000.0; price=167.0; shares=819000000.0"
+    },
+    {
+      "check_id": "market-price-date-alignment",
+      "status": "PASS",
+      "detail": "valuation=2026-07-15; registry=2026-07-15"
+    },
+    {
+      "check_id": "share-date-alignment",
+      "status": "PASS",
+      "detail": "basis=2026-05-21; valuation=2026-05-21; registry=2026-05-21"
+    },
+    {
+      "check_id": "share-proxy",
+      "status": "PASS",
+      "detail": "proxy_required=True; proxy_status=PROXY"
+    },
+    {
+      "check_id": "fcf-bridge-reproduction",
+      "status": "PASS",
+      "detail": "reported=14661000000.0; adjustments=0; base=14661000000.0"
+    },
+    {
+      "check_id": "fcf-period-alignment",
+      "status": "PASS",
+      "detail": "FCF=2026-04-30; financials=2026-04-30"
+    },
+    {
+      "check_id": "reverse-valuation-reproduction",
+      "status": "PASS",
+      "detail": "required=13677300000.0; recomputed=13677300000.0"
+    },
+    {
+      "check_id": "priced-in-reproduction",
+      "status": "PASS",
+      "detail": "priced_required=13677300000.0; priced_difference=-983700000.0"
+    },
+    {
+      "check_id": "scenario-bear-implied-price",
+      "status": "PASS",
+      "detail": "stored=117.21611721611721; recomputed=117.21611721611721"
+    },
+    {
+      "check_id": "scenario-bear-price-change",
+      "status": "PASS",
+      "detail": "stored=-0.29810708253822027; recomputed=-0.29810708253822027"
+    },
+    {
+      "check_id": "scenario-bear-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-base-implied-price",
+      "status": "PASS",
+      "detail": "stored=179.01098901098902; recomputed=179.01098901098902"
+    },
+    {
+      "check_id": "scenario-base-price-change",
+      "status": "PASS",
+      "detail": "stored=0.07192208988616189; recomputed=0.07192208988616189"
+    },
+    {
+      "check_id": "scenario-base-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-bull-implied-price",
+      "status": "PASS",
+      "detail": "stored=249.0842490842491; recomputed=249.08424908424908"
+    },
+    {
+      "check_id": "scenario-bull-price-change",
+      "status": "PASS",
+      "detail": "stored=0.491522449606282; recomputed=0.491522449606282"
+    },
+    {
+      "check_id": "scenario-bull-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "legacy-metric-names",
+      "status": "PASS",
+      "detail": "legacy=[]"
+    },
+    {
+      "check_id": "formal-return-suppression",
+      "status": "PASS",
+      "detail": "Formal expected-return and target outputs are null without a validated horizon."
+    },
+    {
+      "check_id": "portfolio-boundary",
+      "status": "PASS",
+      "detail": "Portfolio overlay remains disabled and no sizing is present."
+    },
+    {
+      "check_id": "evidence-alias-completeness",
+      "status": "PASS",
+      "detail": "raw=123; mapped=123"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "status": "PASS",
+  "company": {
+    "cik": "0001334036",
+    "name": "Crocs, Inc.",
+    "ticker": "CROX",
+    "exchange": "Nasdaq"
+  },
+  "report_id": "RPT-D12C3A257792FC",
+  "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
+  "check_count": 36,
+  "failure_count": 0,
+  "checks": [
+    {
+      "check_id": "contract-schema",
+      "status": "PASS",
+      "detail": "Shared contract validation passed."
+    },
+    {
+      "check_id": "hard-stops",
+      "status": "PASS",
+      "detail": "Hard Stops=0."
+    },
+    {
+      "check_id": "contract-hash",
+      "status": "PASS",
+      "detail": "Stored hash matches the canonical validated object."
+    },
+    {
+      "check_id": "date-financial_statement_date",
+      "status": "PASS",
+      "detail": "financial_statement_date=2026-03-31"
+    },
+    {
+      "check_id": "date-market_price_date",
+      "status": "PASS",
+      "detail": "market_price_date=2026-07-15"
+    },
+    {
+      "check_id": "date-share_count_date",
+      "status": "PASS",
+      "detail": "share_count_date=2026-04-23"
+    },
+    {
+      "check_id": "date-subsequent_event_index_review_through",
+      "status": "PASS",
+      "detail": "subsequent_event_index_review_through=2026-07-16"
+    },
+    {
+      "check_id": "market-cap-reproduction",
+      "status": "PASS",
+      "detail": "market_cap=6627108111.134766; price=133.3699951171875; shares=49689648.0"
+    },
+    {
+      "check_id": "market-price-date-alignment",
+      "status": "PASS",
+      "detail": "valuation=2026-07-15; registry=2026-07-15"
+    },
+    {
+      "check_id": "share-date-alignment",
+      "status": "PASS",
+      "detail": "basis=2026-04-23; valuation=2026-04-23; registry=2026-04-23"
+    },
+    {
+      "check_id": "share-proxy",
+      "status": "PASS",
+      "detail": "proxy_required=True; proxy_status=PROXY"
+    },
+    {
+      "check_id": "fcf-bridge-reproduction",
+      "status": "PASS",
+      "detail": "reported=642876000.0; adjustments=-21144000.0; base=621732000.0"
+    },
+    {
+      "check_id": "fcf-period-alignment",
+      "status": "PASS",
+      "detail": "FCF=2026-03-31; financials=2026-03-31"
+    },
+    {
+      "check_id": "reverse-valuation-reproduction",
+      "status": "PASS",
+      "detail": "required=662710811.1134766; recomputed=662710811.1134765"
+    },
+    {
+      "check_id": "priced-in-reproduction",
+      "status": "PASS",
+      "detail": "priced_required=662710811.1134766; priced_difference=40978811.113476634"
+    },
+    {
+      "check_id": "scenario-bear-implied-price",
+      "status": "PASS",
+      "detail": "stored=80.49966463839712; recomputed=80.49966463839712"
+    },
+    {
+      "check_id": "scenario-bear-price-change",
+      "status": "PASS",
+      "detail": "stored=-0.3964184780267488; recomputed=-0.3964184780267488"
+    },
+    {
+      "check_id": "scenario-bear-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-base-implied-price",
+      "status": "PASS",
+      "detail": "stored=125.1230437373998; recomputed=125.12304373739978"
+    },
+    {
+      "check_id": "scenario-base-price-change",
+      "status": "PASS",
+      "detail": "stored=-0.061835132951316374; recomputed=-0.061835132951316485"
+    },
+    {
+      "check_id": "scenario-base-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-bull-implied-price",
+      "status": "PASS",
+      "detail": "stored=173.87927561893778; recomputed=173.87927561893778"
+    },
+    {
+      "check_id": "scenario-bull-price-change",
+      "status": "PASS",
+      "detail": "stored=0.3037360874622228; recomputed=0.3037360874622228"
+    },
+    {
+      "check_id": "scenario-bull-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "legacy-metric-names",
+      "status": "PASS",
+      "detail": "legacy=[]"
+    },
+    {
+      "check_id": "formal-return-suppression",
+      "status": "PASS",
+      "detail": "Formal expected-return and target outputs are null without a validated horizon."
+    },
+    {
+      "check_id": "portfolio-boundary",
+      "status": "PASS",
+      "detail": "Portfolio overlay remains disabled and no sizing is present."
+    },
+    {
+      "check_id": "evidence-alias-completeness",
+      "status": "PASS",
+      "detail": "raw=142; mapped=142"
+    },
+    {
+      "check_id": "artifact-one-page-exists",
+      "status": "PASS",
+      "detail": "examples/crox/CROX_One_Page_Summary_Bilingual.html"
+    },
+    {
+      "check_id": "artifact-full-report-exists",
+      "status": "PASS",
+      "detail": "examples/crox/CROX_Full_Report_Bilingual.html"
+    },
+    {
+      "check_id": "artifact-evidence-appendix-exists",
+      "status": "PASS",
+      "detail": "examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.html"
+    },
+    {
+      "check_id": "one-page-no-raw-evidence",
+      "status": "PASS",
+      "detail": "One-Page contains no raw evidence IDs."
+    },
+    {
+      "check_id": "full-report-no-raw-evidence",
+      "status": "PASS",
+      "detail": "Full Report contains no raw evidence IDs."
+    },
+    {
+      "check_id": "appendix-preserves-raw-evidence",
+      "status": "PASS",
+      "detail": "Audit appendix contains raw evidence IDs."
+    },
+    {
+      "check_id": "one-page-contract-identity",
+      "status": "PASS",
+      "detail": "Report ID and full contract hash are embedded."
+    },
+    {
+      "check_id": "full-report-contract-identity",
+      "status": "PASS",
+      "detail": "Report ID and full contract hash are embedded."
+    }
+  ]
+}

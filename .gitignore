@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+
+# Regenerable local outputs
+tmp/
+partner-demo/investment_decision_v2/generic_outputs/
+partner-demo/investment_decision_v2/final_delivery/
+partner-demo/investment_decision_v2/output/
+partner-demo/investment_decision_v2/validation/
+partner-demo/investment_decision_v2/regression_render/
+partner-demo/investment_decision_v2/system_test_outputs/

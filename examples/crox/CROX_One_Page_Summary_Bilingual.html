@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CROX One-Page Summary / 一页摘要</title>
+<style>
+@page { size: A4; margin: 7mm 8mm 9mm; }
+* { box-sizing: border-box; }
+:root { --ink:#172026; --muted:#637078; --line:#d8dee1; --soft:#f3f5f4; --teal:#176c72;
+--teal-soft:#e8f2f1; --gold:#9a6a16; --gold-soft:#fbf4e6; --red:#9c3f3a; --red-soft:#faeeee;
+--green:#2c6d4f; --green-soft:#edf6f0; }
+html,body { margin:0; background:#fff; color:var(--ink); }
+body { font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; font-size:9.5px; line-height:1.42; letter-spacing:0; }
+main { width:100%; margin:0 auto; }
+h1,h2,h3,p { overflow-wrap:anywhere; }
+h1 { margin:0; font-size:22px; line-height:1.14; letter-spacing:0; }
+h2 { margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; }
+h3 { margin:8px 0 4px; font-size:10.5px; line-height:1.3; letter-spacing:0; }
+p { margin:4px 0; } ul { margin:4px 0 7px; padding-left:17px; } li { margin:2px 0; }
+a { color:var(--teal); text-decoration:none; }
+table { width:100%; margin:5px 0 9px; border-collapse:collapse; table-layout:fixed; font-variant-numeric:tabular-nums; }
+th,td { padding:4px 5px; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+tr { break-inside:avoid; page-break-inside:avoid; }
+th { background:var(--soft); color:#334047; text-align:left; font-size:8px; font-weight:700; }
+.num { text-align:right; font-variant-numeric:tabular-nums; } .muted { color:var(--muted); } .small { font-size:8px; }
+.eyebrow { margin-bottom:2px; color:var(--teal); font-size:8px; font-weight:700; text-transform:uppercase; }
+.header { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding-bottom:8px; border-bottom:3px solid var(--teal); }
+.header-meta { text-align:right; color:var(--muted); font-size:7.8px; line-height:1.45; }
+.decision-strip { display:grid; grid-template-columns:1.1fr .85fr .48fr .52fr .72fr; gap:1px; margin:8px 0; background:var(--line); border:1px solid var(--line); }
+.decision-cell { min-width:0; padding:6px 7px; background:#fff; }
+.decision-cell .kicker { display:block; color:var(--muted); font-size:7px; text-transform:uppercase; }
+.decision-cell strong { display:block; margin-top:1px; color:var(--teal); font-size:9.3px; line-height:1.25; }
+.workflow-disclosure { margin:2px 0 5px; color:var(--muted); font-size:7px; }
+.answer-box { margin:9px 0; padding:8px 10px; border-left:4px solid var(--teal); background:var(--teal-soft); }
+.answer-box.warning { border-color:var(--gold); background:var(--gold-soft); }
+.answer-box strong { color:var(--teal); } .answer-box.warning strong { color:var(--gold); }
+.metric-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:7px 0 9px; }
+.metric { min-height:52px; padding:6px 7px; border:1px solid var(--line); background:#fff; }
+.metric-label { color:var(--muted); font-size:7.3px; line-height:1.2; }
+.metric-value { margin-top:2px; font-size:14px; font-weight:700; line-height:1.05; }
+.metric-note { margin-top:3px; color:var(--muted); font-size:6.9px; }
+.evidence-id { display:inline-block; color:#5f6b72; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6.6px; line-height:1.25; }
+.bundle-id { display:inline-block; margin:2px 0; padding:1px 4px; border:1px solid #a9c5c5; color:var(--teal); background:var(--teal-soft); font-size:6.5px; font-weight:700; line-height:1.25; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+.scenario-band { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:7px 0 9px; }
+.scenario-card { min-height:76px; padding:7px; border-top:3px solid var(--gold); background:var(--gold-soft); }
+.scenario-card.bear { border-color:var(--red); background:var(--red-soft); }
+.scenario-card.bull { border-color:var(--green); background:var(--green-soft); }
+.scenario-card h3 { margin-top:0; } .scenario-price { font-size:16px; font-weight:700; }
+.scenario-return { font-size:10px; font-weight:700; } .negative { color:var(--red); } .positive { color:var(--green); }
+.module { margin:7px 0; padding:7px 9px; border-left:3px solid #aeb9bd; background:#fafbfa; break-inside:avoid; }
+.module-head { display:flex; justify-content:space-between; gap:10px; } .module-head h3 { margin:0; }
+.status { color:var(--teal); font-size:7.5px; font-weight:700; }
+.debate { margin:8px 0; padding:7px 9px; border:1px solid var(--line); break-inside:avoid; }
+.debate h3 { margin-top:0; color:var(--teal); }
+.tag { display:inline-block; margin-right:4px; padding:1px 4px; border:1px solid var(--line); color:var(--muted); font-size:6.8px; font-weight:700; }
+.portfolio-disabled { margin:8px 0; padding:7px 9px; border:1px solid #d8b66c; background:var(--gold-soft); }
+.page-break { break-before:page; } .keep { break-inside:avoid; } .section-intro { margin-bottom:6px; color:#334047; }
+.formula { color:#4e5c63; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:7px; }
+.audit-table { font-size:7.2px; } .audit-table th,.audit-table td { padding:3px 4px; }
+.selected-evidence { font-size:6.5px; } .selected-evidence th,.selected-evidence td { padding:2px 3px; }
+.source-list { font-size:7.3px; } .source-list td { padding:3px 4px; } .source-level { width:7%; text-align:center; }
+.source-ids { color:#66727a; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6px; }
+.contract-identity { display:none; }
+.running-footer { display:flex; justify-content:space-between; gap:10px; margin-top:8px; padding-top:3px; border-top:1px solid var(--line); color:#7a858b; font-size:6.5px; break-inside:avoid; }
+.one-page-root { font-size:8.5px; line-height:1.3; } .one-page-root h1 { font-size:18px; }
+.one-page-root h2 { margin:7px 0 3px; padding-bottom:2px; font-size:10.4px; }
+.one-page-root h3 { margin:3px 0 2px; font-size:8.8px; } .one-page-root .header { padding-bottom:5px; }
+.one-page-root .decision-strip { margin:5px 0; } .one-page-root .decision-cell { padding:4px 5px; }
+.one-page-root .decision-cell strong { font-size:8.2px; } .one-page-root .answer-box { margin:5px 0; padding:5px 7px; }
+.one-page-root .workflow-disclosure { margin:1px 0 4px; font-size:7.2px; }
+.one-page-root .metric-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:3px; margin:4px 0 5px; }
+.one-page-root .metric { min-height:44px; padding:4px; } .one-page-root .metric-label { font-size:6.7px; }
+.one-page-root .metric-value { font-size:11.2px; } .one-page-root .metric-note { font-size:6.2px; }
+.one-page-root table { margin:3px 0 5px; } .one-page-root th,.one-page-root td { padding:2.5px 3px; font-size:7.1px; line-height:1.2; }
+.one-page-root .small { font-size:7.5px; }
+.one-page-root .debate { margin:3px 0; padding:4px 5px; } .one-page-root ul { margin:2px 0 3px; padding-left:13px; }
+.one-page-root li { margin:1px 0; } .one-page-root .portfolio-disabled { margin:4px 0; padding:4px 6px; }
+</style></head><body><main class="one-page-root">
+<header class="header"><div><div class="eyebrow">Public-Data Issuer Underwriting and IC Pre-Read System - Friday V1</div>
+<h1>Crocs, Inc. (CROX)</h1></div>
+<div class="header-meta">IC Pre-Read One-Page / 投委会预读一页摘要<br>Report ID: RPT-D12C3A257792FC<br>
+Financials: 2026-03-31 | Market: 2026-07-15<br>
+Subsequent-event review: 2026-07-16</div></header>
+<div class="decision-strip">
+<div class="decision-cell"><span class="kicker">Research workflow / 研究流程</span><strong>Ready for Human Review / 可供人工审阅</strong></div>
+<div class="decision-cell"><span class="kicker">Public-data view / 公开数据观点</span><strong>Watch</strong></div>
+<div class="decision-cell"><span class="kicker">Data Gate / 数据门禁</span><strong>Gate 3 / 数据门禁 3</strong></div>
+<div class="decision-cell"><span class="kicker">Confidence / 可信度</span><strong>Medium / 中</strong></div>
+<div class="decision-cell"><span class="kicker">Valuation status / 估值状态</span><strong>RANGE_ONLY</strong></div>
+</div><p class="workflow-disclosure">Research readiness measures whether issuer-level analysis is ready for human review; it does not measure investment attractiveness or authorize a trade. / 研究就绪仅表示发行人层面分析可供人工审阅，不代表投资吸引力，也不授权交易。</p><h2>Investment Question / 投资问题</h2><p><b>Does the current CROX price already reflect the management and consensus recovery path, or can Crocs Brand DTC/international strength offset structural HEYDUDE wholesale weakness enough to create attractive risk-adjusted upside without a binding liquidity constraint? / 当前 CROX 股价是否已反映管理层与市场一致预期中的复苏路径，还是 Crocs 主品牌的 DTC 与国际业务韧性能够抵消 HEYDUDE 批发渠道的结构性疲弱，并在不受流动性约束的情况下形成有吸引力的风险调整后上行空间？</b></p><div class="answer-box"><strong>Public-data action / 公开数据动作: Watch</strong><br>CROX has no immediate public-data credit constraint and produces meaningful FCF underwriting base, but the dated price already requires FCF above the validated base at the selected 10x reference. A favorable equity variant is not yet established; keep the issuer on Watch pending evidence of HEYDUDE stabilization and stronger cash conversion. / CROX在公开数据下不存在即时信用约束并能产生可观FCF分析基准，但按选定10倍参考，当前价格已要求高于已验证基准的FCF。现阶段尚未建立有利的股票差异化观点；在HEYDUDE企稳及现金转化增强获得证据前，维持观察。<div></div></div><div class="answer-box"><strong>What Is Priced In / 市场隐含要求</strong><p>At the analyst-owned 10x sensitivity reference, the dated market capitalization requires approximately USD 662.711 million of FCF, 6.6% above the Public-Data FCF Underwriting Base of USD 621.732 million; the dated price requires operating and cash-flow improvement beyond the public-data base. This conclusion is conditional on the selected reference multiple and is not a fair-value claim. / 按分析师设定的10倍敏感性参考，时点市值要求约6.627亿元FCF，较6.217亿元的公开数据FCF分析基准高出6.6%；时点价格要求经营与现金流改善超过公开数据基准。该结论取决于所选参考倍数，并非公允价值判断。</p><span class="bundle-id">B1 · Executive view and priced-in test / 核心观点与定价检验 · 11 records</span></div><div class="metric-grid"><div class="metric"><div class="metric-label">Dated price / 时点股价</div><div class="metric-value">$133.37</div><div class="metric-note">2026-07-15</div></div><div class="metric"><div class="metric-label">Public-Data FCF Base / 公开数据FCF基准</div><div class="metric-value">$621.7m</div><div class="metric-note">2026-03-31</div></div><div class="metric"><div class="metric-label">FCF required at 10.0x / 10.0倍所需FCF</div><div class="metric-value">$662.7m</div><div class="metric-note">Conditional reverse valuation / 条件性反向估值</div></div><div class="metric"><div class="metric-label">FCF normalization / FCF标准化</div><div class="metric-value">PARTIALLY NORMALIZED</div><div class="metric-note">Economic normalization status / 经济标准化状态</div></div><div class="metric"><div class="metric-label">Gross reported liquidity / 报告总流动性</div><div class="metric-value">$980.7m</div><div class="metric-note">Includes reported facility availability / 包含已披露授信可用额</div></div><div class="metric"><div class="metric-label">Reported P/FCF / 报告P/FCF</div><div class="metric-value">10.3x</div><div class="metric-note">Trailing observation / 历史观察</div></div></div><h2>Scenario Price Sensitivity / 情景价格敏感性</h2><table><thead><tr><th>Scenario / 情景</th><th class="num">Probability input / 概率输入</th><th class="num">FCF base / FCF基准</th><th class="num">Change / 变化</th><th class="num">Multiple / 倍数</th><th class="num">Implied price / 隐含价格</th><th class="num">Price change vs current / 较现价变化</th></tr></thead><tbody><tr><td><b>Bear</b></td><td class="num">25%</td><td class="num">$500.0m</td><td class="num">-19.6%</td><td class="num">8.0x</td><td class="num">$80.50</td><td class="num">-39.6%</td></tr><tr><td><b>Base</b></td><td class="num">50%</td><td class="num">$621.7m</td><td class="num">0.0%</td><td class="num">10.0x</td><td class="num">$125.12</td><td class="num">-6.2%</td></tr><tr><td><b>Bull</b></td><td class="num">25%</td><td class="num">$720.0m</td><td class="num">15.8%</td><td class="num">12.0x</td><td class="num">$173.88</td><td class="num">30.4%</td></tr></tbody></table><p class="small muted">No target date or holding period is assigned. These figures are valuation sensitivities relative to the dated market price. They are not expected returns, total returns, annualized returns, or formal price targets. / 未设定目标日期或持有期；相关数字只是相对于时点市场价格的估值敏感性，不是预期回报、总回报、年化回报或正式目标价。</p><p class="small muted"><b>Per-share basis / 每股口径:</b> PROXY; COMMON_SHARES_OUTSTANDING as of 2026-04-23; forward bridge NOT_COMPLETED; subsequent-event status REVIEWED_NO_QUANTIFIED_CHANGE. / 前瞻股数桥及后续事项状态如上。</p><span class="bundle-id">B6 · Scenario price sensitivity / 情景价格敏感性 · 20 records</span><div class="two-col"><section><h2>Key Debates / 核心争议</h2><div class="debate"><h3>Is HEYDUDE weakness temporary, channel-driven, or structural? / HEYDUDE 的疲弱是暂时性的、渠道调整，还是结构性问题？</h3><p><b>Resolve with / 解决指标:</b> HEYDUDE wholesale decline improves to better than -10% year over year while DTC remains positive and gross margin does not deteriorate further. / HEYDUDE 批发同比降幅改善至 10%以内，同时 DTC 保持正增长且毛利率不再恶化。</p></div><div class="debate"><h3>Can core Crocs Brand protect durable cash generation? / Crocs 主品牌能否守住可持续现金流？</h3><p><b>Resolve with / 解决指标:</b> Crocs Brand remains at or above flat growth, adjusted operating margin is at least 22.3%, and FCF underwriting base is at least USD 621.732 million. / Crocs 主品牌保持不低于零增长，调整后经营利润率至少 22.3%，FCF分析基准 至少 6.21732 亿美元。</p></div><div class="debate"><h3>Does the current price already discount a meaningful recovery? / 当前股价是否已经计入了明显复苏？</h3><p><b>Resolve with / 解决指标:</b> Two consecutive reporting periods exceed the public base on FCF underwriting base and HEYDUDE channel KPIs without weakening liquidity or covenant headroom. / 连续两个报告期的FCF分析基准 与 HEYDUDE 渠道指标超过公开基准，且不削弱流动性或 covenant 余量。</p></div><span class="bundle-id">B2 · Key debates / 核心争议 · 16 records</span></section><section><h2>Decision Boundaries / 决策边界</h2><p><b>Valuation Status / 估值状态:</b> RANGE_ONLY; <b>not completed / 未完成:</b> peer_valuation, historical_valuation, dcf_cross_check, driver_based_forward_forecast, forward_share_count_bridge.</p><p><b>Probability / 概率:</b> ILLUSTRATIVE; formal weighted outcome NOT_EVALUATED.</p><h3>More attractive / 提升吸引力</h3><ul><li>Public-Data FCF Underwriting Base validates above USD 662.711 million without weaker liquidity. / FCF分析基准经验证高于6.62711亿美元，且流动性不转弱。</li></ul><h3>Invalidation / 推翻条件</h3><ul><li>Public-Data FCF Underwriting Base falls below USD 500 million without a temporary reversible working-capital cause. / 若不存在暂时且可逆的营运资金原因，FCF分析基准低于5亿美元。</li></ul><h3>Monitor next / 下一步监控</h3><ul><li>HEYDUDE wholesale and DTC growth; Crocs Brand growth; adjusted operating margin. / HEYDUDE批发与DTC增速、Crocs主品牌增速、调整后经营利润率。</li></ul><div class="answer-box warning"><strong>Decision Confidence / 决策可信度: Medium</strong><ul><li>4 material warning(s) remain.</li><li>FCF Normalization Status is PARTIALLY_NORMALIZED; economic durability remains incomplete. / FCF标准化状态为PARTIALLY_NORMALIZED，经济可持续性尚未完整验证。</li></ul></div><div class="two-col"><section><h3>Can conclude / 可以得出</h3><ul><li>Whether the issuer deserves further research under the current public-data evidence set. / 当前公开证据下发行人是否值得继续研究。</li></ul></section><section><h3>Cannot conclude / 不能得出</h3><ul><li>Whether the fund should buy or sell the security. / 基金是否应买入或卖出该证券。</li></ul></section></div></section></div><div class="portfolio-disabled"><b>Portfolio Decision: Not Evaluated / 组合决策：未评估。 Portfolio Overlay: Disabled / 组合叠加层：未启用。</b> Fund-specific inputs were not provided; no sizing or trade authorization is shown. / 未提供基金特定参数；不展示仓位，也不授权交易。</div><div class="running-footer"><span>CROX | Public-data underwriting | RPT-D12C3A257792FC | Hash eb20dfccfd27</span><span class="contract-identity">Contract hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d</span><span>Validated contract identity / 已验证合同标识</span></div></main></body></html>

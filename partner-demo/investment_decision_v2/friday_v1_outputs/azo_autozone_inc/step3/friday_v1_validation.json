@@ -1,0 +1,155 @@
+{
+  "status": "PASS",
+  "company": {
+    "cik": "0000866787",
+    "name": "AUTOZONE INC",
+    "ticker": "AZO",
+    "exchange": "NYSE"
+  },
+  "report_id": "RPT-0F80FD1B28CD0F",
+  "contract_hash": "0ae4cbf4f915d762d10cdb2a39777343d1438f0f40bfb375e0762f568afeb8fb",
+  "check_count": 28,
+  "failure_count": 0,
+  "checks": [
+    {
+      "check_id": "contract-schema",
+      "status": "PASS",
+      "detail": "Shared contract validation passed."
+    },
+    {
+      "check_id": "hard-stops",
+      "status": "PASS",
+      "detail": "Hard Stops=0."
+    },
+    {
+      "check_id": "contract-hash",
+      "status": "PASS",
+      "detail": "Stored hash matches the canonical validated object."
+    },
+    {
+      "check_id": "date-financial_statement_date",
+      "status": "PASS",
+      "detail": "financial_statement_date=2026-05-09"
+    },
+    {
+      "check_id": "date-market_price_date",
+      "status": "PASS",
+      "detail": "market_price_date=2026-07-15"
+    },
+    {
+      "check_id": "date-share_count_date",
+      "status": "PASS",
+      "detail": "share_count_date=2026-06-05"
+    },
+    {
+      "check_id": "date-subsequent_event_index_review_through",
+      "status": "PASS",
+      "detail": "subsequent_event_index_review_through=2026-07-16"
+    },
+    {
+      "check_id": "market-cap-reproduction",
+      "status": "PASS",
+      "detail": "market_cap=48495610918.341064; price=2970.570068359375; shares=16325355.0"
+    },
+    {
+      "check_id": "market-price-date-alignment",
+      "status": "PASS",
+      "detail": "valuation=2026-07-15; registry=2026-07-15"
+    },
+    {
+      "check_id": "share-date-alignment",
+      "status": "PASS",
+      "detail": "basis=2026-06-05; valuation=2026-06-05; registry=2026-06-05"
+    },
+    {
+      "check_id": "share-proxy",
+      "status": "PASS",
+      "detail": "proxy_required=True; proxy_status=PROXY"
+    },
+    {
+      "check_id": "fcf-bridge-reproduction",
+      "status": "PASS",
+      "detail": "reported=1633222000.0; adjustments=0; base=1633222000.0"
+    },
+    {
+      "check_id": "fcf-period-alignment",
+      "status": "PASS",
+      "detail": "FCF=2026-05-09; financials=2026-05-09"
+    },
+    {
+      "check_id": "reverse-valuation-reproduction",
+      "status": "PASS",
+      "detail": "required=1939824436.7336426; recomputed=1939824436.7336426"
+    },
+    {
+      "check_id": "priced-in-reproduction",
+      "status": "PASS",
+      "detail": "priced_required=1939824436.7336426; priced_difference=306602436.7336426"
+    },
+    {
+      "check_id": "scenario-bear-implied-price",
+      "status": "PASS",
+      "detail": "stored=1592.614678210673; recomputed=1592.614678210673"
+    },
+    {
+      "check_id": "scenario-bear-price-change",
+      "status": "PASS",
+      "detail": "stored=-0.46386900777928364; recomputed=-0.46386900777928364"
+    },
+    {
+      "check_id": "scenario-bear-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-base-implied-price",
+      "status": "PASS",
+      "detail": "stored=2603.312454767446; recomputed=2603.312454767446"
+    },
+    {
+      "check_id": "scenario-base-price-change",
+      "status": "PASS",
+      "detail": "stored=-0.12363203194690597; recomputed=-0.12363203194690597"
+    },
+    {
+      "check_id": "scenario-base-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "scenario-bull-implied-price",
+      "status": "PASS",
+      "detail": "stored=3675.2646420246297; recomputed=3675.2646420246297"
+    },
+    {
+      "check_id": "scenario-bull-price-change",
+      "status": "PASS",
+      "detail": "stored=0.2372253666631916; recomputed=0.2372253666631916"
+    },
+    {
+      "check_id": "scenario-bull-legacy-fields",
+      "status": "PASS",
+      "detail": "Only implied_price and price_change_vs_current are permitted without a horizon."
+    },
+    {
+      "check_id": "legacy-metric-names",
+      "status": "PASS",
+      "detail": "legacy=[]"
+    },
+    {
+      "check_id": "formal-return-suppression",
+      "status": "PASS",
+      "detail": "Formal expected-return and target outputs are null without a validated horizon."
+    },
+    {
+      "check_id": "portfolio-boundary",
+      "status": "PASS",
+      "detail": "Portfolio overlay remains disabled and no sizing is present."
+    },
+    {
+      "check_id": "evidence-alias-completeness",
+      "status": "PASS",
+      "detail": "raw=146; mapped=146"
+    }
+  ]
+}

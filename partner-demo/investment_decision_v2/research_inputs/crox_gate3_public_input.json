@@ -1,0 +1,939 @@
+{
+  "company": {
+    "cik": "0001334036",
+    "name": "Crocs, Inc.",
+    "ticker": "CROX",
+    "exchange": "Nasdaq"
+  },
+  "external_evidence": [
+    {
+      "status": "VALIDATED",
+      "external_key": "business_model",
+      "metric_name": "business_model_and_segments",
+      "value": "Crocs designs, markets, distributes, and sells casual footwear and accessories through two reportable segments, Crocs Brand and HEYDUDE Brand, using wholesale and direct-to-consumer channels.",
+      "unit": "text",
+      "period_end": "2025-12-31",
+      "period_type": "annual",
+      "as_of_date": "2025-12-31",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs 2025 Form 10-K",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000006/crox-20251231.htm",
+        "source_locator": "Item 1 and Note 1, business description and reportable segments",
+        "publication_date": "2026-02-12",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Primary filing evidence."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "fy25_brand_impairment",
+      "metric_name": "fy2025_brand_performance_and_heydude_impairment",
+      "value": "FY2025 Crocs Brand revenue was USD 3,325.807 million, up 1.5%; HEYDUDE revenue was USD 714.840 million, down 13.3%. Crocs recorded USD 737.0 million of non-cash HEYDUDE trademark and goodwill impairment charges.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2025-01-01",
+      "period_end": "2025-12-31",
+      "period_type": "annual",
+      "as_of_date": "2025-12-31",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs 2025 Form 10-K",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000006/crox-20251231.htm",
+        "source_locator": "Item 7, 2025 operating highlights and reportable segment results; Note 4 impairment",
+        "publication_date": "2026-02-12",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "The impairment is non-cash and should not be added to CFO-based FCF a second time."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "q1_consolidated_quality",
+      "metric_name": "q1_2026_consolidated_revenue_and_margin",
+      "value": "Q1 2026 revenue was USD 921.457 million, down 1.7%; DTC revenue grew 12.1% while wholesale declined 9.9%. GAAP operating margin was 21.8% and adjusted operating margin was 22.3%, versus 23.8% in Q1 2025.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-03-31",
+      "period_type": "quarter",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_and_company_adjusted",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "First Quarter 2026 Operating Results and non-GAAP reconciliation",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Adjusted measures are company-defined non-GAAP measures."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "q1_brand_channel_results",
+      "metric_name": "q1_2026_brand_and_channel_results",
+      "value": "Q1 2026 Crocs Brand revenue was USD 767.416 million, up 0.8%; Crocs DTC rose 12.9%, wholesale fell 6.5%, North America fell 6.1%, and international rose 7.2%. HEYDUDE revenue was USD 154.041 million, down 12.3%; HEYDUDE DTC rose 8.6% and wholesale fell 24.7%.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-03-31",
+      "period_type": "quarter",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "First Quarter 2026 Brand Summary and revenues by segment, channel, and geography",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Reported growth unless explicitly described as constant currency."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "fy26_management_guidance",
+      "metric_name": "fy2026_management_guidance",
+      "value": "FY2026 consolidated revenue growth guidance is -1% to +1%; Crocs Brand is 0% to +2%; HEYDUDE is -7% to -5%; adjusted operating margin is expected to expand modestly from 22.3%; adjusted diluted EPS is USD 13.20 to USD 13.75; capex is USD 70 million to USD 80 million.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "management_guidance",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "Financial Outlook, Full Year 2026",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Adjusted EPS guidance excludes potential future share repurchases."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "q2_management_guidance",
+      "metric_name": "q2_2026_management_guidance",
+      "value": "Q2 2026 revenue is expected to be down slightly; Crocs Brand +1% to +3%; HEYDUDE -14% to -12%; adjusted operating margin approximately 24.7%; adjusted diluted EPS USD 4.15 to USD 4.35.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-04-01",
+      "period_end": "2026-06-30",
+      "period_type": "forecast",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "management_guidance",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "Financial Outlook, Second Quarter 2026",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Adjusted EPS guidance excludes potential future share repurchases."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "capex_guidance_midpoint",
+      "metric_name": "fy2026_capex_guidance_midpoint",
+      "value": 75000000.0,
+      "unit": "USD",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "midpoint_of_management_guidance",
+      "evidence_class": "INFERENCE",
+      "formula": "(USD 70 million + USD 80 million) / 2",
+      "confidence": "Medium",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "Financial Outlook, Full Year 2026 capex range",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Analyst-calculated midpoint; used only as a run-rate capex normalization."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "fy26_nongaap_adjustments",
+      "metric_name": "fy2026_expected_nongaap_adjustments",
+      "value": 25000000.0,
+      "unit": "USD",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "management_guidance",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Crocs Q1 2026 earnings release",
+        "source_url": "https://investors.crocs.com/news-and-events/press-releases/press-release-details/2026/Crocs-Inc--Reports-Better-Than-Expected-First-Quarter-2026-Results-And-Raises-Full-Year-Outlook/default.aspx",
+        "source_locator": "Full Year 2026 outlook and GAAP to non-GAAP guidance reconciliation",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Primarily cost-reduction initiatives; cash timing is not fully disclosed, so no FCF add-back is made."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "april_share_repurchase",
+      "metric_name": "subsequent_share_repurchase",
+      "value": "From April 1 through April 23, 2026, Crocs repurchased 0.8 million shares for USD 73.6 million; USD 673.2 million of authorization remained.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-04-01",
+      "period_end": "2026-04-23",
+      "period_type": "event",
+      "as_of_date": "2026-04-23",
+      "measurement_basis": "reported_subsequent_event",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "subsequent_event_status": "SUBSEQUENT_TO_BALANCE_SHEET_DATE",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 2, Liquidity; share repurchase activity through April 23, 2026",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Do not mix this cash use into the March 31 balance sheet."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "march_liquidity",
+      "metric_name": "march_31_2026_reported_liquidity",
+      "value": "At March 31, 2026, unrestricted cash was USD 130.881 million and reported available borrowings were USD 849.865 million, for USD 980.746 million of gross reported liquidity before conditions, haircuts, or subsequent events.",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_and_arithmetic_sum",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 2, Financial Condition, Capital Resources, and Liquidity table",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Historical point-in-time liquidity, not a pro forma April balance."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "current_debt_repaid",
+      "metric_name": "subsequent_repayment_of_current_borrowing",
+      "value": 5550000.0,
+      "unit": "USD",
+      "currency": "USD",
+      "period_end": "2026-04-30",
+      "period_type": "event",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_subsequent_event",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "subsequent_event_status": "SUBSEQUENT_TO_BALANCE_SHEET_DATE",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 2, Asia Revolving Credit Facility; USD 5.6 million repaid in April 2026",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Balance-sheet carrying amount was USD 5.550 million at March 31; narrative rounds to USD 5.6 million. Funding source is not separately disclosed."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "debt_schedule",
+      "metric_name": "debt_tranches_and_maturities",
+      "value": "At March 31, 2026, long-term face-value borrowings were USD 1.359 billion: USD 159 million revolver due November 2027, USD 500 million Term Loan B due February 17, 2029, USD 350 million 4.25% notes due March 15, 2029, and USD 350 million 4.125% notes due August 15, 2031. The separate USD 5.550 million current Citibank borrowing was repaid in April.",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_face_value_and_contractual_maturity",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Note 7, Borrowings; facility and senior notes sections",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Face value is kept separate from the USD 1.330271 billion long-term balance-sheet carrying amount."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "covenant_terms",
+      "metric_name": "credit_agreement_covenants_and_compliance",
+      "value": "The revolving Credit Agreement requires minimum interest coverage of 3.00x and maximum leverage of 3.25x, subject to adjustments. Crocs reported compliance with the Credit Agreement, Term Loan B, and notes at March 31, 2026; numerical headroom was not disclosed in the reviewed filing.",
+      "unit": "text",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_contract_terms_and_compliance",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Note 7, Senior Revolving Credit Facility, Term Loan B, and Senior Notes",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Compliance is not treated as proof of adequate downside headroom."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "foreign_cash_access",
+      "metric_name": "foreign_cash_location_and_access",
+      "value": "At March 31, 2026, USD 113.4 million of USD 130.9 million total cash was held internationally. All foreign cash could be repatriated without additional U.S. federal income tax; an insignificant amount was restricted by local law or otherwise, although timing and local restrictions can still affect access.",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 2, Repatriation of Cash and Cash Equivalents",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Neutral wording preserves both tax access and operational/local-law limitations."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "lease_schedule",
+      "metric_name": "operating_lease_contractual_payment_schedule",
+      "value": "At March 31, 2026, operating lease carrying liabilities were USD 389.623 million, while undiscounted future minimum payments were USD 465.620 million, including USD 75.021 million for the remainder of 2026 and USD 97.935 million for 2027.",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_carrying_value_and_contractual_schedule",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Note 4, Leases, maturities table",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "The current lease carrying value is not substituted for contractual cash payments."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "purchase_commitments",
+      "metric_name": "purchase_commitments",
+      "value": 258100000.0,
+      "unit": "USD",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "instant",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "reported_undiscounted_commitments",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Note 12, Commitments and Contingencies, Purchase Commitments",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Expected to be fulfilled in the normal course; no balance-sheet liability recorded."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "interest_rate_sensitivity",
+      "metric_name": "variable_rate_interest_sensitivity",
+      "value": 6600000.0,
+      "unit": "USD/year",
+      "currency": "USD",
+      "period_end": "2027-03-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-03-31",
+      "measurement_basis": "company_sensitivity_for_100bp_rate_increase",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 3, interest-rate risk sensitivity",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Incremental annual interest expense under a hypothetical 100 basis-point increase."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "tariff_refund_estimate",
+      "metric_name": "estimated_tariff_refund_eligibility",
+      "value": 70000000.0,
+      "unit": "USD",
+      "currency": "USD",
+      "period_end": "2026-03-31",
+      "period_type": "event",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "management_estimate_not_recognized_as_cash",
+      "evidence_class": "FACT",
+      "confidence": "Medium",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs Q1 2026 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000032/crox-20260331.htm",
+        "source_locator": "Item 2, Known or Anticipated Trends, tariff refund discussion",
+        "publication_date": "2026-04-30",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Timing is uncertain; excluded from normalized FCF and liquidity sources."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "june_10_8k_review",
+      "metric_name": "subsequent_8k_content_review",
+      "value": "The June 10, 2026 Form 8-K reports stockholder approval of the 2026 Equity Incentive Plan, director elections, auditor ratification, and other annual-meeting votes. It does not disclose a change to debt, liquidity, guidance, reported shares outstanding, or the valuation inputs used in this analysis.",
+      "unit": "text",
+      "period_start": "2026-06-09",
+      "period_end": "2026-06-10",
+      "period_type": "event",
+      "as_of_date": "2026-06-10",
+      "measurement_basis": "reviewed_regulatory_filing_content",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "subsequent_event_status": "REVIEWED_NO_MATERIAL_FINANCIAL_CHANGE",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Crocs June 10, 2026 Form 8-K",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1334036/000133403626000046/crox-20260609.htm",
+        "source_locator": "Items 5.02, 5.07, and 9.01",
+        "publication_date": "2026-06-10",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "The equity plan can affect future dilution and compensation, but no quantified incremental share count or cash effect is disclosed in this 8-K."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "factset_consensus_fy26",
+      "metric_name": "factset_fy2026_consensus",
+      "value": "FactSet consensus as of July 15, 2026 estimates FY2026 revenue of USD 4.068 billion (+1%), EPS of USD 13.72 (+10%), EBITDA of USD 995 million, EBIT of USD 917 million, net financial debt of USD 889 million, and cash flow per share of USD 15.41. The provider's cash-flow definition is not treated as free cash flow.",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-07-15",
+      "measurement_basis": "institutional_consensus",
+      "evidence_class": "FACT",
+      "confidence": "Medium",
+      "source": {
+        "source_level": 4,
+        "source_type": "institutional_consensus",
+        "source_name": "FactSet Research Systems consensus via Boursorama",
+        "source_url": "https://www.boursorama.com/cours/consensus/CROX/",
+        "source_locator": "Prévisions de bénéfices et de résultats CROCS au 15/07/2026",
+        "publication_date": "2026-07-15",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Third-party consensus; definitions may differ from company non-GAAP guidance."
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "factset_consensus_target",
+      "metric_name": "factset_median_price_target",
+      "value": 126.0,
+      "unit": "USD/share",
+      "currency": "USD",
+      "period_end": "2026-07-07",
+      "period_type": "instant",
+      "as_of_date": "2026-07-07",
+      "measurement_basis": "median_analyst_price_target",
+      "evidence_class": "FACT",
+      "confidence": "Medium",
+      "source": {
+        "source_level": 4,
+        "source_type": "institutional_consensus",
+        "source_name": "FactSet Research Systems consensus via Boursorama",
+        "source_url": "https://www.boursorama.com/cours/consensus/CROX/",
+        "source_locator": "Objectif de cours table, column dated 07/07/2026; 17 analysts and median target of USD 126",
+        "publication_date": "2026-07-14",
+        "retrieval_date": "2026-07-15"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "The target observation is dated July 7 in the table; the page was retrieved July 15. It is descriptive evidence, not the internal target price."
+    }
+  ],
+  "investment_question": {
+    "status": "ANALYST_DEFINED",
+    "text": "Does the current CROX price already reflect the management and consensus recovery path, or can Crocs Brand DTC/international strength offset structural HEYDUDE wholesale weakness enough to create attractive risk-adjusted upside without a binding liquidity constraint? / 当前 CROX 股价是否已反映管理层与市场一致预期中的复苏路径，还是 Crocs 主品牌的 DTC 与国际业务韧性能够抵消 HEYDUDE 批发渠道的结构性疲弱，并在不受流动性约束的情况下形成有吸引力的风险调整后上行空间？",
+    "decision_supported": "Public-data Continue Research / Watch / Stop decision and the evidence required for a human investment decision; no fund-specific sizing. / 支持基于公开资料的继续研究、观察或停止研究判断，以及人工投资决策所需的下一步证据；不涉及基金仓位。",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "key_debates": [
+    {
+      "title": "Is HEYDUDE weakness temporary, channel-driven, or structural? / HEYDUDE 的疲弱是暂时性的、渠道调整，还是结构性问题？",
+      "market_view": "FY2025 revenue fell 13.3%, Q1 2026 revenue fell 12.3%, and Q2 guidance still calls for a 12%-14% decline; the recovery may be slower and less profitable than headline enterprise guidance suggests. / 2025 财年收入下降 13.3%，2026 年第一季度下降 12.3%，第二季度指引仍预计下降 12%-14%；实际复苏可能比公司整体指引所呈现的更慢、盈利更弱。",
+      "alternative_view": "Q1 HEYDUDE DTC grew 8.6%, management raised the FY2026 brand range to a 5%-7% decline, and a wholesale reset could leave a healthier direct channel and easier comparisons. / 第一季度 HEYDUDE DTC 增长 8.6%，管理层将 2026 财年品牌指引上调至下降 5%-7%；批发渠道重整可能留下更健康的直营渠道与更容易的同比基数。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["fy25_brand_impairment", "q1_brand_channel_results", "q2_management_guidance"],
+      "market_evidence_metrics": [],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["q1_brand_channel_results", "fy26_management_guidance"],
+      "alternative_evidence_metrics": [],
+      "missing_evidence": "Channel inventory, wholesale order book, sell-through, markdown intensity, repeat-purchase data, and a sourced path to HEYDUDE segment margin recovery. / 尚缺渠道库存、批发订单、终端销售、折扣强度、复购数据，以及可验证的 HEYDUDE 利润率修复路径。",
+      "resolution_kpi_or_event": "HEYDUDE wholesale decline improves to better than -10% year over year while DTC remains positive and gross margin does not deteriorate further. / HEYDUDE 批发同比降幅改善至 10%以内，同时 DTC 保持正增长且毛利率不再恶化。",
+      "decision_impact": "This debate determines whether CROX deserves only a low turnaround multiple or can support the Bull FCF and multiple assumptions. / 该争议决定 CROX 只能获得低位转型估值，还是能够支撑 Bull 情景的 FCF 与倍数。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "title": "Can core Crocs Brand protect normalized cash generation? / Crocs 主品牌能否守住标准化现金流？",
+      "market_view": "Q1 Crocs wholesale and North America revenue declined, adjusted operating margin fell to 22.3% from 23.8%, and first-quarter FCF was negative amid working-capital use. / 第一季度 Crocs 批发及北美收入下降，调整后经营利润率由 23.8%降至 22.3%，营运资金占用使季度 FCF 为负。",
+      "alternative_view": "Crocs Brand still grew 0.8%; DTC grew 12.9% and international grew 7.2%. LTM reported FCF remained USD 642.876 million before the conservative capex normalization. / Crocs 主品牌仍增长 0.8%，DTC 增长 12.9%，国际业务增长 7.2%；在保守调整资本开支前，LTM 报告 FCF 仍为 6.42876 亿美元。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["q1_consolidated_quality", "q1_brand_channel_results"],
+      "market_evidence_metrics": ["latest_quarter_fcf", "accounts_receivable_net", "inventory_net", "accounts_payable"],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["q1_brand_channel_results", "fy26_management_guidance"],
+      "alternative_evidence_metrics": ["reported_ltm_fcf"],
+      "missing_evidence": "Eight-quarter cash-conversion trend, inventory aging, promotional intensity, maintenance versus growth capex, and cash restructuring timing. / 尚缺八个季度的现金转化趋势、库存账龄、促销强度、维持性与增长性资本开支拆分，以及重组现金支出时点。",
+      "resolution_kpi_or_event": "Crocs Brand remains at or above flat growth, adjusted operating margin is at least 22.3%, and normalized FCF is at least USD 621.732 million. / Crocs 主品牌保持不低于零增长，调整后经营利润率至少 22.3%，标准化 FCF 至少 6.21732 亿美元。",
+      "decision_impact": "Core-brand durability determines whether current FCF is repeatable and whether debt and buybacks remain comfortably funded. / 主品牌的持续性决定当前 FCF 是否可重复，以及债务与回购能否由现金流从容支持。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "title": "Does the current price already discount a meaningful recovery? / 当前股价是否已经计入了明显复苏？",
+      "market_view": "FactSet expects FY2026 revenue of USD 4.068 billion and EPS of USD 13.72, while the median analyst target of USD 126 is below the dated market price used in this model. Recovery is not an undiscovered consensus view. / FactSet 预计 2026 财年收入 40.68 亿美元、EPS 13.72 美元；126 美元的分析师目标价中位数低于模型采用的市场价格，因此复苏并非尚未被市场发现的一致预期。",
+      "alternative_view": "If normalized FCF rises materially above the public-data base and HEYDUDE stabilization supports a higher multiple, upside can exceed the consensus target; public evidence does not yet establish that path. / 若标准化 FCF 明显高于公开数据基准，且 HEYDUDE 企稳足以支撑更高估值倍数，上行可能超过一致目标价；但现有公开证据尚不能证明该路径。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["factset_consensus_fy26", "factset_consensus_target"],
+      "market_evidence_metrics": ["market_price_unadjusted_close", "market_cap_point_in_time", "trailing_p_fcf"],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["fy26_management_guidance", "capex_guidance_midpoint"],
+      "alternative_evidence_metrics": ["reported_ltm_fcf"],
+      "missing_evidence": "Peer and historical multiple study, sourced 2027 FCF, buyback pace, and proof that HEYDUDE improvement is incremental to consensus. / 尚缺同业及历史倍数研究、可溯源的 2027 年 FCF、回购节奏，以及 HEYDUDE 改善超出一致预期的证据。",
+      "resolution_kpi_or_event": "Two consecutive reporting periods exceed the public base on normalized FCF and HEYDUDE channel KPIs without weakening liquidity or covenant headroom. / 连续两个报告期的标准化 FCF 与 HEYDUDE 渠道指标超过公开基准，且不削弱流动性或 covenant 余量。",
+      "decision_impact": "At the current price, the investment case needs a variant operating outcome, not merely delivery of the consensus recovery. / 在当前价格下，投资逻辑需要差异化经营结果，而不仅是兑现一致预期中的复苏。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    }
+  ],
+  "issuer_underwriting": {
+    "business_and_industry": {
+      "status": "VALIDATED",
+      "conclusion": "Crocs is a two-brand, wholesale-and-DTC footwear issuer. The core Crocs Brand remains the operating and cash-generation anchor; HEYDUDE is the turnaround variable. Q1 showed a favorable DTC/international mix but weak wholesale and North America demand. / 公司由两个品牌及批发、DTC 两类渠道构成。Crocs 主品牌仍是经营与现金流核心，HEYDUDE 是主要转型变量；第一季度 DTC 与国际业务表现较好，但批发和北美需求偏弱。",
+      "evidence_ids": [],
+      "evidence_keys": ["business_model", "fy25_brand_impairment", "q1_brand_channel_results", "fy26_management_guidance"],
+      "limitations": ["No public channel inventory or sell-through dataset was validated.", "Industry share and peer pricing were not independently sourced in this Gate 3 pass."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "earnings_quality": {
+      "status": "VALIDATED",
+      "conclusion": "LTM GAAP earnings are distorted by the FY2025 USD 737 million non-cash HEYDUDE impairment, while LTM CFO and reported FCF are positive. The impairment is already added back within CFO and is not added again in normalized FCF. Company-adjusted margin and EPS are useful for comparability but remain management-defined. / 过去十二个月 GAAP 利润受到 2025 年 HEYDUDE 7.37 亿美元非现金减值的显著扭曲，而 CFO 与报告 FCF 为正；该减值已在 CFO 中加回，不会在标准化 FCF 中重复加回。",
+      "evidence_ids": ["EV-BB679D6FF21709", "EV-BEEEB238DC69A3", "EV-039973F242ADE9"],
+      "evidence_keys": ["fy25_brand_impairment", "q1_consolidated_quality", "fy26_nongaap_adjustments"],
+      "limitations": ["The cash portion and timing of FY2026 cost-reduction charges are not fully disclosed.", "Normalized FCF is a public-data run-rate proxy, not a management FCF forecast."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "working_capital_and_cash_conversion": {
+      "status": "VALIDATED",
+      "conclusion": "Q1 2026 working capital absorbed cash: receivables and inventory rose from year-end while accounts payable declined. Same-period average-balance metrics were DSO 35.2 days, DIO 86.5 days, DPO 57.4 days, and CCC 64.3 days; Q1 FCF was negative USD 98.934 million. LTM construction reduces, but does not eliminate, seasonality risk. / 2026 年第一季度营运资金占用现金，应收和存货较年末上升、应付下降；同口径指标为 DSO 35.2 天、DIO 86.5 天、DPO 57.4 天、CCC 64.3 天，季度 FCF 为负 9,893.4 万美元。",
+      "evidence_ids": ["EV-9369ADF159F73F", "EV-561197A4078B22", "EV-AADC2C69A99668", "EV-2C23D1D14E4652", "EV-111220DAD99940", "EV-E86D6CE214780A", "EV-5F37167E05BC53", "EV-47DD03DB1FFBDA", "EV-A61EC9DC4F40E6", "EV-D12F39EEFE4F46", "EV-C8DFF9D58C15E8"],
+      "evidence_keys": [],
+      "limitations": ["Only the latest comparable quarter and opening balance are validated here; an eight-quarter trend is still required for live underwriting.", "Inventory aging and receivable aging are not publicly quantified at the required granularity."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "liquidity_sources_and_uses": {
+      "status": "VALIDATED",
+      "conclusion": "Reported March 31 gross liquidity was USD 980.746 million, but it is a historical point-in-time figure. The April USD 73.6 million buyback and USD 5.550 million current borrowing repayment are subsequent events; their full pro forma liquidity effect cannot be calculated without April operating cash flow and funding-source detail. No tariff refund is counted as a source. / 3 月 31 日报告总流动性为 9.80746 亿美元，但这是历史时点数据；4 月回购和短期借款偿还属于后续事项，缺少 4 月经营现金流与资金来源，不能虚构精确 pro forma 流动性。",
+      "evidence_ids": ["EV-477EE204D9C0E5", "EV-499E0353F42923", "EV-454A13202ADFBB", "EV-C8DFF9D58C15E8", "EV-1C60834FADAB7A"],
+      "evidence_keys": ["march_liquidity", "april_share_repurchase", "current_debt_repaid", "foreign_cash_access", "tariff_refund_estimate"],
+      "limitations": ["No complete April 23 cash, revolver, and operating sources-and-uses bridge is publicly available.", "Facility availability remains subject to agreement conditions; no downside haircut is presented as fact."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "debt_leases_covenants_refinancing": {
+      "status": "VALIDATED",
+      "conclusion": "The only March 31 current borrowing was repaid in April. Material maturities begin with the USD 159 million revolver in November 2027, followed by USD 850 million of Term Loan B and notes in 2029 and USD 350 million notes in 2031. Crocs reported covenant compliance, but numerical leverage and interest-coverage headroom is MISSING. Lease carrying value and contractual lease payments are kept separate. / 3 月末唯一短期借款已于 4 月偿还；主要到期集中在 2027、2029 和 2031 年。公司披露 covenant 合规，但数值 headroom 缺失；租赁账面负债与合同现金付款分开呈现。",
+      "evidence_ids": ["EV-1C60834FADAB7A", "EV-B8EAB04B234159", "EV-71616C3217DB51", "EV-2F99B0F6247627"],
+      "evidence_keys": ["current_debt_repaid", "debt_schedule", "covenant_terms", "lease_schedule", "purchase_commitments", "interest_rate_sensitivity"],
+      "limitations": ["Numerical covenant headroom cannot be reproduced from the public filing alone.", "The November 2027 revolver extension/refinancing path remains a monitoring item.", "Purchase commitments are normal-course obligations but are not disaggregated by exact payment date."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "capital_allocation": {
+      "status": "VALIDATED",
+      "conclusion": "Crocs resumed buybacks after quarter-end, deploying USD 73.6 million through April 23 despite HEYDUDE uncertainty and negative Q1 FCF. The program may create per-share upside, but authorization is not treated as future spending and buybacks must be evaluated against liquidity, leverage, and the 2027 maturity. / 公司在季度末后恢复回购并投入 7,360 万美元；这可能增厚每股价值，但授权额度不等于未来现金支出，需与流动性、杠杆及 2027 年到期压力共同评估。",
+      "evidence_ids": ["EV-065DB974C23B3E", "EV-C8DFF9D58C15E8", "EV-1C60834FADAB7A"],
+      "evidence_keys": ["april_share_repurchase", "current_debt_repaid", "covenant_terms"],
+      "limitations": ["Future repurchase pace is not assumed.", "No fund-specific preference between buybacks, debt reduction, and reinvestment is supplied."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "management_guidance_and_subsequent_events": {
+      "status": "VALIDATED",
+      "conclusion": "Management raised FY2026 revenue and EPS guidance after Q1, but the outlook still assumes HEYDUDE declines and excludes future buyback effects from EPS. The April buyback and debt repayment are incorporated only as dated subsequent events. The estimated USD 70 million tariff refund is excluded from liquidity and FCF until timing and recognition are evidenced. / 管理层上调全年指引，但仍预计 HEYDUDE 下滑，EPS 指引也未包含未来回购；4 月事项仅按后续事项处理，关税退款在时间与确认方式明确前不计入流动性或 FCF。",
+      "evidence_ids": ["EV-FD319539EFE8C6"],
+      "evidence_keys": ["fy26_management_guidance", "q2_management_guidance", "april_share_repurchase", "current_debt_repaid", "tariff_refund_estimate", "june_10_8k_review"],
+      "limitations": ["Guidance credibility requires subsequent reported results.", "The June 10 subsequent filing index was reviewed by the automated engine, but any later material filing must be read before delivery."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "stress_test": {
+      "status": "VALIDATED",
+      "conclusion": "Public disclosures do not indicate an immediate 12-month liquidity constraint: reported cash plus borrowing availability is large relative to the current borrowing and a 100bp variable-rate shock adds USD 6.6 million of annual interest. However, negative Q1 FCF, buybacks, purchase commitments, lease payments, and missing numerical covenant headroom make the conclusion qualified rather than definitive. / 公开信息未显示未来 12 个月存在即时流动性约束，但负的第一季度 FCF、回购、采购承诺、租赁付款及 covenant 数值 headroom 缺失，使该结论只能是有条件的。",
+      "evidence_ids": ["EV-454A13202ADFBB", "EV-C8DFF9D58C15E8", "EV-1C60834FADAB7A"],
+      "evidence_keys": ["interest_rate_sensitivity", "april_share_repurchase", "purchase_commitments", "lease_schedule", "covenant_terms"],
+      "limitations": ["No company-disclosed downside covenant calculation is available.", "Scenario FCF and exit multiples remain analyst judgments and are separately labeled."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    }
+  },
+  "normalized_fcf": {
+    "status": "VALIDATED",
+    "normalization_status": "PARTIALLY_NORMALIZED",
+    "normalization_scope": "Public-data LTM FCF underwriting base with reported capex replaced by the FY2026 management-guidance midpoint; not a durable forward forecast. / 公开数据LTM FCF分析基准，以2026财年管理层资本开支指引中值替换报告资本开支；并非可持续前瞻预测。",
+    "normalization_unresolved_items": [
+      "Working-capital durability and reversal timing remain unresolved. / 营运资金的持续性与回转时点尚未解决。",
+      "HEYDUDE stabilization, restructuring cash timing, and operating-margin durability remain unresolved. / HEYDUDE企稳、重组现金时点及经营利润率持续性尚未解决。"
+    ],
+    "value": 621732000.0,
+    "period_end": "2026-03-31",
+    "base_evidence_metric": "reported_ltm_fcf",
+    "bridge_lines": [
+      {
+        "label": "Replace LTM reported capex with FY2026 guidance midpoint / 以 2026 财年指引中值替换 LTM 报告资本开支",
+        "amount": -21144000.0,
+        "evidence_id": "",
+        "evidence_key": "capex_guidance_midpoint",
+        "evidence_class": "JUDGMENT",
+        "embedded_in_cfo": false,
+        "separately_modeled": true,
+        "reversal_id": "",
+        "rationale": "Reported LTM capex is USD 53.856 million. The FY2026 capex guidance midpoint is USD 75.000 million. Adjustment = -(75.000 - 53.856) = -USD 21.144 million. CFO is unchanged. No separate adjustment is made for cash interest, cash taxes, working capital, operating lease cash flow, or the non-cash HEYDUDE impairment because those items are already reflected in CFO under the applicable presentation. / LTM 报告资本开支为 5,385.6 万美元，2026 财年资本开支指引中值为 7,500 万美元，因此调整为负 2,114.4 万美元。CFO 不变；现金利息、现金税、营运资金、经营租赁现金流及非现金 HEYDUDE 减值均已反映在 CFO 中，不再重复调整。"
+      }
+    ],
+    "no_adjustments_rationale": "",
+    "confidence": "Medium",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "share_count_basis": {
+    "share_count_type": "COMMON_SHARES_OUTSTANDING",
+    "forward_share_count_bridge_status": "NOT_COMPLETED",
+    "known_subsequent_event_status": "REVIEWED_NO_QUANTIFIED_CHANGE",
+    "known_subsequent_event_note": "The 2026-04-23 cover-page share count is used. Public subsequent-event review through 2026-07-16 did not produce a validated quantified later share count; future repurchases or equity-plan activity are not incorporated. / 采用2026-04-23封面页股数；截至2026-07-16的公开后续事项复核未获得经验证的后续量化股数，未来回购或股权计划活动未纳入。",
+    "limitations": [
+      "The share-count date precedes the 2026-07-15 market-price date, so all per-share sensitivities are labeled PROXY. / 股数日期早于2026-07-15市场价格日期，因此所有每股敏感性均标记为PROXY。"
+    ]
+  },
+  "valuation_completion": {
+    "dcf_cross_check": "NOT_COMPLETED",
+    "driver_based_forward_forecast": "NOT_COMPLETED"
+  },
+  "what_is_priced_in": {
+    "risk_interpretation": "The conditional FCF requirement must be tested against HEYDUDE wholesale stabilization, Crocs Brand margin durability, working-capital conversion, management guidance, and consensus. A 52-week price position is not used as evidence that recovery is fully priced. / 条件性FCF要求必须结合HEYDUDE批发企稳、Crocs主品牌利润率持续性、营运资金转化、管理层指引及一致预期检验；不以52周价格位置作为复苏已被充分定价的证据。"
+  },
+  "market_data_approval": {
+    "status": "APPROVED_FOR_RESEARCH",
+    "provider": "Yahoo Finance chart endpoint",
+    "scope": "Public-data research demo: dated unadjusted close for valuation and adjusted closes on exact common dates for CROX/SPY return comparison; not approved for live fund reporting or Gate 4.",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "market_expectations": {
+    "status": "SOURCED",
+    "summary": "FactSet consensus as of July 15, 2026 expects FY2026 revenue of USD 4.068 billion (+1%), EPS of USD 13.72 (+10%), EBIT of USD 917 million, and net financial debt of USD 889 million. The median analyst target was USD 126 with 17 analysts in the cited table. Management guidance is broadly consistent on revenue and EPS; therefore, recovery is already the conventional view rather than a variant thesis. / 截至 2026 年 7 月 15 日，FactSet 一致预期为 2026 财年收入 40.68 亿美元（+1%）、EPS 13.72 美元（+10%）、EBIT 9.17 亿美元、净金融债务 8.89 亿美元；17 位分析师的目标价中位数为 126 美元。管理层收入与 EPS 指引大体一致，因此复苏已是市场常规观点，而非差异化观点。",
+    "variant_question": "Is the market underestimating normalized FCF and HEYDUDE stabilization enough to justify upside beyond the consensus recovery path? / 市场是否低估了标准化 FCF 与 HEYDUDE 企稳，从而形成超越一致复苏路径的上行空间？",
+    "variant_perception": "The public-data base does not yet establish a favorable variant. At a 10x equity FCF reference, the July 15 dated market cap requires about USD 662.711 million of normalized FCF versus the validated public-data base of USD 621.732 million. Attractive upside requires evidence closer to the Bull case, not merely delivery of current guidance. / 公开数据基准尚未建立有利的差异化判断。按 10 倍股权 FCF 参考倍数，7 月 15 日市值要求约 6.62711 亿美元标准化 FCF，高于已验证的 6.21732 亿美元公开数据基准；要获得有吸引力的上行，需要更接近 Bull 情景的证据，而不仅是兑现现有指引。",
+    "current_public_evidence": "Q1 showed positive Crocs Brand DTC and international growth, but HEYDUDE and wholesale remained weak, working capital absorbed cash, and the validated normalized FCF base remained below the 10x reverse-valuation requirement. / 第一季度 Crocs 主品牌 DTC 与国际业务增长为正，但 HEYDUDE 与批发仍弱，营运资金占用现金，且已验证标准化 FCF 仍低于 10 倍反向估值要求。",
+    "potential_variant": "The potential upside variant is faster HEYDUDE stabilization plus durable Crocs Brand cash conversion that lifts normalized FCF above USD 662.711 million; current public evidence does not yet validate that combination. / 潜在上行差异来自 HEYDUDE 更快企稳与 Crocs 主品牌现金转化保持韧性，使标准化 FCF 超过 6.62711 亿美元；现有公开证据尚未验证该组合。",
+    "disconfirming_evidence": "The variant would be weakened by continued double-digit HEYDUDE decline, Crocs Brand turning materially negative, adjusted margin below guidance, or normalized FCF remaining below the reverse-valuation requirement. / 若 HEYDUDE 持续双位数下滑、Crocs 主品牌明显转负、调整后利润率低于指引，或标准化 FCF 持续低于反向估值要求，则该差异化观点被削弱。",
+    "market_evidence_keys": ["factset_consensus_fy26", "factset_consensus_target"],
+    "public_evidence_keys": ["q1_consolidated_quality", "q1_brand_channel_results", "fy26_management_guidance"],
+    "public_evidence_metrics": ["reported_ltm_fcf", "market_cap_point_in_time"],
+    "variant_evidence_keys": ["capex_guidance_midpoint", "fy26_management_guidance"],
+    "variant_evidence_metrics": ["public_data_fcf_underwriting_base", "reverse_valuation_required_metric_value"],
+    "disconfirming_evidence_keys": ["q2_management_guidance", "q1_brand_channel_results"],
+    "disconfirming_evidence_metrics": ["latest_quarter_fcf"],
+    "source": {
+      "source_level": 4,
+      "source_type": "institutional_consensus",
+      "source_name": "FactSet Research Systems consensus via Boursorama",
+      "source_url": "https://www.boursorama.com/cours/consensus/CROX/",
+      "source_locator": "Analyst recommendations, median target, and FY2026 earnings/results forecasts dated July 14-15, 2026",
+      "publication_date": "2026-07-15",
+      "retrieval_date": "2026-07-15"
+    },
+    "as_of_date": "2026-07-15",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "valuation_framework": {
+    "status": "VALIDATED",
+    "method": "EQUITY_FCF_MULTIPLE",
+    "reverse_valuation": {
+      "status": "VALIDATED",
+      "formula": "required_metric_value = market_cap / selected_multiple",
+      "selected_multiple": 10.0,
+      "required_metric_value": 662710811.1134766,
+      "assumptions": [
+        "10.0x is a round reverse-valuation reference close to the July 15 observed trailing reported P/FCF of approximately 10.31x; it is not asserted as fair value.",
+        "The metric is equity free cash flow after cash capex, so no debt subtraction is repeated in the price formula.",
+        "The reverse calculation asks what normalized FCF the dated market cap requires at 10.0x; it does not assume the market explicitly uses this method.",
+        "Share count is the April 23, 2026 cover-page point-in-time share count available before the July 15, 2026 price date."
+      ],
+      "evidence_ids": [],
+      "evidence_keys": ["factset_consensus_fy26", "factset_consensus_target", "capex_guidance_midpoint"],
+      "evidence_metrics": ["market_cap_point_in_time", "trailing_p_fcf", "reported_ltm_fcf"]
+    },
+    "sensitivity_completed": true,
+    "sensitivity_table": [
+      {"metric_value": 500000000.0, "multiple": 8.0, "implied_price": 80.49966463839712},
+      {"metric_value": 500000000.0, "multiple": 10.0, "implied_price": 100.6245807979964},
+      {"metric_value": 500000000.0, "multiple": 12.0, "implied_price": 120.74949695759568},
+      {"metric_value": 621732000.0, "multiple": 8.0, "implied_price": 100.09843498991984},
+      {"metric_value": 621732000.0, "multiple": 10.0, "implied_price": 125.12304373739978},
+      {"metric_value": 621732000.0, "multiple": 12.0, "implied_price": 150.14765248487976},
+      {"metric_value": 720000000.0, "multiple": 8.0, "implied_price": 115.91951707929185},
+      {"metric_value": 720000000.0, "multiple": 10.0, "implied_price": 144.89939634911482},
+      {"metric_value": 720000000.0, "multiple": 12.0, "implied_price": 173.87927561893778}
+    ],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "scenario_model": {
+    "status": "ANALYST_VALIDATED",
+    "metric": "Normalized FCF",
+    "reviewed_by": "Codex public-data research QA (human review pending)",
+    "scenarios": [
+      {
+        "name": "Bear",
+        "probability": 0.25,
+        "metric_value_total": 500000000.0,
+        "growth_assumption": -0.19579497275353364,
+        "exit_multiple": 8.0,
+        "key_driver": "HEYDUDE remains a double-digit decliner, Crocs Brand North America/wholesale weakness broadens, margin compresses, and cash conversion remains below the validated base. / HEYDUDE 继续双位数下滑，Crocs 主品牌北美与批发疲弱扩大，利润率受压，现金转化低于已验证基准。",
+        "falsification_trigger": "HEYDUDE wholesale improves to better than -10%, Crocs Brand remains non-negative, and normalized FCF is at least USD 621.732 million without weaker liquidity. / 若 HEYDUDE 批发降幅改善至 10%以内、Crocs 主品牌不下滑、标准化 FCF 至少 6.21732 亿美元且流动性不转弱，则 Bear 情景被推翻。",
+        "assumption_sources": ["q1_brand_channel_results", "q2_management_guidance", "reported_ltm_fcf"],
+        "probability_rationale": "The 25% Bear weight is an illustrative analyst allocation reflecting unresolved HEYDUDE and working-capital downside; it has not been partner-approved. / 25%的 Bear 权重是针对 HEYDUDE 与营运资金下行风险的示意性分析分配，尚未获 partner 审批。",
+        "confidence": "Low",
+        "notes": "USD 500 million equals a 19.5795% decline from the USD 621.732 million normalized base. The 8.0x multiple reflects a still-unresolved brand turnaround and higher cash-flow risk. Probability is analyst judgment, not a market-implied probability. / 5 亿美元较 6.21732 亿美元标准化基准下降 19.5795%；8 倍倍数反映品牌转型未解决及更高现金流风险，概率为分析判断而非市场隐含概率。"
+      },
+      {
+        "name": "Base",
+        "probability": 0.5,
+        "metric_value_total": 621732000.0,
+        "growth_assumption": 0.0,
+        "exit_multiple": 10.0,
+        "key_driver": "Enterprise revenue remains within guidance, Crocs Brand offsets most HEYDUDE weakness, adjusted margin is broadly stable, and capex is normalized to the FY2026 guidance midpoint. / 公司收入落在指引范围内，Crocs 主品牌抵消 HEYDUDE 的大部分疲弱，调整后利润率大体稳定，资本开支按 2026 财年指引中值标准化。",
+        "falsification_trigger": "Normalized FCF falls below USD 550 million, FY2026 revenue or EPS guidance is reduced below the current range, or covenant/refinancing risk becomes binding. / 若标准化 FCF 低于 5.5 亿美元、2026 财年收入或 EPS 指引下调至当前区间以下，或 covenant/再融资风险成为实质约束，则 Base 情景被推翻。",
+        "assumption_sources": ["fy26_management_guidance", "capex_guidance_midpoint", "public_data_fcf_underwriting_base"],
+        "probability_rationale": "The 50% Base weight is an illustrative central allocation because management guidance and consensus broadly overlap; it is not a statistically estimated or approved probability. / 50%的 Base 权重是基于管理层指引与一致预期大体重合的示意性中心分配，并非统计估计或已审批概率。",
+        "confidence": "Medium",
+        "notes": "The FCF base is the validated public-data normalization. The 10.0x multiple is the reverse-valuation reference, not a peer-derived fair-value assertion. / FCF 基准来自已验证的公开数据标准化；10 倍为反向估值参考，并非由同业比较得出的公允价值结论。"
+      },
+      {
+        "name": "Bull",
+        "probability": 0.25,
+        "metric_value_total": 720000000.0,
+        "growth_assumption": 0.1580552392349115,
+        "exit_multiple": 12.0,
+        "key_driver": "Crocs Brand DTC/international strength broadens, HEYDUDE wholesale stabilizes faster than guidance, margin and working capital improve, and buybacks do not weaken liquidity. / Crocs 主品牌 DTC 与国际业务优势扩大，HEYDUDE 批发改善快于指引，利润率与营运资金改善，且回购未削弱流动性。",
+        "falsification_trigger": "HEYDUDE remains a double-digit decliner, normalized FCF stays below USD 662.711 million, or adjusted operating margin fails to hold at least 22.3%. / 若 HEYDUDE 仍为双位数下滑、标准化 FCF 低于 6.62711 亿美元，或调整后经营利润率无法保持至少 22.3%，则 Bull 情景被推翻。",
+        "assumption_sources": ["q1_brand_channel_results", "fy26_management_guidance", "reverse_valuation_required_metric_value"],
+        "probability_rationale": "The 25% Bull weight is an illustrative analyst allocation for a faster-than-guidance stabilization path; public evidence and partner approval remain insufficient for formal use. / 25%的 Bull 权重是对快于指引企稳路径的示意性分析分配；公开证据与 partner 审批均不足以支持正式使用。",
+        "confidence": "Low",
+        "notes": "USD 720 million equals a 15.8055% increase from the normalized base. The 12.0x multiple requires both operating proof and reduced turnaround risk. Probability is analyst judgment. / 7.2 亿美元较标准化基准增长 15.8055%；12 倍估值需要经营改善证据及转型风险下降，概率为分析判断。"
+      }
+    ]
+  },
+  "probability_framework": {
+    "status": "ILLUSTRATIVE",
+    "method_type": "SCENARIO_JUDGMENT",
+    "methodology": "Allocate an illustrative central weight where current management guidance and sourced consensus overlap, then allocate symmetric tail weights to explicit operating downside and upside paths. Test alternative downside-heavy, central, and upside-heavy weight sets. These weights are workflow inputs, not frequencies, market-implied probabilities, or an approved investment conclusion. / 当管理层指引与有来源的一致预期重合时给予示意性中心权重，并把对称尾部权重分配给明确的经营下行与上行路径，再测试偏下行、中心和偏上行三组替代权重。该权重仅为流程输入，并非历史频率、市场隐含概率或已审批投资结论。",
+    "method_details": {
+      "allocation_rationale": "Base receives the largest illustrative weight because FY2026 guidance and sourced consensus are broadly aligned; Bear and Bull represent measurable deviations around that path. / Base 获得最大示意权重，因为2026财年指引与一致预期大体一致；Bear 与 Bull 表示围绕该路径的可衡量偏离。",
+      "sensitivity_completed": true
+    },
+    "evidence_keys": ["factset_consensus_fy26", "fy26_management_guidance", "q1_brand_channel_results"],
+    "evidence_metrics": ["reported_ltm_fcf", "public_data_fcf_underwriting_base", "reverse_valuation_required_metric_value"],
+    "scenario_rationales": {
+      "Bear": "Unresolved HEYDUDE, wholesale, margin and working-capital risks justify retaining a material downside path. / HEYDUDE、批发、利润率及营运资金风险尚未解决，因此保留实质下行情景。",
+      "Base": "Management guidance and sourced consensus broadly overlap, making the current operating path the central illustrative case. / 管理层指引与有来源的一致预期大体重合，因此当前经营路径作为中心示意情景。",
+      "Bull": "A faster stabilization path is possible but requires evidence not yet established in public data. / 更快企稳存在可能，但仍需要尚未由公开数据证明的证据。"
+    },
+    "as_of_date": "2026-07-15",
+    "probability_expiration_review_date": "2026-10-31",
+    "review_triggers": ["NEW_EARNINGS_OR_GUIDANCE", "MATERIAL_CAPITAL_ALLOCATION", "COVENANT_OR_REFINANCING_CHANGE"],
+    "reviewed_by": "Codex public-data research QA (human review pending)",
+    "approval": {
+      "status": "NOT_APPROVED",
+      "approved_by": null,
+      "approval_date": null
+    },
+    "sensitivity_cases": [
+      {"label": "Downside-heavy / 偏下行", "probabilities": {"Bear": 0.5, "Base": 0.35, "Bull": 0.15}},
+      {"label": "Central illustrative / 中心示意", "probabilities": {"Bear": 0.25, "Base": 0.5, "Bull": 0.25}},
+      {"label": "Upside-heavy / 偏上行", "probabilities": {"Bear": 0.15, "Base": 0.35, "Bull": 0.5}}
+    ]
+  },
+  "peer_valuation_context": {
+    "status": "UNAVAILABLE",
+    "as_of_date": "2026-07-15",
+    "selection_rationale": "A controlled peer set has not yet been sourced and period-aligned. / 尚未获得并完成期间对齐的受控同业集合。",
+    "peers": [],
+    "reviewed_by": "Codex public-data research QA (human review pending)",
+    "interpretation": "No peer-derived fair-value conclusion or automatic ranking is permitted. / 不得生成同业推导的公允价值结论或自动排名。"
+  },
+  "fcf_quality_assessment": {
+    "status": "VALIDATED",
+    "rating": "Medium",
+    "cash_conversion_confidence": "Medium",
+    "source_of_fcf": [
+      "Positive LTM reported CFO after cash interest, cash taxes and working-capital movements / 正的LTM报告CFO，已包含现金利息、现金税与营运资金变动",
+      "Reported cash capex replaced with FY2026 guidance midpoint for the normalized run-rate / 标准化运行率以2026财年资本开支指引中值替换报告现金资本开支"
+    ],
+    "sustainability_assessment": "The normalized FCF is reproducible and conservative on capex, but durability remains dependent on core Crocs Brand performance, HEYDUDE stabilization and reversal of Q1 working-capital pressure. / 标准化FCF可复算且资本开支口径偏保守，但其可持续性仍取决于Crocs主品牌表现、HEYDUDE企稳及第一季度营运资金压力逆转。",
+    "conclusion": "FCF quality is adequate for scenario construction but not strong enough, on public evidence alone, to treat the normalized amount as a durable forecast. / FCF质量足以用于构建情景，但仅凭公开证据尚不足以把该标准化金额视为可持续预测。",
+    "dimensions": [
+      {"dimension": "Reported-to-normalized bridge / 报告至标准化桥接", "assessment": "Reproducible / 可复算", "implication": "Only the capex run-rate is adjusted; CFO items are not double counted. / 仅调整资本开支运行率，不重复计算CFO项目。"},
+      {"dimension": "Working-capital support / 营运资金支持", "assessment": "Mixed / 中性偏弱", "implication": "Q1 absorbed cash, so durability requires comparable-period improvement. / 第一季度占用现金，可持续性需由可比期间改善验证。"},
+      {"dimension": "Operating durability / 经营持续性", "assessment": "Unresolved / 未解决", "implication": "HEYDUDE and wholesale weakness remain material. / HEYDUDE与批发疲弱仍具实质影响。"}
+    ],
+    "evidence_keys": ["capex_guidance_midpoint", "q1_brand_channel_results", "fy26_management_guidance"],
+    "evidence_metrics": ["valuation_basis_cfo", "reported_ltm_fcf", "public_data_fcf_underwriting_base", "latest_quarter_fcf"],
+    "limitations": ["No eight-quarter normalized cash-conversion history is validated.", "Maintenance and growth capex are not publicly separated."],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "investment_decision_summary": {
+    "status": "VALIDATED",
+    "current_action": "Watch",
+    "current_view": "CROX has no immediate public-data credit constraint and produces meaningful normalized FCF, but the dated price already requires FCF above the validated base at the selected 10x reference. A favorable equity variant is not yet established; keep the issuer on Watch pending evidence of HEYDUDE stabilization and stronger cash conversion. / CROX在公开数据下不存在即时信用约束并能产生可观标准化FCF，但按选定10倍参考，当前价格已要求高于已验证基准的FCF。现阶段尚未建立有利的股票差异化观点；在HEYDUDE企稳及现金转化增强获得证据前，维持观察。",
+    "what_would_make_attractive": [
+      "Normalized FCF validates above USD 662.711 million without weaker liquidity. / 标准化FCF经验证高于6.62711亿美元，且流动性不转弱。",
+      "HEYDUDE wholesale decline improves to better than -10% while Crocs Brand remains non-negative and adjusted margin is at least 22.3%. / HEYDUDE批发降幅改善至10%以内，同时Crocs主品牌不下滑且调整后利润率至少22.3%。"
+    ],
+    "what_would_invalidate": [
+      "Normalized FCF falls below USD 500 million without a temporary reversible working-capital cause. / 若不存在暂时且可逆的营运资金原因，标准化FCF低于5亿美元。",
+      "Both brands decline materially, adjusted operating margin falls below 20%, or covenant/refinancing capacity becomes constrained. / 两个品牌均明显下滑、调整后经营利润率低于20%，或covenant及再融资能力受限。"
+    ],
+    "what_to_monitor_next": [
+      "HEYDUDE wholesale and DTC growth; Crocs Brand growth; adjusted operating margin. / HEYDUDE批发与DTC增速、Crocs主品牌增速、调整后经营利润率。",
+      "Comparable-period working capital, normalized FCF, revolver availability and numerical covenant headroom. / 可比期间营运资金、标准化FCF、循环信贷可用额及covenant数值余量。"
+    ],
+    "evidence_keys": ["factset_consensus_fy26", "factset_consensus_target", "q1_brand_channel_results", "march_liquidity", "covenant_terms"],
+    "evidence_metrics": ["market_price_unadjusted_close", "market_cap_point_in_time", "public_data_fcf_underwriting_base", "reverse_valuation_required_metric_value", "reported_ltm_fcf"],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "decision_rules": {
+    "status": "VALIDATED",
+    "upgrade_conditions": [
+      "Upgrade the public-data action if HEYDUDE wholesale decline improves to better than -10% year over year while HEYDUDE DTC remains positive. / 若 HEYDUDE 批发同比降幅改善至 10%以内且 DTC 保持正增长，上调公开数据判断。",
+      "Upgrade valuation confidence if normalized FCF is validated above USD 662.711 million, the 10.0x reverse-valuation requirement at the July 15 dated market cap. / 若标准化 FCF 经验证高于 7 月 15 日市值在 10 倍下所需的 6.62711 亿美元，上调估值可信度。",
+      "Upgrade toward the Bull case only if Crocs Brand remains at or above flat growth, adjusted operating margin is at least 22.3%, and liquidity/covenant evidence does not weaken. / 仅当 Crocs 主品牌不下滑、调整后经营利润率至少 22.3%，且流动性与 covenant 证据不转弱时，才向 Bull 情景上调。",
+      "Upgrade source confidence when numerical leverage and interest-coverage headroom can be reproduced from current public or partner-approved data. / 当杠杆及利息覆盖倍数余量能够由当前公开或 partner 批准的数据复算时，上调来源可信度。"
+    ],
+    "downgrade_conditions": [
+      "Downgrade if FY2026 revenue guidance falls below -1%, adjusted EPS guidance falls below USD 13.20, or adjusted operating margin guidance falls below 22.3%. / 若 2026 财年收入指引低于 -1%、调整后 EPS 低于 13.20 美元，或调整后经营利润率指引低于 22.3%，下调判断。",
+      "Downgrade if normalized FCF is validated below USD 550 million or working-capital deterioration persists for two comparable quarters. / 若标准化 FCF 经验证低于 5.5 亿美元，或营运资金恶化连续两个可比季度持续，下调判断。",
+      "Downgrade if HEYDUDE remains a double-digit decliner without sequential wholesale improvement or if Crocs Brand also turns materially negative. / 若 HEYDUDE 持续双位数下滑且批发环比未改善，或 Crocs 主品牌也明显转负，下调判断。",
+      "Downgrade if revolver availability, covenant headroom, or the November 2027 refinancing path becomes materially constrained. / 若循环信贷可用额、covenant 余量或 2027 年 11 月再融资路径受到实质约束，下调判断。"
+    ],
+    "thesis_invalidation_conditions": [
+      "Invalidate the recovery thesis if Crocs Brand and HEYDUDE both decline materially while adjusted operating margin falls below 20%. / 若 Crocs 主品牌与 HEYDUDE 均明显下滑且调整后经营利润率低于 20%，复苏逻辑失效。",
+      "Invalidate the FCF valuation thesis if normalized FCF is below USD 500 million without a clearly temporary, reversible working-capital cause. / 若标准化 FCF 低于 5 亿美元且不存在明确、暂时、可逆的营运资金原因，FCF 估值逻辑失效。",
+      "Invalidate the no-immediate-credit-constraint conclusion upon a covenant breach, material loss of facility availability, or inability to address the November 2027 revolver maturity on acceptable terms. / 若发生 covenant 违约、授信可用额大幅下降，或无法以可接受条件处理 2027 年 11 月循环信贷到期，则“无即时信用约束”结论失效。",
+      "Invalidate the differentiated long thesis if operating results merely match consensus while the share price continues to require FCF above the validated base at the selected multiple. / 若经营结果仅符合一致预期，而股价在选定倍数下仍要求高于已验证基准的 FCF，则差异化做多逻辑失效。"
+    ],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "catalysts": [
+    "HEYDUDE wholesale decline narrowing below -10% with positive DTC growth. / HEYDUDE 批发降幅收窄至 -10%以内且 DTC 保持增长。",
+    "Validated normalized FCF exceeding the USD 662.711 million reverse-valuation requirement. / 标准化 FCF 超过反向估值所需的 6.62711 亿美元。",
+    "Demonstrated adjusted operating margin at or above 22.3% while Crocs Brand remains non-negative. / Crocs 主品牌不下滑且调整后经营利润率不低于 22.3%。",
+    "Numerical covenant headroom and a credible November 2027 revolver plan. / 明确的 covenant 数值余量及可信的 2027 年 11 月循环信贷安排。"
+  ],
+  "credit_constraint_status": {
+    "status": "NO_IMMEDIATE_CREDIT_CONSTRAINT_QUALIFIED",
+    "as_of_date": "2026-04-30",
+    "basis": "Reported liquidity and maturity schedule do not show a 12-month funding wall, but numerical covenant headroom and a complete post-quarter sources-and-uses bridge are unavailable. / 报告流动性与到期结构未显示未来 12 个月存在融资墙，但 covenant 数值余量及季度末后的完整资金来源与用途桥接仍不可得。"
+  },
+  "portfolio_context": {
+    "status": "DISABLED",
+    "note": "Portfolio Overlay: Disabled - fund-specific target return, downside tolerance, horizon, exposure, liquidity, concentration, and opportunity cost were not provided. / 组合叠加层未启用：尚未提供基金特定的目标回报、下行容忍度、期限、现有敞口、流动性、集中度及机会成本。"
+  },
+  "human_approval": {
+    "status": "NOT_REVIEWED",
+    "reviewed_by": ""
+  }
+}
