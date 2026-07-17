@@ -19,6 +19,41 @@ The One-Page Summary presents the investment question, public-data view, what is
 
 一页摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。两者来自同一个 validated contract，不独立重算数字或结论。
 
+## Use with Codex / 在 Codex 中使用
+
+GitHub hosts the files but does not run the analysis by itself. Download the entire repository, open the repository root in Codex, replace `[公司名称或股票代码]` in the prompt below, and submit it in the Codex chat. Do not open or install only the `public-firm-credit-liquidity-skill` subfolder because the full analysis engine is stored under `partner-demo/`.
+
+GitHub 页面本身不会自动运行分析。请下载整个 repository，在 Codex 中打开仓库根目录，将下面 Prompt 中的 `[公司名称或股票代码]` 替换为目标公司后发送。不要只打开或安装 `public-firm-credit-liquidity-skill` 子文件夹，因为完整分析引擎位于 `partner-demo/`。
+
+Download with Git:
+
+```bash
+git clone https://github.com/yifeicai11-bot/public-company-investment-underwriting.git
+cd public-company-investment-underwriting
+```
+
+Alternatively, select **Code > Download ZIP** on GitHub, unzip it, and open the resulting `public-company-investment-underwriting` folder in Codex.
+
+Copy this prompt into Codex:
+
+```text
+请先读取 `public-firm-credit-liquidity-skill/SKILL.md`，并遵循其中的数据验证、来源记录、Data Gate、估值情景和输出规则。
+
+请分析 [公司名称或股票代码]。
+
+要求：
+1. 只使用公开资料。
+2. 先建立 Data and Evidence Layer，再进行 Issuer Underwriting。
+3. 检查财务期间、市场价格日期、股数日期和后续事项，不得混用季度、YTD 和 LTM 数据。
+4. 完整分析 receivables、bad debt、cash conversion、working capital、liquidity、debt、leases、covenants、refinancing 和 capital allocation。
+5. 明确 Investment Question、Key Debates、Decision Confidence、What Is Priced In 和 Thesis Breaks。
+6. 只有在估值和情景假设可复算时才展示情景价格。
+7. 未提供基金组合资料时，保持 Portfolio Overlay Disabled，不生成 position sizing。
+8. 最终生成中英文 One-Page Summary、Full Report、Evidence Appendix 和 Validation Report。
+```
+
+The initial public-only run may stop below Gate 3 when analyst-owned research inputs are incomplete. A partner-ready report requires sourced public research and human review of the Investment Question, Key Debates, FCF normalization, market expectations, valuation assumptions, and scenarios. / 当分析师输入尚不完整时，首次 public-only 运行可能停在 Gate 3 以下。Partner-ready 报告仍需要对投资问题、核心争议、FCF 标准化、市场预期、估值假设和情景进行公开资料研究与人工复核。
+
 ## What the System Does / 系统能力
 
 - Starts with a mandatory Investment Question rather than a generic company description.
