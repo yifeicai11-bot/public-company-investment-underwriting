@@ -50,6 +50,11 @@ Copy this prompt into Codex:
 6. 只有在估值和情景假设可复算时才展示情景价格。
 7. 未提供基金组合资料时，保持 Portfolio Overlay Disabled，不生成 position sizing。
 8. 最终生成中英文 One-Page Summary、Full Report、Evidence Appendix 和 Validation Report。
+9. 不要只在聊天框中撰写分析。请实际运行仓库中的 shared builder、investment layer、renderer 和 validation scripts，并将最终文件保存到新的公司输出目录。
+10. 首先运行 public-only builder。然后读取生成的 `analyst_input_template.json`，继续搜索公司 filings、investor materials、guidance、consensus 和其他公开资料，建立包含完整 source metadata 的 research-input JSON。不得复制 CROX、AutoZone 或其他公司的假设。
+11. 使用完成后的 research-input 重新运行 investment layer，并在当前 Data Gate 允许的范围内生成报告。随后运行 renderer 和独立 validation script。
+12. 只有在 contract validation 通过、没有 Hard Stop 且当前 Data Gate 允许时，才生成正式 One-Page、Full Report 和 Evidence Appendix；否则生成 Diagnostic Report，并明确列出缺失资料和修复要求。
+13. 最终在聊天框中列出所有生成文件的路径、Data Gate、Decision Confidence、Hard Stop 数量、Warning 数量和 validation 结果。
 ```
 
 The initial public-only run may stop below Gate 3 when analyst-owned research inputs are incomplete. A partner-ready report requires sourced public research and human review of the Investment Question, Key Debates, FCF normalization, market expectations, valuation assumptions, and scenarios. / 当分析师输入尚不完整时，首次 public-only 运行可能停在 Gate 3 以下。Partner-ready 报告仍需要对投资问题、核心争议、FCF 标准化、市场预期、估值假设和情景进行公开资料研究与人工复核。
