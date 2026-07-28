@@ -794,19 +794,29 @@ def extract_facility_values(
     """
 
     values: dict[str, tuple[float, str]] = {}
-    commitment = extract_amount_phrase(
+    exact_table_commitment = scaled_table_amount_after_label(
+        text,
+        "Credit Agreement limit",
+    )
+    commitment = exact_table_commitment or extract_amount_phrase(
         text,
         (
             r"(?:provides for|consists of|maintains?)\s+(?:an?\s+)?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+facility",
             r"(?:entered into|amended|replaced)(?:[^.;]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+(?:agreement|facility)",
+            r"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{0,220})?to\s+(?:an?\s+)?aggregate\s+of\s+\$?\s*([0-9,.]+)\s*(billion|million)",
             r"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{0,160})?(?:provides for|commitments? (?:of|totaling|equal to)|capacity of)\s+\$?\s*([0-9,.]+)\s*(billion|million)",
             r"\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?revolving\s+credit\s+facility",
         ),
     )
     if commitment is not None:
+        commitment_note = (
+            "parsed from the explicitly scaled Credit Agreement limit table"
+            if exact_table_commitment is not None
+            else "parsed only from a direct credit-facility commitment phrase"
+        )
         values["facility_commitment"] = (
             commitment,
-            "parsed only from a direct credit-facility commitment phrase",
+            commitment_note,
         )
 
     dated_availability = dated_facility_availability(

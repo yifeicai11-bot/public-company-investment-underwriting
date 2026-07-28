@@ -219,6 +219,24 @@ class AccountingControlTests(unittest.TestCase):
         values = extract_facility_values(text, as_of_date="2026-06-30")
         self.assertNotIn("facility_letters_of_credit", values)
 
+    def test_scaled_credit_agreement_limit_overrides_other_debt_instruments(self) -> None:
+        text = """
+        The Note Agreement provided for notes of up to $350.0 million.
+        The amounts outstanding and available borrowing capacity under the Credit
+        Agreement are presented below:
+        March 31, December 31, (In thousands) 2026 2025
+        Credit Agreement limit $400,000 $400,000
+        Credit Agreement borrowings — —
+        Outstanding letters of credit (31,845) (37,533)
+        Credit Agreement availability $368,155 $362,467
+        """
+        values = extract_facility_values(text, as_of_date="2026-03-31")
+        self.assertEqual(values["facility_commitment"][0], 400_000_000)
+        self.assertEqual(
+            values["facility_commitment"][1],
+            "parsed from the explicitly scaled Credit Agreement limit table",
+        )
+
     def test_facility_reconciliation_blocks_impossible_commitment(self) -> None:
         result = assess_facility_reconciliation(
             {
