@@ -980,6 +980,52 @@ CALCULATION_FORMULAS: dict[str, str] = {
 }
 
 
+WORKING_CAPITAL_COMPONENT_METRICS: dict[str, str] = {
+    "DSO": "dso_avg_ar",
+    "DIO": "dio_avg_inventory",
+    "DPO": "dpo_avg_ap",
+    "CCC": "cash_conversion_cycle",
+}
+
+
+def working_capital_component_coverage(
+    metric_names: set[str] | list[str] | tuple[str, ...],
+) -> dict[str, Any]:
+    """Classify component availability without treating an absent metric as zero."""
+
+    observed = set(metric_names)
+    components = {
+        label: (
+            "AVAILABLE"
+            if metric_name in observed
+            else "MISSING_PENDING_CLASSIFICATION"
+        )
+        for label, metric_name in WORKING_CAPITAL_COMPONENT_METRICS.items()
+    }
+    available = [
+        label for label, status in components.items() if status == "AVAILABLE"
+    ]
+    unavailable = [
+        label
+        for label, status in components.items()
+        if status == "MISSING_PENDING_CLASSIFICATION"
+    ]
+    return {
+        "status": (
+            "COMPLETE"
+            if not unavailable
+            else "PARTIAL"
+            if available
+            else "UNAVAILABLE"
+        ),
+        "components": components,
+        "available": available,
+        "unavailable": unavailable,
+        "absent_values_assumed_zero": False,
+        "not_applicable_requires_analyst_review": bool(unavailable),
+    }
+
+
 def enrich_data_points(company: dict[str, Any], rows: list[DataPoint]) -> None:
     retrieval_date = datetime.now(UTC).date().isoformat()
     for row in rows:
@@ -2077,6 +2123,38 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         add_validation(validations, "P0-working-capital-days", "PASS", "Medium", "At least one average-balance working-capital day metric calculated.", "Improves monitoring vs single-point ratios.", "Add 8-quarter trend before final memo.")
     else:
         add_validation(validations, "P0-working-capital-days", "MISSING", "Medium", "Could not calculate average-balance DSO/DIO/DPO.", "Working-capital pressure cannot be assessed fully.", "Extract prior quarter balances or note definitions.")
+
+    working_capital_coverage = working_capital_component_coverage(set(m))
+    if working_capital_coverage["status"] == "COMPLETE":
+        add_validation(
+            validations,
+            "P1-working-capital-component-coverage",
+            "PASS",
+            "High",
+            "DSO, DIO, DPO, and CCC are all available; no absent component was assumed to be zero.",
+            "The working-capital cycle has complete component coverage at the current reporting date.",
+            "Retain business-model and note-definition review before peer comparison.",
+            category="working_capital_coverage",
+        )
+    elif working_capital_coverage["status"] == "PARTIAL":
+        add_validation(
+            validations,
+            "P1-working-capital-component-coverage",
+            "PROVISIONAL",
+            "High",
+            (
+                f"Available components: {', '.join(working_capital_coverage['available'])}; "
+                f"missing pending classification: {', '.join(working_capital_coverage['unavailable'])}. "
+                "No absent component is assumed to be zero."
+            ),
+            "A partial cycle must not be presented as complete cash-conversion analysis.",
+            (
+                "Review the business model and filing definitions, then classify each unavailable "
+                "component as NOT_APPLICABLE or MISSING before final underwriting."
+            ),
+            category="working_capital_coverage",
+            issue_class="WARNING",
+        )
 
     ap_rows = [m.get("accounts_payable"), m.get("prior_accounts_payable")]
     ap_rows = [row for row in ap_rows if row]

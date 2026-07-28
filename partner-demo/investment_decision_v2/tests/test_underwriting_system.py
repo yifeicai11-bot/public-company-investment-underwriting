@@ -23,6 +23,7 @@ from build_public_company_decision_pack import (  # noqa: E402
     derive_total_liabilities,
     extract_facility_values,
     extract_inline_row_value,
+    working_capital_component_coverage,
 )
 from build_public_company_investment_layer import (  # noqa: E402
     aligned_return_pair,
@@ -236,6 +237,19 @@ class AccountingControlTests(unittest.TestCase):
             values["facility_commitment"][1],
             "parsed from the explicitly scaled Credit Agreement limit table",
         )
+
+    def test_missing_inventory_is_not_assumed_zero_in_working_capital_cycle(self) -> None:
+        coverage = working_capital_component_coverage({"dso_avg_ar"})
+        self.assertEqual(coverage["status"], "PARTIAL")
+        self.assertEqual(coverage["components"]["DSO"], "AVAILABLE")
+        self.assertEqual(
+            coverage["components"]["DIO"],
+            "MISSING_PENDING_CLASSIFICATION",
+        )
+        self.assertIn("DPO", coverage["unavailable"])
+        self.assertIn("CCC", coverage["unavailable"])
+        self.assertFalse(coverage["absent_values_assumed_zero"])
+        self.assertTrue(coverage["not_applicable_requires_analyst_review"])
 
     def test_facility_reconciliation_blocks_impossible_commitment(self) -> None:
         result = assess_facility_reconciliation(

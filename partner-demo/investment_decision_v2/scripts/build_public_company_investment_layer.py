@@ -40,6 +40,7 @@ from build_public_company_decision_pack import (  # noqa: E402
     fmt_usd,
     metric_map,
     safe_float,
+    working_capital_component_coverage,
 )
 from underwriting_contract import (  # noqa: E402
     FCF_NORMALIZATION_STATUSES,
@@ -2691,6 +2692,21 @@ def build_issuer_underwriting(
         for row in records
         if row.get("metric_name") and row.get("evidence_id")
     }
+    working_capital_coverage = working_capital_component_coverage(
+        set(metric_to_id)
+    )
+    working_capital_limitations = [
+        (
+            f"Available components: {', '.join(working_capital_coverage['available']) or 'none'}; "
+            f"missing pending classification: "
+            f"{', '.join(working_capital_coverage['unavailable']) or 'none'}."
+        ),
+        (
+            "Unavailable components are not treated as zero. Business-model and filing review "
+            "must classify each one as NOT_APPLICABLE or MISSING."
+        ),
+        "An 8-quarter trend and note-level reserve, inventory, and payable definitions are not universally available.",
+    ]
     overrides = research_input.get("issuer_underwriting", {})
     validation_issues: list[dict[str, Any]] = []
 
@@ -2711,7 +2727,7 @@ def build_issuer_underwriting(
             "status": "PRELIMINARY" if any(row.get("driver") == "FCF margin" and row.get("value") is not None for row in drivers.get("rows", [])) else "INCOMPLETE",
             "conclusion": "Same-period and average-balance metrics are used where available; trend and business-model interpretation remain incomplete.",
             "evidence_ids": evidence_ids_for(step2, "dso_avg_ar", "dio_avg_inventory", "dpo_avg_ap", "cash_conversion_cycle", "latest_ytd_fcf"),
-            "limitations": ["An 8-quarter trend and note-level reserve, inventory, and payable definitions are not universally available."],
+            "limitations": working_capital_limitations,
         },
         "liquidity_sources_and_uses": {
             "status": "PRELIMINARY",
