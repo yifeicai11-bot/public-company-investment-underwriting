@@ -1151,6 +1151,7 @@ class Gate4OverlayContractTests(unittest.TestCase):
             overlay_path.write_text(
                 json.dumps(
                     {
+                        "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
                         "overlay_mode": "ILLUSTRATIVE_DEMO_NOT_FUND_DATA",
                         "gate3_eligibility_policy": {
                             "max_report_age_days": 30,
@@ -1191,7 +1192,11 @@ class Gate4OverlayContractTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            output_dir = build_overlay(step3_dir, overlay_path)
+            output_dir = build_overlay(
+                step3_dir,
+                overlay_path,
+                Path(tmp) / "public_demo_output",
+            )
             eligibility = json.loads(
                 (output_dir / "gate4_gate3_eligibility.json").read_text(encoding="utf-8")
             )

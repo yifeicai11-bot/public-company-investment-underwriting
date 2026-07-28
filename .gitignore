@@ -6,6 +6,43 @@ __pycache__/
 venv/
 .env
 .env.*
+.cache/
+.ipynb_checkpoints/
+*.log
+*.crash
+*.dmp
+*.core
+*.tmp
+*.temp
+
+# Gate 4 private portfolio workspaces and exact local input/output names
+investment_private/
+**/investment_private/
+**/private_input/
+**/private_inputs/
+**/private_output/
+**/private_outputs/
+**/portfolio_private/
+**/partner_private/
+**/gate4_private_workspace_manifest.json
+**/portfolio_policy.yaml
+**/portfolio_policy.yml
+**/portfolio_policy.json
+**/current_holdings.csv
+**/current_holdings.xlsx
+**/current_holdings.xls
+**/opportunity_set.csv
+**/opportunity_set.xlsx
+**/opportunity_set.xls
+**/approval_config.yaml
+**/approval_config.yml
+**/approval_config.json
+**/gate3_freshness_attestation.yaml
+**/gate3_freshness_attestation.yml
+**/gate3_freshness_attestation.json
+**/gate4_local_entry_diagnostic.json
+**/gate4_system_assessment.json
+**/gate4_partner_decision.json
 
 # Regenerable local outputs
 tmp/

@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""Build Step 4 partner / portfolio overlay from a validated Gate 3 contract.
+"""Render a synthetic Step 4 interface demo from a validated Gate 3 contract.
 
-The overlay consumes the immutable shared underwriting contract and
-partner-provided portfolio constraints. It never rebuilds or overwrites
-issuer-level analysis. Demo inputs must be explicitly marked as illustrative
-and are not treated as real fund data.
+This legacy path never accepts real fund data and never unlocks Gate 4. Use
+run_gate4_local_entry.py for locally stored private inputs.
 """
 
 from __future__ import annotations
@@ -23,8 +21,13 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from underwriting_contract import assess_gate3_for_gate4  # noqa: E402
+from gate4_privacy import (  # noqa: E402
+    SYNTHETIC_CLASSIFICATION,
+    is_within,
+    resolved_path,
+)
 
-PRIVATE_INPUT_VALIDATOR_STATUS = "NOT_IMPLEMENTED_S03"
+PRIVATE_INPUT_VALIDATOR_STATUS = "SYNTHETIC_DEMO_ONLY"
 
 
 @dataclass
@@ -309,12 +312,7 @@ def overlay_gates(
             "Complete and validate the shared public-company underwriting contract before portfolio overlay.",
         )
     )
-    real_validated_mode = (
-        PRIVATE_INPUT_VALIDATOR_STATUS == "AVAILABLE"
-        and mode == "REAL_PARTNER_INPUT"
-        and overlay.get("input_status") == "VALIDATED"
-        and bool(overlay.get("reviewed_by"))
-    )
+    real_validated_mode = False
     gates.append(
         OverlayGate(
             "O2-overlay-mode",
@@ -326,7 +324,7 @@ def overlay_gates(
                 f"reviewer={overlay.get('reviewed_by', 'n/a')}"
             ),
             "Illustrative, unreviewed, or schema-unvalidated inputs may demonstrate workflow but cannot create Gate 4 outputs.",
-            "Complete the private-input schemas and local validator before enabling REAL_PARTNER_INPUT.",
+            "Use run_gate4_local_entry.py for local private validation; this renderer remains synthetic-only.",
         )
     )
     gates.append(
@@ -633,10 +631,30 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def build_overlay(gate3_target: Path, overlay_path: Path) -> Path:
+def build_overlay(
+    gate3_target: Path,
+    overlay_path: Path,
+    output_dir: Path | None = None,
+) -> Path:
     step3, contract_path = load_gate3_contract(gate3_target)
-    step3_dir = contract_path.parent
     overlay = load_overlay(overlay_path)
+    if (
+        overlay.get("data_classification") != SYNTHETIC_CLASSIFICATION
+        or overlay.get("overlay_mode") != "ILLUSTRATIVE_DEMO_NOT_FUND_DATA"
+    ):
+        raise ValueError(
+            "This legacy renderer accepts synthetic public examples only. "
+            "Use run_gate4_local_entry.py for private local inputs."
+        )
+    if output_dir is None:
+        raise ValueError("A separate public-demo output directory is required.")
+    output_dir = resolved_path(output_dir)
+    gate3_dir = resolved_path(contract_path.parent)
+    if output_dir == gate3_dir or is_within(output_dir, gate3_dir):
+        raise ValueError(
+            "Synthetic overlay outputs must remain separate from immutable Gate 3 artifacts."
+        )
+    output_dir.mkdir(parents=True, exist_ok=True)
     eligibility = assess_gate3_for_gate4(
         step3,
         policy=overlay.get("gate3_eligibility_policy"),
@@ -668,31 +686,44 @@ def build_overlay(gate3_target: Path, overlay_path: Path) -> Path:
         "public_action_view_zh": zh_action(step3.get("action_view")),
         "public_expected_return": returns.get("public_expected_return"),
     }
-    (step3_dir / "gate4_gate3_eligibility.json").write_text(
+    (output_dir / "gate4_gate3_eligibility.json").write_text(
         json.dumps(eligibility, indent=2, default=str),
         encoding="utf-8",
     )
-    (step3_dir / "portfolio_overlay_demo.json").write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
-    write_csv(step3_dir / "portfolio_overlay_gates.csv", [asdict(g) for g in gates])
-    (step3_dir / "public_only_and_partner_overlay_demo.md").write_text(
+    (output_dir / "portfolio_overlay_demo.json").write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
+    write_csv(output_dir / "portfolio_overlay_gates.csv", [asdict(g) for g in gates])
+    (output_dir / "public_only_and_partner_overlay_demo.md").write_text(
         build_markdown(step3, overlay, returns, eligibility, gates, action, sizing, confidence, rationale),
         encoding="utf-8",
     )
-    return step3_dir
+    return output_dir
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build Step 4 partner portfolio overlay from an immutable Gate 3 contract."
+        description="Render a synthetic Step 4 interface demo from an immutable Gate 3 contract."
     )
     parser.add_argument(
         "gate3_contract_or_dir",
         help="Path to underwriting_output_contract.json or its Step 3 directory. Ticker-only input is not accepted.",
     )
-    parser.add_argument("--overlay", required=True, help="Path to partner overlay JSON or CSV.")
+    parser.add_argument(
+        "--overlay",
+        required=True,
+        help="Path to a SYNTHETIC_PUBLIC_EXAMPLE overlay JSON or CSV.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        help="Separate directory for synthetic public-demo outputs.",
+    )
     args = parser.parse_args()
 
-    out = build_overlay(Path(args.gate3_contract_or_dir), Path(args.overlay))
+    out = build_overlay(
+        Path(args.gate3_contract_or_dir),
+        Path(args.overlay),
+        Path(args.output_dir),
+    )
     print(out)
     print(out / "gate4_gate3_eligibility.json")
     print(out / "public_only_and_partner_overlay_demo.md")

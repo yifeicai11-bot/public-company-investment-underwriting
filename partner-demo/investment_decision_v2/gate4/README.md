@@ -27,6 +27,9 @@ for the local portfolio overlay. It contains no real fund or Partner data.
 - A nonzero hedge ratio requires an existing hedge identifier or a HEDGE row.
 - Active opportunity-set rows need validated return and downside data before
   opportunity cost can be evaluated.
+- Existing issuer, sector, country, correlated, gross, and net exposures are
+  derived later from the complete holdings table. They are not duplicated as
+  manually typed exposure totals that could drift from the underlying rows.
 
 No default policy values are supplied. Empty templates are intentionally
 invalid until the Partner completes them locally.
@@ -43,6 +46,56 @@ invalid until the Partner completes them locally.
 Input validation does not calculate a recommended position and never places a
 trade. It emits only a privacy-safe diagnostic containing check IDs, field
 names, statuses, and remediation.
+
+## Local Private Workflow
+
+Do not paste real policy, holdings, opportunity-set, approval, or position data
+into Codex, Claude, another hosted model, an external API, or a remote log.
+Initialize and complete the files locally:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py
+```
+
+The default workspace is `~/investment_private`. It is created outside Git with
+directory mode `0700` and file mode `0600`. No return target, risk limit,
+holding, or approval value is invented.
+
+After completing the local files, validate the exact Gate 3 contract and the
+private bundle:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+The local entry writes only
+`~/investment_private/private_outputs/gate4_local_entry_diagnostic.json`.
+It omits raw holdings, policy values, opportunity rows, reviewer names, and
+approval rationales. S04 validates inputs and the Gate 3 entry boundary only;
+the later constraint engine is still `NOT_EVALUATED`.
+
+## Privacy Controls
+
+- Real workspaces and private outputs are blocked inside this or any other Git
+  worktree, including through a symbolic link.
+- Exact local filenames and common private directory names are ignored by Git.
+- The pre-commit scanner blocks likely portfolio files without printing their
+  contents. Enable it once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+- Local Gate 4 modules do not import network, telemetry, crash-reporting, or
+  logging clients.
+- Spreadsheet formulas are rejected; raw portfolio values remain in memory.
+- Temporary writes occur only inside the private output directory and are
+  atomically replaced with mode `0600`.
+- Private PDF generation is disabled until a tested metadata-sanitization
+  control exists.
+- Public tests, demos, and committed files may use synthetic data only.
 
 ## Synthetic Example
 

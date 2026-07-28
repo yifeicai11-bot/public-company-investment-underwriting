@@ -165,6 +165,22 @@ Use:
 
 When Gate 3 is stale or ineligible, suppress Gate 4 return, risk, sizing, and action calculations. A diagnostic may identify the contract and blocking checks, but it must not silently reuse stale scenario values. Hard Stops can never be escalated.
 
+#### Gate 4 Private Input Boundary
+
+Real fund policy, holdings, opportunity-set, approval, and sizing data must stay
+in a local workspace outside every Git worktree. Use the schemas and empty
+templates under `partner-demo/investment_decision_v2/gate4/`, initialize
+`~/investment_private` with `initialize_gate4_private_workspace.py`, and run the
+entry check with `run_gate4_local_entry.py`. Do not paste real portfolio data
+into chat or send it to an external model/API.
+
+Private-input validation may return `GATE_4_INPUTS_VALIDATED`, but this means
+only that the dated local bundle is complete and reconciled. Until the shared
+constraint engine is implemented and run, keep System Portfolio Assessment
+`NOT_EVALUATED`, Partner Decision `PENDING`, and every sizing/action field null.
+The legacy `build_partner_portfolio_overlay.py` path is restricted to
+`SYNTHETIC_PUBLIC_EXAMPLE` demos and must reject real inputs.
+
 ## Decision Confidence
 
 Keep Decision Confidence separate from Data Gate.

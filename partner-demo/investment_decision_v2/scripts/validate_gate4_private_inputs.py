@@ -10,10 +10,17 @@ from pathlib import Path
 from gate4_private_contract import (
     INPUT_STATUS_VALIDATED,
     load_and_validate_private_inputs,
+    read_mapping,
+)
+from gate4_privacy import (
+    PRIVATE_CLASSIFICATION,
+    SYNTHETIC_CLASSIFICATION,
+    PrivacyBoundaryError,
+    assert_local_workspace,
 )
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate a local Gate 4 private-workspace manifest."
     )
@@ -24,8 +31,30 @@ def main() -> None:
         help="Print the privacy-safe diagnostic object; raw input values are never printed.",
     )
     args = parser.parse_args()
+    manifest_path = Path(args.manifest).expanduser().resolve(strict=False)
+    try:
+        manifest = read_mapping(manifest_path)
+        classification = manifest.get("data_classification")
+        if classification == PRIVATE_CLASSIFICATION:
+            assert_local_workspace(
+                manifest_path.parent,
+                data_classification=PRIVATE_CLASSIFICATION,
+            )
+        elif classification == SYNTHETIC_CLASSIFICATION:
+            assert_local_workspace(
+                manifest_path.parent,
+                data_classification=SYNTHETIC_CLASSIFICATION,
+                allow_public_synthetic_read_only=True,
+            )
+    except PrivacyBoundaryError:
+        print("status=GATE_4_PRIVATE_WORKSPACE_BLOCKED")
+        print("detail=Move real Gate 4 inputs outside every Git worktree.")
+        print("raw_values_printed=false")
+        return 2
+    except ValueError:
+        pass
 
-    _, diagnostic = load_and_validate_private_inputs(Path(args.manifest))
+    _, diagnostic = load_and_validate_private_inputs(manifest_path)
     if args.diagnostic_json:
         print(json.dumps(diagnostic, indent=2))
     else:
@@ -33,8 +62,8 @@ def main() -> None:
         print(f"status={diagnostic['status']}")
         print(f"checks={summary['total']}; failed={summary['failed']}")
         print("raw_values_printed=false")
-    raise SystemExit(0 if diagnostic["status"] == INPUT_STATUS_VALIDATED else 2)
+    return 0 if diagnostic["status"] == INPUT_STATUS_VALIDATED else 2
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

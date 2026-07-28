@@ -57,6 +57,8 @@ When the user or partner wants the memo to help make an investment decision, rea
 
 When using any third-party library, GitHub skill, MCP server, market-data source, or hosted API to support the review, read `references/external_tool_policy.md`. External tools may accelerate data extraction, market data retrieval, note reading, or portfolio analytics, but they must not bypass source logging, period validation, provider labeling, or investment-gate limits.
 
+Before handling any fund policy, holdings, opportunity-set, approval, or portfolio-sizing context, read `references/gate4_private_data_workflow.md`. Never request that real portfolio data be pasted into chat or uploaded to an external model. Use only the local private workspace and privacy-safe diagnostic workflow.
+
 Do not directly wrap automated ratios as an investment report. Use the layered structure:
 
 1. Data Integrity
@@ -110,13 +112,17 @@ Start from the generated `analyst_input_template.json`. Scenario implied prices 
 
 Use `external_evidence` for public facts that are not already extracted from SEC XBRL, such as guidance, investor-presentation details, consensus, covenant terms, and industry evidence. Give each item a unique `external_key`, full source hierarchy metadata, as-of/publication/retrieval dates, source locator, and reviewer. Issuer modules and Key Debates may reference `evidence_keys`; the engine resolves them into stable evidence IDs.
 
-When partner/fund-specific context is available, run the Step 4 portfolio overlay:
+When partner/fund-specific context is available, initialize the local Gate 4 workspace:
 
-`partner-demo/investment_decision_v2/scripts/build_partner_portfolio_overlay.py "<path to underwriting_output_contract.json or its Step 3 directory>" --overlay "<overlay json>"`
+`partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py`
+
+Complete the files under `~/investment_private` locally, then run:
+
+`partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
 
 Gate 4 accepts only the immutable shared `underwriting_output_contract.json`; ticker-only input and legacy `step3_data.json` are prohibited because Gate 4 must not rebuild or overwrite issuer analysis. Before any portfolio calculation, validate the contract version and hash, Data Gate, report/financial/market dates, latest filing, subsequent-event review, probability freshness, valuation eligibility, Hard Stops, and unresolved issuer warnings. Age limits, eligible valuation statuses, probability requirements, and warning-escalation rules must be supplied explicitly; do not invent defaults.
 
-If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. An eligible Gate 3 contract with no private inputs returns `GATE_4_PRIVATE_INPUTS_REQUIRED`. Illustrative data can demonstrate the interface but cannot unlock Gate 4. Portfolio action and position range may appear only when explicitly human-approved and must never trigger a trade.
+If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; complete validated inputs return `GATE_4_INPUTS_VALIDATED`, with system assessment still `NOT_EVALUATED` and Partner decision still `PENDING`. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. Portfolio action and position range may appear only after the future constraint engine and explicit human approval, and must never trigger a trade.
 
 Do not tune the Step 3 builder to a single regression company. PFGC may be used to catch regressions, but the rules must remain company-agnostic and usable for any SEC-reporting public company resolved from a ticker or company name.
 
