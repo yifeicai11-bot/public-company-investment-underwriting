@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "safe_failure_taxonomy",
+  "phase": "B",
+  "session": "S06",
+  "outcomes": [
+    {
+      "outcome_id": "VALIDATED_RESULT",
+      "meaning": "The source, period, unit, calculation lineage, and applicable decision gate support the displayed result.",
+      "blocks_formal_report": false,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": true,
+      "required_evidence": [
+        "Validation status and the evidence or calculation lineage supporting the result."
+      ],
+      "required_output_behavior": [
+        "Display only within the outputs allowed by the current Data Gate."
+      ],
+      "prohibited_behavior": [
+        "Do not treat validation of one metric as validation of the full investment conclusion."
+      ]
+    },
+    {
+      "outcome_id": "MISSING",
+      "meaning": "The item is relevant, but public evidence or analyst validation is insufficient.",
+      "blocks_formal_report": false,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": true,
+      "required_evidence": [
+        "The missing field, failed lookup, or unresolved definition.",
+        "The evidence required to complete the item."
+      ],
+      "required_output_behavior": [
+        "Keep the affected metric or conclusion null.",
+        "Reduce confidence or constrain the action language when the missing item is material."
+      ],
+      "prohibited_behavior": [
+        "Do not replace a missing value with zero.",
+        "Do not infer the missing value from an unrelated period or concept."
+      ]
+    },
+    {
+      "outcome_id": "NOT_APPLICABLE",
+      "meaning": "The metric is not economically meaningful for the business model or analytical question.",
+      "blocks_formal_report": false,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": true,
+      "required_evidence": [
+        "A business-model or accounting rationale approved by the analyst."
+      ],
+      "required_output_behavior": [
+        "Display NOT_APPLICABLE with the rationale instead of forcing a value."
+      ],
+      "prohibited_behavior": [
+        "Do not use NOT_APPLICABLE merely because extraction failed.",
+        "Do not calculate a synthetic zero denominator."
+      ]
+    },
+    {
+      "outcome_id": "SUPPRESSED",
+      "meaning": "A field is intentionally hidden because its gate, assumptions, comparability, or reproducibility requirements are not met.",
+      "blocks_formal_report": false,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": true,
+      "required_evidence": [
+        "The gate or validation rule that caused suppression.",
+        "The input or approval needed to release the field."
+      ],
+      "required_output_behavior": [
+        "Keep the suppressed field null in every renderer and derivative output.",
+        "State why the field is unavailable when it is decision-relevant."
+      ],
+      "prohibited_behavior": [
+        "Do not display the value elsewhere under a weaker label.",
+        "Do not allow the renderer to recreate the suppressed calculation."
+      ]
+    },
+    {
+      "outcome_id": "WARNING",
+      "meaning": "Research may continue, but a material limitation, unresolved note, or lower-confidence input must remain visible.",
+      "blocks_formal_report": false,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": true,
+      "required_evidence": [
+        "The limitation, its decision impact, and a specific remediation."
+      ],
+      "required_output_behavior": [
+        "Display the warning prominently and reflect it in Decision Confidence."
+      ],
+      "prohibited_behavior": [
+        "Do not silently downgrade a Hard Stop to a Warning.",
+        "Do not describe an unresolved warning as a validated conclusion."
+      ]
+    },
+    {
+      "outcome_id": "HARD_STOP",
+      "meaning": "A material integrity failure makes a formal analytical or investment output unsafe.",
+      "blocks_formal_report": true,
+      "allows_diagnostic": true,
+      "allows_research_to_continue": false,
+      "required_evidence": [
+        "The failed check, conflicting inputs, decision impact, and remediation."
+      ],
+      "required_output_behavior": [
+        "Block formal report generation and produce a diagnostic.",
+        "Suppress ratings, valuation, expected return, target price, portfolio action, and position sizing."
+      ],
+      "prohibited_behavior": [
+        "Do not continue through the same analytical path after the integrity failure.",
+        "Do not permit human escalation to override a data-integrity Hard Stop."
+      ]
+    }
+  ]
+}

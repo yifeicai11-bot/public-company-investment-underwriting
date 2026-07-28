@@ -128,6 +128,17 @@ Do not tune the Step 3 builder to a single regression company. PFGC may be used 
 
 If a company-specific regression script exists in `partner-demo/investment_decision_v2/scripts/`, run it before using that company as a partner demo. For PFGC, run `build_pfgc_step2_dataset.py` and inspect the validation report before drafting.
 
+Before a major release, validate
+`partner-demo/investment_decision_v2/regression/cross_industry_matrix.json`
+and `safe_failure_taxonomy.json` with
+`scripts/validate_cross_industry_regression.py`, then run
+`tests/run_company_regression.py`. Treat `ACTIVE` coverage as tested and
+`PLANNED` coverage only as an explicit gap. A safe result may be
+`VALIDATED_RESULT`, `MISSING`, `NOT_APPLICABLE`, `SUPPRESSED`, `WARNING`, or
+`HARD_STOP`; never force a metric merely to make a regression case pass.
+Regression fixtures and their expected behaviors belong in the matrix, not in
+shared analytical branches.
+
 ## Blind Review Mode
 
 When the target company is not pre-classified by the user:

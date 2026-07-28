@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/regression/safe_failure_taxonomy.schema.json",
+  "title": "Safe Failure Taxonomy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_type",
+    "phase",
+    "session",
+    "outcomes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "document_type": {
+      "const": "safe_failure_taxonomy"
+    },
+    "phase": {
+      "const": "B"
+    },
+    "session": {
+      "const": "S06"
+    },
+    "outcomes": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "$ref": "#/$defs/outcome"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome_id",
+        "meaning",
+        "blocks_formal_report",
+        "allows_diagnostic",
+        "allows_research_to_continue",
+        "required_evidence",
+        "required_output_behavior",
+        "prohibited_behavior"
+      ],
+      "properties": {
+        "outcome_id": {
+          "enum": [
+            "VALIDATED_RESULT",
+            "MISSING",
+            "NOT_APPLICABLE",
+            "SUPPRESSED",
+            "WARNING",
+            "HARD_STOP"
+          ]
+        },
+        "meaning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocks_formal_report": {
+          "type": "boolean"
+        },
+        "allows_diagnostic": {
+          "type": "boolean"
+        },
+        "allows_research_to_continue": {
+          "type": "boolean"
+        },
+        "required_evidence": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "required_output_behavior": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "prohibited_behavior": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      }
+    }
+  }
+}

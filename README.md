@@ -221,9 +221,25 @@ python3 -m unittest discover \
   -v
 ```
 
+Validate the cross-industry matrix and safe-failure taxonomy:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
+```
+
+Run all active public-only regression cases:
+
+```bash
+python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
+  --out-root /tmp/public-company-regression/builder \
+  --report /tmp/public-company-regression/report.json
+```
+
 ## Current Validation / 当前验证
 
-- 84 shared accounting, evidence, market-data, gate, scenario, rendering, Gate 4 input-contract, and privacy-boundary tests passed locally.
+- 111 shared accounting, evidence, market-data, gate, scenario, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
+- The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - AutoZone: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - Both One-Page PDFs are one A4 page; both Full Reports are 11 A4 pages and were visually reviewed after page rendering.

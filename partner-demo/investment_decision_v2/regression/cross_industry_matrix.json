@@ -1,0 +1,393 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "cross_industry_regression_matrix",
+  "phase": "B",
+  "session": "S06",
+  "as_of_date": "2026-07-28",
+  "supported_core": "SEC-reporting, US GAAP, non-financial issuers using 10-K and 10-Q filings",
+  "coverage_policy": {
+    "minimum_active_cases": 6,
+    "minimum_active_industries": 5,
+    "required_safe_outcomes": [
+      "VALIDATED_RESULT",
+      "MISSING",
+      "NOT_APPLICABLE",
+      "SUPPRESSED",
+      "WARNING",
+      "HARD_STOP"
+    ],
+    "planned_coverage_is_not_tested": true
+  },
+  "shared_analytical_files": [
+    "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py",
+    "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+    "partner-demo/investment_decision_v2/scripts/underwriting_contract.py",
+    "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py"
+  ],
+  "stress_characteristics": [
+    {
+      "stress_id": "large_cash_and_capital_allocation",
+      "description": "Large cash or investment balances with material capital-allocation decisions."
+    },
+    {
+      "stress_id": "high_leverage",
+      "description": "Leverage or refinancing pressure is a potentially binding constraint."
+    },
+    {
+      "stress_id": "negative_fcf",
+      "description": "Reported or normalized free cash flow is negative."
+    },
+    {
+      "stress_id": "negative_ebitda",
+      "description": "EBITDA is negative and multiple-based comparisons may be invalid."
+    },
+    {
+      "stress_id": "low_margin",
+      "description": "A low-margin model makes working capital and liquidity movements material."
+    },
+    {
+      "stress_id": "high_working_capital",
+      "description": "Receivables, inventory, payables, or revolver usage are major cash-conversion drivers."
+    },
+    {
+      "stress_id": "supplier_financed_negative_working_capital",
+      "description": "Payables or other supplier financing create structurally negative working capital."
+    },
+    {
+      "stress_id": "high_sbc_software",
+      "description": "Stock-based compensation, dilution, and subscription economics require explicit treatment."
+    },
+    {
+      "stress_id": "acquisition_heavy",
+      "description": "Acquisitions, integration, impairments, or acquired debt affect comparability."
+    },
+    {
+      "stress_id": "complex_debt_structure",
+      "description": "Multiple facilities, tranches, guarantees, collateral, or covenant packages require reconciliation."
+    },
+    {
+      "stress_id": "convertible_or_preferred",
+      "description": "Convertible debt or preferred securities affect debt, dilution, or recovery analysis."
+    },
+    {
+      "stress_id": "negative_shareholder_equity",
+      "description": "Negative book equity must not break liabilities or capital-allocation analysis."
+    },
+    {
+      "stress_id": "large_repurchase",
+      "description": "Repurchases materially affect cash, shares outstanding, leverage, or downside liquidity."
+    },
+    {
+      "stress_id": "non_calendar_fiscal_year",
+      "description": "Fiscal periods do not align with calendar quarters or year-end."
+    },
+    {
+      "stress_id": "fifty_three_week_year",
+      "description": "A 53-week fiscal year requires explicit period comparability."
+    },
+    {
+      "stress_id": "amended_or_restated_filing",
+      "description": "An amended or restated filing must override or qualify prior data."
+    },
+    {
+      "stress_id": "material_subsequent_event",
+      "description": "A post-period event may contradict the displayed current state."
+    },
+    {
+      "stress_id": "missing_or_noncomparable_xbrl",
+      "description": "Missing or non-comparable XBRL concepts must produce a safe missing, not-applicable, or suppressed outcome."
+    },
+    {
+      "stress_id": "asset_heavy_capex",
+      "description": "Capital intensity makes capex classification and cash conversion central."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "CI-CROX",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "regression",
+      "ticker": "CROX",
+      "company_name": "Crocs, Inc.",
+      "industry": "Consumer Footwear",
+      "business_model": "Consumer brand with wholesale, direct-to-consumer, and acquired-brand exposure",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "acquisition_heavy",
+        "high_working_capital"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Existing Friday V1 regression fixture."
+    },
+    {
+      "case_id": "CI-AAPL",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "regression",
+      "ticker": "AAPL",
+      "company_name": "Apple Inc.",
+      "industry": "Technology Hardware",
+      "business_model": "Global hardware, services, and installed-base ecosystem",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "large_cash_and_capital_allocation",
+        "large_repurchase",
+        "non_calendar_fiscal_year"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Existing cash, share-count, and capital-allocation regression fixture."
+    },
+    {
+      "case_id": "CI-PFGC",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "regression",
+      "ticker": "PFGC",
+      "company_name": "Performance Food Group Company",
+      "industry": "Food Distribution",
+      "business_model": "Low-margin distribution with material inventory, receivables, payables, and revolver usage",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "low_margin",
+        "high_working_capital",
+        "non_calendar_fiscal_year"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Existing working-capital and liquidity regression fixture."
+    },
+    {
+      "case_id": "CI-ADBE",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "regression",
+      "ticker": "ADBE",
+      "company_name": "Adobe Inc.",
+      "industry": "Application Software",
+      "business_model": "Subscription software with deferred revenue, stock-based compensation, and low physical working capital",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "high_sbc_software",
+        "non_calendar_fiscal_year"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Legacy unseen-company fixture retained as an ordinary regression after its first use."
+    },
+    {
+      "case_id": "CI-AZO",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "regression",
+      "ticker": "AZO",
+      "company_name": "AutoZone, Inc.",
+      "industry": "Automotive Parts Retail",
+      "business_model": "Supplier-financed retailer with repurchases and a non-calendar retail fiscal year",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "supplier_financed_negative_working_capital",
+        "negative_shareholder_equity",
+        "large_repurchase",
+        "non_calendar_fiscal_year",
+        "fifty_three_week_year"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Existing supplier-financed retailer and negative-equity regression fixture."
+    },
+    {
+      "case_id": "CI-ODFL",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "preserved_forward",
+      "ticker": "ODFL",
+      "company_name": "Old Dominion Freight Line, Inc.",
+      "industry": "Less-than-Truckload Transportation",
+      "business_model": "Asset-heavy service network with receivables, material capex, and little or no operating inventory",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "missing_or_noncomparable_xbrl",
+        "asset_heavy_capex"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price",
+        "working_capital_partial_coverage",
+        "facility_reconciliation"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "MISSING",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "S05 deterministic blind-company result preserved as a regression fixture after the first run."
+    },
+    {
+      "case_id": "CI-PLANNED-DISTRESS",
+      "fixture_status": "PLANNED",
+      "fixture_role": "planned_slot",
+      "ticker": null,
+      "company_name": null,
+      "industry": "To be selected from an eligible non-financial industry",
+      "business_model": "Cash-consuming or distressed operating issuer",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "high_leverage",
+        "negative_fcf",
+        "negative_ebitda"
+      ],
+      "required_assertions": [
+        "negative_denominator_suppression",
+        "liquidity_and_refinancing_integrity"
+      ],
+      "required_safe_outcomes": [
+        "MISSING",
+        "SUPPRESSED",
+        "WARNING",
+        "HARD_STOP"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+    },
+    {
+      "case_id": "CI-PLANNED-CAPITAL-STRUCTURE",
+      "fixture_status": "PLANNED",
+      "fixture_role": "planned_slot",
+      "ticker": null,
+      "company_name": null,
+      "industry": "To be selected from an eligible non-financial industry",
+      "business_model": "Issuer with multiple debt instruments or hybrid securities",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "complex_debt_structure",
+        "convertible_or_preferred"
+      ],
+      "required_assertions": [
+        "instrument_identity",
+        "debt_and_dilution_reconciliation"
+      ],
+      "required_safe_outcomes": [
+        "MISSING",
+        "SUPPRESSED",
+        "WARNING",
+        "HARD_STOP"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+    },
+    {
+      "case_id": "CI-PLANNED-FILING-INTEGRITY",
+      "fixture_status": "PLANNED",
+      "fixture_role": "planned_slot",
+      "ticker": null,
+      "company_name": null,
+      "industry": "To be selected from an eligible non-financial industry",
+      "business_model": "Issuer with filing-version or subsequent-event complexity",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "amended_or_restated_filing",
+        "material_subsequent_event"
+      ],
+      "required_assertions": [
+        "filing_version_precedence",
+        "subsequent_event_consistency"
+      ],
+      "required_safe_outcomes": [
+        "MISSING",
+        "WARNING",
+        "HARD_STOP"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+    }
+  ],
+  "synthetic_safety_cases": [
+    {
+      "case_id": "SF-VALIDATED",
+      "outcome_id": "VALIDATED_RESULT",
+      "test_method": "Validate a sourced calculation with complete lineage and an allowed Data Gate."
+    },
+    {
+      "case_id": "SF-MISSING",
+      "outcome_id": "MISSING",
+      "test_method": "Remove a relevant source and confirm the metric remains null with remediation."
+    },
+    {
+      "case_id": "SF-NOT-APPLICABLE",
+      "outcome_id": "NOT_APPLICABLE",
+      "test_method": "Provide an analyst-reviewed business-model rationale and confirm no zero-valued metric is forced."
+    },
+    {
+      "case_id": "SF-SUPPRESSED",
+      "outcome_id": "SUPPRESSED",
+      "test_method": "Use a Gate 1 public-only contract and confirm target price, expected return, and position sizing remain null."
+    },
+    {
+      "case_id": "SF-WARNING",
+      "outcome_id": "WARNING",
+      "test_method": "Leave a material but non-contradictory note review incomplete and confirm research continues with reduced confidence."
+    },
+    {
+      "case_id": "SF-HARD-STOP",
+      "outcome_id": "HARD_STOP",
+      "test_method": "Create a material period, unit, lineage, or double-count contradiction and confirm formal output is blocked."
+    }
+  ]
+}
