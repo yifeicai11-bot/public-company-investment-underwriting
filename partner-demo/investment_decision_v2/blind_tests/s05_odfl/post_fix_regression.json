@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_post_fix_regression_record",
+  "phase": "B",
+  "session": "S05",
+  "status": "PASS",
+  "analytical_code_commit": "7f120ae8670c80d2862d7c56d7d62372c81b27ac",
+  "test_results": [
+    {
+      "suite": "unit_tests",
+      "status": "PASS",
+      "passed": 99,
+      "failed": 0
+    },
+    {
+      "suite": "company_regression",
+      "status": "PASS",
+      "passed": 4,
+      "failed": 0,
+      "results": [
+        {
+          "ticker": "CROX",
+          "test_type": "regression",
+          "data_gate": 1,
+          "evidence_count": 72,
+          "warning_count": 19,
+          "error_count": 0
+        },
+        {
+          "ticker": "AAPL",
+          "test_type": "regression",
+          "data_gate": 1,
+          "evidence_count": 90,
+          "warning_count": 19,
+          "error_count": 0
+        },
+        {
+          "ticker": "PFGC",
+          "test_type": "regression",
+          "data_gate": 1,
+          "evidence_count": 103,
+          "warning_count": 20,
+          "error_count": 0
+        },
+        {
+          "ticker": "ADBE",
+          "test_type": "forward_blind",
+          "data_gate": 1,
+          "evidence_count": 96,
+          "warning_count": 20,
+          "error_count": 0
+        }
+      ]
+    },
+    {
+      "suite": "crox_partner_delivery",
+      "status": "PASS",
+      "passed": 36,
+      "failed": 0
+    },
+    {
+      "suite": "azo_partner_delivery",
+      "status": "PASS",
+      "passed": 36,
+      "failed": 0
+    },
+    {
+      "suite": "friday_v1_full_baseline_render_pdf_pixel",
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0,
+      "baseline_id": "friday-v1",
+      "tag": "v1.0.0-friday"
+    },
+    {
+      "suite": "blind_run_artifact_integrity",
+      "status": "PASS",
+      "run_count": 4,
+      "artifacts_per_run": 22,
+      "file_set_unchanged": true,
+      "artifact_hashes_unchanged": true,
+      "runs": [
+        "first_run",
+        "post_fix_attempt_1",
+        "post_fix_attempt_2",
+        "post_fix"
+      ]
+    },
+    {
+      "suite": "gate4_privacy_boundary_scan",
+      "status": "PASS",
+      "files_checked": 72,
+      "violations": 0
+    }
+  ],
+  "final_blind_company_contract": {
+    "ticker": "ODFL",
+    "report_id": "RPT-D34F5AB77357DC",
+    "contract_hash": "42e8274f514daeb5d9a6afa9121fa049b5260eae1c9fa0a4bc25125c24ba7639",
+    "data_gate": 1,
+    "hard_stop_count": 0,
+    "warning_count": 21,
+    "validation_issue_count": 37,
+    "decision_confidence": "Low",
+    "formal_investment_conclusion_permitted": false,
+    "target_price_suppressed": true,
+    "expected_return_suppressed": true,
+    "position_sizing_suppressed": true,
+    "portfolio_overlay_disabled": true
+  },
+  "expected_limitations": [
+    "The public-only blind run has no analyst-defined Investment Question or Key Debates.",
+    "Issuer underwriting and normalized FCF are not yet analyst-validated.",
+    "Market data uses a non-partner-approved public provider.",
+    "Covenant, lease, and subsequent-event note review remains incomplete.",
+    "DIO, DPO, and CCC require explicit NOT_APPLICABLE or MISSING classification."
+  ],
+  "unresolved_failures": [],
+  "acceptance": {
+    "shared_fix_only": true,
+    "crox_regression_passed": true,
+    "cross_company_regression_passed": true,
+    "blind_forward_test_passed": true,
+    "unsafe_outputs_remained_suppressed": true,
+    "result": "PASS"
+  }
+}

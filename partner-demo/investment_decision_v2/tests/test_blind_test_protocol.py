@@ -121,6 +121,15 @@ class BlindTestProtocolTests(unittest.TestCase):
             result["first_run_integrity"]["artifact_hashes_unchanged"]
         )
 
+    def test_post_fix_attempts_and_final_run_are_immutable(self) -> None:
+        for run_name in ("post_fix_attempt_1", "post_fix_attempt_2", "post_fix"):
+            with self.subTest(run_name=run_name):
+                result = verify_preserved_run(MANIFEST_PATH.parent / run_name)
+                self.assertEqual(result["status"], "PASS")
+                self.assertEqual(result["artifact_count"], 22)
+                self.assertTrue(result["file_set_unchanged"])
+                self.assertTrue(result["artifact_hashes_unchanged"])
+
 
 if __name__ == "__main__":
     unittest.main()

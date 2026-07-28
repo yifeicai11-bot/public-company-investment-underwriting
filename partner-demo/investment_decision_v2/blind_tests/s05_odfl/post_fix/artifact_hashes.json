@@ -1,0 +1,28 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 22,
+  "artifacts": {
+    "builder_output/odfl_old_dominion_freight_line_inc/data/data_evidence_pack.json": "c2672615f909e9b79ba4152536cf185f6b0fa99b67965f9de1fcfd2a39a5e052",
+    "builder_output/odfl_old_dominion_freight_line_inc/data/normalized_data.csv": "7daa232880f05fa8aa0bd92f213905ba00af999f1606da90694e7079c5e97075",
+    "builder_output/odfl_old_dominion_freight_line_inc/data/normalized_data.json": "c2672615f909e9b79ba4152536cf185f6b0fa99b67965f9de1fcfd2a39a5e052",
+    "builder_output/odfl_old_dominion_freight_line_inc/investment_data_pack.md": "c71d4aae3a40fc96c42202cc7bd072c8606243a2d71f036ac27a33d3384a524e",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/analyst_input_template.json": "1ac3b709db9dd34d6232e6b2924459b430d4867d877ef221c4f4c139f47c9391",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/committee_snapshot.csv": "0597f727ab99e8b6ecb52a6629d702f72473f9c14b03ea8329c1191d94ebdfef",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/investment_layer.json": "a04723702c3b07b2a3dd1cf53cab1c405be0201c2a650df83f1f18eb29cc0d55",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/investment_layer.md": "64cb5442f637fb844fcfbb87ec98a8a56da005b392c35181e9a6f9d1a259cdc7",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/market_expectations.csv": "3fa5c9659a35c70be633d5d0ababe6d1cb45a3dfcd2812f584c73e892abd151f",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/partner_overlay_template.md": "166fc9fe34b1611149b6dabd885e8a5aa71e6dc10fc85ce50b737539267df46c",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/public_data_drivers.csv": "eff2d1bbdc0c8506ee1fda937212896454bba9fd567cfd4653a28393f2a14dc4",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/step3_data.json": "a04723702c3b07b2a3dd1cf53cab1c405be0201c2a650df83f1f18eb29cc0d55",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/step3_validation_report.md": "b2e7234099fb45159ce956a4dc1c458fa21104dc0e95226d73d8f97f9afaffda",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/underwriting_output_contract.json": "a04723702c3b07b2a3dd1cf53cab1c405be0201c2a650df83f1f18eb29cc0d55",
+    "builder_output/odfl_old_dominion_freight_line_inc/step3/valuation_metrics.csv": "ec99bab8cc89db626b5aa401c548b8fc9a7d46b8085343be86d9c1aab63720d5",
+    "builder_output/odfl_old_dominion_freight_line_inc/validation/validation_report.md": "0abb2de885df3238264edcf4407dbca2a78071cdcb0e31ad875b4f5bd47ae1d7",
+    "execution_context.json": "701532c4a23ca9b94b00a62a7e8bc532d14b4ea07347162b5620df32ca7cce10",
+    "post_fix_diagnostic.json": "b0a4a8ceaa6b19d2b3c5fef94136a8eca3c90e70082c6547cf56baa55f4fd2b1",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "cc41f4e1b043e808db725777fc5814bc143f934ba8da03f05e4b2edabf73e0c2"
+  }
+}

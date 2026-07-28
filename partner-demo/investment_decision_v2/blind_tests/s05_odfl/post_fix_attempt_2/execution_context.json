@@ -1,0 +1,35 @@
+{
+  "started_at": "2026-07-28T08:50:43Z",
+  "python_version": "3.12.13",
+  "python_executable": "/Users/caiyifei/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "timezone": [
+    "HKT",
+    "HKT"
+  ],
+  "current_commit": "0002fe630fb674862a3e952f16f85f20d8d0fd40",
+  "pre_run_commit": "d6e093de0e700819ed514f9929aabb0ef720ca87",
+  "post_fix_prerequisites": {
+    "status": "PASS",
+    "selected_ticker": "ODFL",
+    "selection_reproduced": true,
+    "frozen_pre_run_blobs_reproduced": true,
+    "first_run_integrity": {
+      "status": "PASS",
+      "run_directory": "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s05_odfl/first_run",
+      "hash_method": "SHA256",
+      "artifact_count": 22,
+      "file_set_unchanged": true,
+      "artifact_hashes_unchanged": true
+    }
+  },
+  "network_scope": "PUBLIC_DATA_ONLY",
+  "research_input": null,
+  "command": [
+    "/Users/caiyifei/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+    "ODFL",
+    "--out-root",
+    "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s05_odfl/post_fix/builder_output"
+  ]
+}

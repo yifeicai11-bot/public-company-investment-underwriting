@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_forward_test_fix_record",
+  "phase": "B",
+  "session": "S05",
+  "status": "PASS",
+  "selected_issuer": {
+    "ticker": "ODFL",
+    "company_name": "Old Dominion Freight Line, Inc.",
+    "selection_method": "SHA256_MODULO_PREDECLARED_POOL",
+    "network_scope": "PUBLIC_DATA_ONLY",
+    "research_input": null
+  },
+  "audit_sequence": {
+    "pre_run_commit": "d6e093de0e700819ed514f9929aabb0ef720ca87",
+    "frozen_protocol_commit": "970ccad6c02954ec0e71c189ac1509939d51740b",
+    "first_run": {
+      "report_id": "RPT-B5A2BED9A429E8",
+      "contract_hash": "59bc5a074408ecad32f05c83d5d8257cc8af6efb47a0306f4ddaa3d7fe4c9584",
+      "data_gate": 1,
+      "hard_stop_count": 0,
+      "warning_count": 20,
+      "validation_issue_count": 35,
+      "artifact_count": 22,
+      "preserved_unchanged": true
+    },
+    "post_fix_attempts": [
+      {
+        "directory": "post_fix_attempt_1",
+        "commit": "039f2ba3c23454ba3d8406cb69bb333c6d81ceff",
+        "purpose": "Validate date-aware, instrument-bound facility parsing.",
+        "result": "Availability and current-date letters of credit were recovered; unsupported commitment was safely suppressed.",
+        "preserved_unchanged": true
+      },
+      {
+        "directory": "post_fix_attempt_2",
+        "commit": "0002fe630fb674862a3e952f16f85f20d8d0fd40",
+        "purpose": "Validate explicitly scaled Credit Agreement limit extraction and facility reconciliation.",
+        "result": "The $400.0m commitment reconciled to $368.2m availability plus $31.8m letters of credit within the allowed rounding tolerance.",
+        "preserved_unchanged": true
+      }
+    ],
+    "final_post_fix": {
+      "directory": "post_fix",
+      "commit": "7f120ae8670c80d2862d7c56d7d62372c81b27ac",
+      "report_id": "RPT-D34F5AB77357DC",
+      "contract_hash": "42e8274f514daeb5d9a6afa9121fa049b5260eae1c9fa0a4bc25125c24ba7639",
+      "data_gate": 1,
+      "hard_stop_count": 0,
+      "warning_count": 21,
+      "validation_issue_count": 37,
+      "artifact_count": 22,
+      "preserved_unchanged": true
+    }
+  },
+  "first_run_defects": [
+    {
+      "id": "S05-D01",
+      "category": "instrument_context_contamination",
+      "observed": "The generic parser assigned a $350.0m private-shelf Note Agreement amount to the Credit Agreement commitment.",
+      "shared_root_cause": "Facility extraction accepted nearby debt-note amounts without requiring an instrument-bound label and scale.",
+      "risk": "Liquidity and refinancing analysis could use a commitment from the wrong instrument."
+    },
+    {
+      "id": "S05-D02",
+      "category": "period_alignment",
+      "observed": "The parser selected the prior-date $37.5m letters-of-credit amount instead of the March 31, 2026 amount of $31.8m.",
+      "shared_root_cause": "A sentence using paired amounts and dates with the word respectively was not mapped by date.",
+      "risk": "A point-in-time liquidity calculation could combine values from different reporting dates."
+    },
+    {
+      "id": "S05-D03",
+      "category": "missing_facility_availability",
+      "observed": "The March 31, 2026 disclosed availability of $368.2m was not extracted.",
+      "shared_root_cause": "The shared parser did not recognize a dated availability phrase in the facility note.",
+      "risk": "The system could materially understate observable liquidity."
+    },
+    {
+      "id": "S05-D04",
+      "category": "working_capital_coverage",
+      "observed": "Receivables and DSO were available, but absent DIO, DPO, and CCC fields were not explicitly classified.",
+      "shared_root_cause": "The shared working-capital module did not distinguish partial metric coverage from a complete cash-conversion cycle.",
+      "risk": "A service business could appear to have complete working-capital analysis when inventory metrics were unavailable or not applicable."
+    }
+  ],
+  "shared_fixes": [
+    {
+      "component": "build_public_company_decision_pack.py",
+      "changes": [
+        "Map respectively-linked amount/date pairs to the requested reporting date.",
+        "Require dated and instrument-bound facility disclosures.",
+        "Prefer explicitly scaled Credit Agreement limit tables over generic nearby amounts.",
+        "Reconcile commitment to availability and known reductions, with an automatic Hard Stop for an impossible material mismatch.",
+        "Classify working-capital component coverage without treating absent metrics as zero."
+      ]
+    },
+    {
+      "component": "build_public_company_investment_layer.py",
+      "changes": [
+        "Expose available and missing working-capital components in the underwriting limitations.",
+        "Require analyst classification of unavailable components as NOT_APPLICABLE or MISSING before final underwriting."
+      ]
+    },
+    {
+      "component": "run_blind_company_forward_test.py",
+      "changes": [
+        "Verify immutable file sets and SHA256 hashes for preserved runs.",
+        "Write post-fix output to a separate directory and refuse overwrite."
+      ]
+    }
+  ],
+  "final_validated_observations": {
+    "financial_statement_date": "2026-03-31",
+    "facility_commitment_usd_millions": 400.0,
+    "facility_availability_usd_millions": 368.2,
+    "facility_letters_of_credit_usd_millions": 31.8,
+    "facility_reconciliation": "PASS_WITHIN_USD_1.0M_ROUNDING_TOLERANCE",
+    "cash_and_short_term_investments_usd_millions": 288.082,
+    "available_liquidity_including_reported_facility_usd_millions": 656.282,
+    "working_capital_components_available": [
+      "DSO"
+    ],
+    "working_capital_components_pending_classification": [
+      "DIO",
+      "DPO",
+      "CCC"
+    ],
+    "absent_components_assumed_zero": false
+  },
+  "decision_safety": {
+    "decision_confidence": "Low",
+    "target_price": null,
+    "probability_weighted_return": null,
+    "position_sizing": null,
+    "portfolio_context": "DISABLED",
+    "scenario_count": 0,
+    "note": "The final warning count increased from 20 to 21 because incomplete working-capital coverage is now disclosed explicitly. This is a safety improvement, not a regression."
+  },
+  "system_wide_attestation": {
+    "ticker_specific_code_added": false,
+    "company_name_checks_added": false,
+    "hard_coded_company_values_added": false,
+    "shared_logic_scan_for_selected_issuer": "PASS_NO_MATCH",
+    "renderer_used_to_fix_analysis": false,
+    "crox_only_fix": false
+  },
+  "acceptance": {
+    "underlying_shared_logic_corrected": true,
+    "first_run_preserved": true,
+    "intermediate_attempts_preserved": true,
+    "cross_company_regression_required": true,
+    "forward_test_safe_failure_behavior_preserved": true,
+    "result": "PASS"
+  }
+}
