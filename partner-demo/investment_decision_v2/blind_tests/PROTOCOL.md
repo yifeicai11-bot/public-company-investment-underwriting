@@ -32,3 +32,18 @@ python3 partner-demo/investment_decision_v2/scripts/run_blind_company_forward_te
 ```
 
 The runner refuses to overwrite an existing `first_run/` directory.
+
+After a shared fix is committed, verify the immutable first run and execute the
+separate post-fix run with:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py \
+  partner-demo/investment_decision_v2/blind_tests/s05_odfl/manifest.json \
+  --verify-preserved-first-run
+
+python3 partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py \
+  partner-demo/investment_decision_v2/blind_tests/s05_odfl/manifest.json \
+  --post-fix
+```
+
+The runner also refuses to overwrite `post_fix/`.

@@ -18,6 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from build_public_company_decision_pack import (  # noqa: E402
     INSTANT_TAGS,
     ap_balance_is_trade_compatible,
+    assess_facility_reconciliation,
     choose_duration,
     derive_total_liabilities,
     extract_facility_values,
@@ -191,6 +192,44 @@ class AccountingControlTests(unittest.TestCase):
         values = extract_facility_values(text)
         self.assertEqual(values["total_available_borrowings_reported"][0], 849_865_000)
         self.assertEqual(values["total_available_borrowings_reported"][1], "parsed from scaled liquidity table")
+
+    def test_facility_parser_links_respectively_amounts_to_reporting_dates(self) -> None:
+        text = """
+        The Note Agreement provided for senior notes of up to $350.0 million.
+        The Credit Agreement provides for a $400.0 million revolving credit facility.
+        There were $31.8 million and $37.5 million of outstanding letters of credit
+        at March 31, 2026 and December 31, 2025, respectively.
+        As of March 31, 2026, we had $368.2 million of borrowing availability
+        under the Credit Agreement after taking into account outstanding letters of credit.
+        """
+        values = extract_facility_values(text, as_of_date="2026-03-31")
+        self.assertEqual(values["facility_commitment"][0], 400_000_000)
+        self.assertEqual(values["facility_availability_reported"][0], 368_200_000)
+        self.assertEqual(values["facility_letters_of_credit"][0], 31_800_000)
+        self.assertNotEqual(values["facility_commitment"][0], 350_000_000)
+        reconciliation = assess_facility_reconciliation(values)
+        self.assertEqual(reconciliation["status"], "PASS")
+        self.assertAlmostEqual(reconciliation["gap"], 0)
+
+    def test_facility_parser_does_not_use_prior_date_when_current_date_is_absent(self) -> None:
+        text = """
+        There were $31.8 million and $37.5 million of outstanding letters of credit
+        at March 31, 2026 and December 31, 2025, respectively.
+        """
+        values = extract_facility_values(text, as_of_date="2026-06-30")
+        self.assertNotIn("facility_letters_of_credit", values)
+
+    def test_facility_reconciliation_blocks_impossible_commitment(self) -> None:
+        result = assess_facility_reconciliation(
+            {
+                "facility_commitment": (350_000_000, "direct commitment"),
+                "facility_availability_reported": (368_200_000, "dated availability"),
+                "facility_letters_of_credit": (31_800_000, "dated letters of credit"),
+            }
+        )
+        self.assertEqual(result["status"], "FAIL")
+        self.assertEqual(result["known_component_total"], 400_000_000)
+        self.assertEqual(result["gap"], -50_000_000)
 
     def test_cfo_embedded_line_cannot_be_separately_modelled(self) -> None:
         line = CashFlowLedgerLine(

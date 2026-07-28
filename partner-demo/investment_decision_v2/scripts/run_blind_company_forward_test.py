@@ -168,6 +168,56 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_preserved_run(run_dir: Path) -> dict[str, Any]:
+    """Verify every preserved artifact and reject added or removed files."""
+
+    hash_path = run_dir / "artifact_hashes.json"
+    try:
+        payload = json.loads(hash_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise BlindTestProtocolError(
+            f"The preserved run hash registry is unreadable: {run_dir}."
+        ) from exc
+    artifacts = payload.get("artifacts")
+    if payload.get("hash_method") != "SHA256" or not isinstance(artifacts, dict):
+        raise BlindTestProtocolError("The preserved run hash registry is invalid.")
+
+    expected_paths = set(artifacts)
+    actual_paths = {
+        str(path.relative_to(run_dir))
+        for path in run_dir.rglob("*")
+        if path.is_file() and path.name != "artifact_hashes.json"
+    }
+    if actual_paths != expected_paths:
+        added = sorted(actual_paths - expected_paths)
+        removed = sorted(expected_paths - actual_paths)
+        raise BlindTestProtocolError(
+            f"The preserved run file set changed; added={added}; removed={removed}."
+        )
+
+    mismatches: list[str] = []
+    for relative_path, expected_hash in artifacts.items():
+        path = run_dir / relative_path
+        if sha256_file(path) != expected_hash:
+            mismatches.append(relative_path)
+    if mismatches:
+        raise BlindTestProtocolError(
+            f"The preserved run artifact hashes changed: {sorted(mismatches)}."
+        )
+    if payload.get("artifact_count") != len(artifacts):
+        raise BlindTestProtocolError(
+            "The preserved run artifact count does not match its registry."
+        )
+    return {
+        "status": "PASS",
+        "run_directory": str(run_dir),
+        "hash_method": "SHA256",
+        "artifact_count": len(artifacts),
+        "file_set_unchanged": True,
+        "artifact_hashes_unchanged": True,
+    }
+
+
 def summarize_first_run(
     *,
     output_root: Path,
@@ -353,6 +403,137 @@ def run_first_test(
     return diagnostic
 
 
+def verify_post_fix_prerequisites(
+    manifest_path: Path,
+    manifest: dict[str, Any],
+) -> dict[str, Any]:
+    reproduced = reproduce_selection(manifest)
+    ticker = selected_ticker(manifest)
+    if reproduced["selected_ticker"] != ticker:
+        raise BlindTestProtocolError(
+            "The selected issuer no longer matches the deterministic draw."
+        )
+    if reproduced["seed_sha256"] != manifest.get("selection_method", {}).get(
+        "seed_sha256"
+    ):
+        raise BlindTestProtocolError("The deterministic selection hash changed.")
+
+    pre_run_commit = manifest.get("pre_run_commit")
+    frozen = manifest.get("pre_run_shared_logic")
+    if not isinstance(pre_run_commit, str) or not isinstance(frozen, dict):
+        raise BlindTestProtocolError("The pre-run shared-logic baseline is incomplete.")
+    git_text("cat-file", "-e", f"{pre_run_commit}^{{commit}}")
+    for relative_path, expected_blob in frozen.items():
+        if git_text("rev-parse", f"{pre_run_commit}:{relative_path}") != expected_blob:
+            raise BlindTestProtocolError(
+                f"The frozen pre-run blob hash changed for {relative_path}."
+            )
+
+    first_run_dir = (
+        manifest_path.parent / manifest["first_run_protocol"]["output_directory"]
+    )
+    first_run_integrity = verify_preserved_run(first_run_dir)
+    return {
+        "status": "PASS",
+        "selected_ticker": ticker,
+        "selection_reproduced": True,
+        "frozen_pre_run_blobs_reproduced": True,
+        "first_run_integrity": first_run_integrity,
+    }
+
+
+def run_post_fix_test(
+    manifest_path: Path,
+    *,
+    timeout_seconds: int = 600,
+) -> dict[str, Any]:
+    """Rerun the selected issuer without modifying the immutable first run."""
+
+    manifest_path = manifest_path.resolve()
+    manifest = load_manifest(manifest_path)
+    prerequisites = verify_post_fix_prerequisites(manifest_path, manifest)
+    post_fix_dir = manifest_path.parent / "post_fix"
+    if post_fix_dir.exists():
+        raise BlindTestProtocolError(
+            "The post-fix directory already exists and cannot be overwritten."
+        )
+    post_fix_dir.mkdir(parents=True)
+    builder_output = post_fix_dir / "builder_output"
+    command = [
+        sys.executable,
+        str(BUILDER),
+        selected_ticker(manifest),
+        "--out-root",
+        str(builder_output),
+    ]
+    runtime = {
+        "started_at": utc_now(),
+        "python_version": platform.python_version(),
+        "python_executable": sys.executable,
+        "platform": platform.platform(),
+        "timezone": list(__import__("time").tzname),
+        "current_commit": git_text("rev-parse", "HEAD"),
+        "pre_run_commit": manifest["pre_run_commit"],
+        "post_fix_prerequisites": prerequisites,
+        "network_scope": "PUBLIC_DATA_ONLY",
+        "research_input": None,
+        "command": command,
+    }
+    write_json(post_fix_dir / "execution_context.json", runtime)
+
+    environment = os.environ.copy()
+    environment["PYTHONHASHSEED"] = "0"
+    timed_out = False
+    try:
+        process = subprocess.run(
+            command,
+            cwd=REPO_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+        return_code = process.returncode
+        stdout = process.stdout
+        stderr = process.stderr
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        return_code = 124
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+
+    (post_fix_dir / "stdout.txt").write_text(stdout, encoding="utf-8")
+    (post_fix_dir / "stderr.txt").write_text(stderr, encoding="utf-8")
+    diagnostic = summarize_first_run(
+        output_root=builder_output,
+        return_code=return_code,
+        timed_out=timed_out,
+    )
+    diagnostic["status"] = (
+        "POST_FIX_COMPLETED"
+        if diagnostic["status"] == "FIRST_RUN_COMPLETED"
+        else "POST_FIX_DIAGNOSTIC_REQUIRED"
+    )
+    diagnostic["completed_at"] = utc_now()
+    write_json(post_fix_dir / "post_fix_diagnostic.json", diagnostic)
+
+    artifact_hashes = {
+        str(path.relative_to(post_fix_dir)): sha256_file(path)
+        for path in sorted(post_fix_dir.rglob("*"))
+        if path.is_file() and path.name != "artifact_hashes.json"
+    }
+    write_json(
+        post_fix_dir / "artifact_hashes.json",
+        {
+            "hash_method": "SHA256",
+            "artifact_count": len(artifact_hashes),
+            "artifacts": artifact_hashes,
+        },
+    )
+    return diagnostic
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run one immutable public-only blind-company forward test."
@@ -364,12 +545,48 @@ def main() -> int:
         action="store_true",
         help="Verify deterministic selection and shared-logic freeze without network access.",
     )
+    parser.add_argument(
+        "--verify-preserved-first-run",
+        action="store_true",
+        help="Verify the immutable first-run file set and SHA256 registry.",
+    )
+    parser.add_argument(
+        "--post-fix",
+        action="store_true",
+        help="Run one separately preserved post-fix test after verifying the first run.",
+    )
     args = parser.parse_args()
     try:
         manifest = load_manifest(args.manifest)
+        selected_modes = sum(
+            bool(mode)
+            for mode in (
+                args.verify_only,
+                args.verify_preserved_first_run,
+                args.post_fix,
+            )
+        )
+        if selected_modes > 1:
+            raise BlindTestProtocolError(
+                "Choose only one verification or execution mode."
+            )
         if args.verify_only:
             print(json.dumps(verify_manifest_and_freeze(manifest), indent=2))
             return 0
+        if args.verify_preserved_first_run:
+            first_run_dir = (
+                args.manifest.resolve().parent
+                / manifest["first_run_protocol"]["output_directory"]
+            )
+            print(json.dumps(verify_preserved_run(first_run_dir), indent=2))
+            return 0
+        if args.post_fix:
+            result = run_post_fix_test(
+                args.manifest,
+                timeout_seconds=args.timeout_seconds,
+            )
+            print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+            return 0 if result["status"] == "POST_FIX_COMPLETED" else 1
         result = run_first_test(
             args.manifest,
             timeout_seconds=args.timeout_seconds,

@@ -22,6 +22,8 @@ from run_blind_company_forward_test import (  # noqa: E402
     load_manifest,
     reproduce_selection,
     verify_manifest_and_freeze,
+    verify_post_fix_prerequisites,
+    verify_preserved_run,
 )
 
 try:
@@ -89,10 +91,12 @@ class BlindTestProtocolTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 1)
 
-    def test_verify_only_passes_before_first_run(self) -> None:
-        result = verify_manifest_and_freeze(self.manifest)
-        self.assertEqual(result["status"], "PASS")
-        self.assertTrue(result["shared_logic_unchanged_before_first_run"])
+    def test_pre_run_verifier_rejects_post_run_shared_changes(self) -> None:
+        with self.assertRaisesRegex(
+            BlindTestProtocolError,
+            "Shared analytical logic changed",
+        ):
+            verify_manifest_and_freeze(self.manifest)
 
     def test_manifest_tampering_is_detected(self) -> None:
         tampered = json.loads(json.dumps(self.manifest))
@@ -100,9 +104,22 @@ class BlindTestProtocolTests(unittest.TestCase):
         with self.assertRaisesRegex(BlindTestProtocolError, "deterministic draw"):
             verify_manifest_and_freeze(tampered)
 
-    def test_first_run_directory_is_not_precreated(self) -> None:
+    def test_first_run_directory_is_immutable_and_complete(self) -> None:
         first_run = MANIFEST_PATH.parent / "first_run"
-        self.assertFalse(first_run.exists())
+        result = verify_preserved_run(first_run)
+        self.assertEqual(result["status"], "PASS")
+        self.assertTrue(result["file_set_unchanged"])
+        self.assertTrue(result["artifact_hashes_unchanged"])
+        self.assertGreater(result["artifact_count"], 0)
+
+    def test_post_fix_prerequisites_preserve_selection_and_first_run(self) -> None:
+        result = verify_post_fix_prerequisites(MANIFEST_PATH, self.manifest)
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["selected_ticker"], "ODFL")
+        self.assertTrue(result["selection_reproduced"])
+        self.assertTrue(
+            result["first_run_integrity"]["artifact_hashes_unchanged"]
+        )
 
 
 if __name__ == "__main__":

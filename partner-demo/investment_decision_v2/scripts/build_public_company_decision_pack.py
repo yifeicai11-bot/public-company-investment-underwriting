@@ -630,7 +630,162 @@ def scaled_table_amount_after_label(text: str, label: str, context_window: int =
     return None
 
 
-def extract_facility_values(text: str) -> dict[str, tuple[float, str]]:
+FILING_DATE_PATTERN = (
+    r"(?:January|February|March|April|May|June|July|August|September|October|"
+    r"November|December|Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|"
+    r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|"
+    r"Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},\s+\d{4}"
+)
+
+
+def filing_date_phrase_to_iso(value: str) -> str | None:
+    normalized = re.sub(r"\s+", " ", value).strip()
+    for pattern in ("%B %d, %Y", "%b %d, %Y"):
+        try:
+            return datetime.strptime(normalized, pattern).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def respectively_linked_letters_of_credit(
+    text: str,
+    *,
+    as_of_date: str | None,
+) -> tuple[float, str] | None:
+    """Select the amount linked to its date in an explicit respectively sentence."""
+
+    pattern = re.compile(
+        rf"(?:there\s+were|we\s+had)\s+\$?\s*"
+        rf"(?P<amount_one>[0-9,.]+)\s*(?P<scale_one>billion|million)\s+and\s+\$?\s*"
+        rf"(?P<amount_two>[0-9,.]+)\s*(?P<scale_two>billion|million)\s+"
+        rf"(?:in|of)?\s*outstanding\s+letters\s+of\s+credit\s+at\s+"
+        rf"(?P<date_one>{FILING_DATE_PATTERN})\s+and\s+"
+        rf"(?P<date_two>{FILING_DATE_PATTERN})\s*,?\s*respectively",
+        flags=re.I,
+    )
+    candidates: list[tuple[str, float]] = []
+    for match in pattern.finditer(text):
+        for amount_group, scale_group, date_group in (
+            ("amount_one", "scale_one", "date_one"),
+            ("amount_two", "scale_two", "date_two"),
+        ):
+            linked_date = filing_date_phrase_to_iso(match.group(date_group))
+            amount = money_phrase_to_usd(
+                match.group(amount_group),
+                match.group(scale_group),
+            )
+            if linked_date and amount is not None:
+                candidates.append((linked_date, amount))
+    if not candidates:
+        return None
+    if as_of_date:
+        exact = [candidate for candidate in candidates if candidate[0] == as_of_date]
+        if not exact:
+            return None
+        selected_date, selected_amount = exact[0]
+    else:
+        selected_date, selected_amount = max(candidates, key=lambda candidate: candidate[0])
+    return selected_amount, selected_date
+
+
+def dated_facility_availability(
+    text: str,
+    *,
+    as_of_date: str | None,
+) -> tuple[float, str] | None:
+    pattern = re.compile(
+        rf"(?:as\s+of|at)\s+(?P<date>{FILING_DATE_PATTERN})\s*,?\s*"
+        rf"(?:we\s+)?(?:had|have)\s+\$?\s*(?P<amount>[0-9,.]+)\s*"
+        rf"(?P<scale>billion|million)\s+(?:of\s+)?"
+        rf"(?:(?:remaining\s+)?borrowing\s+availability|available\s+borrowing\s+capacity|"
+        rf"unused\s+borrowing\s+capacity)\s+under\s+(?:the\s+)?"
+        rf"(?:credit\s+agreement|revolving\s+credit\s+facility|revolving\s+facility|credit\s+facility)",
+        flags=re.I,
+    )
+    candidates: list[tuple[str, float]] = []
+    for match in pattern.finditer(text):
+        linked_date = filing_date_phrase_to_iso(match.group("date"))
+        amount = money_phrase_to_usd(match.group("amount"), match.group("scale"))
+        if linked_date and amount is not None:
+            candidates.append((linked_date, amount))
+    if not candidates:
+        return None
+    if as_of_date:
+        exact = [candidate for candidate in candidates if candidate[0] == as_of_date]
+        if not exact:
+            return None
+        return exact[0][1], exact[0][0]
+    selected_date, selected_amount = max(candidates, key=lambda candidate: candidate[0])
+    return selected_amount, selected_date
+
+
+def assess_facility_reconciliation(
+    values: dict[str, tuple[float, str]],
+    *,
+    tolerance: float = 1_000_000,
+) -> dict[str, Any]:
+    """Check that reported availability and known reductions do not exceed commitment."""
+
+    def amount(name: str) -> float | None:
+        item = values.get(name)
+        return item[0] if item else None
+
+    commitment = amount("facility_commitment")
+    availability = amount("facility_availability_reported")
+    if commitment is None or availability is None:
+        return {
+            "status": "NOT_TESTED",
+            "commitment": commitment,
+            "availability": availability,
+            "known_reductions": {},
+            "known_component_total": None,
+            "gap": None,
+            "reason": "Both facility commitment and availability are required.",
+        }
+
+    reductions = {
+        name: value
+        for name in (
+            "facility_borrowings",
+            "facility_letters_of_credit",
+            "facility_lender_reserves",
+        )
+        if (value := amount(name)) is not None
+    }
+    known_component_total = availability + sum(reductions.values())
+    gap = commitment - known_component_total
+    if gap < -tolerance:
+        status = "FAIL"
+        reason = (
+            "Commitment is below availability plus known borrowings, letters of "
+            "credit, and reserves."
+        )
+    elif abs(gap) <= tolerance:
+        status = "PASS"
+        reason = "Commitment reconciles to availability plus known reductions."
+    else:
+        status = "PROVISIONAL"
+        reason = (
+            "The positive residual may represent undisclosed borrowings, reserves, "
+            "or another availability reduction."
+        )
+    return {
+        "status": status,
+        "commitment": commitment,
+        "availability": availability,
+        "known_reductions": reductions,
+        "known_component_total": known_component_total,
+        "gap": gap,
+        "reason": reason,
+    }
+
+
+def extract_facility_values(
+    text: str,
+    *,
+    as_of_date: str | None = None,
+) -> dict[str, tuple[float, str]]:
     """Extract common facility values from filing text.
 
     The output is deliberately medium-confidence. It gives the memo a better
@@ -639,39 +794,50 @@ def extract_facility_values(text: str) -> dict[str, tuple[float, str]]:
     """
 
     values: dict[str, tuple[float, str]] = {}
-    facility_context = find_snippet(
-        text,
-        ("ABL Facility", "revolving credit facility", "credit agreement", "credit facility"),
-        window=1500,
-    )
-    if facility_context:
-        commitment = extract_amount_phrase(
-            facility_context,
-            (
-                r"up to \$?\s*([0-9,.]+)\s*(billion|million)",
-                r"aggregate borrowings of up to \$?\s*([0-9,.]+)\s*(billion|million)",
-                r"commitments? (?:of|under|totaling|equal to) \$?\s*([0-9,.]+)\s*(billion|million)",
-                r"total commitments(?:[^.]{0,100})?were \$?\s*([0-9,.]+)\s*(billion|million)",
-                r"provides for (?:an? )?(?:revolving )?credit facility of \$?\s*([0-9,.]+)\s*(billion|million)",
-                r"\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:asset-based|revolving|credit)",
-            ),
-        )
-        if commitment is not None:
-            values["facility_commitment"] = (commitment, "parsed from facility note context")
-
-    availability_phrase = extract_amount_phrase(
+    commitment = extract_amount_phrase(
         text,
         (
-            r"excess availability(?:[^.]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)",
-            r"available (?:for borrowing|under [^.]{0,80})(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
-            r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of (?:remaining )?borrowing availability under the (?:revolving )?facility",
-            r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of available borrowing capacity under the (?:revolving )?facility",
-            r"unused (?:borrowing )?capacity(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
-            r"undrawn (?:commitments?|capacity|availability)(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
+            r"(?:provides for|consists of|maintains?)\s+(?:an?\s+)?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+facility",
+            r"(?:entered into|amended|replaced)(?:[^.;]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+(?:agreement|facility)",
+            r"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{0,160})?(?:provides for|commitments? (?:of|totaling|equal to)|capacity of)\s+\$?\s*([0-9,.]+)\s*(billion|million)",
+            r"\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?revolving\s+credit\s+facility",
         ),
     )
+    if commitment is not None:
+        values["facility_commitment"] = (
+            commitment,
+            "parsed only from a direct credit-facility commitment phrase",
+        )
+
+    dated_availability = dated_facility_availability(
+        text,
+        as_of_date=as_of_date,
+    )
+    availability_phrase = (
+        dated_availability[0]
+        if dated_availability is not None
+        else extract_amount_phrase(
+            text,
+            (
+                r"excess availability(?:[^.]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)",
+                r"available (?:for borrowing|under [^.]{0,80})(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
+                r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of (?:remaining )?borrowing availability under (?:the )?(?:credit agreement|revolving facility|credit facility)",
+                r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of available borrowing capacity under (?:the )?(?:credit agreement|revolving facility|credit facility)",
+                r"unused (?:borrowing )?capacity(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
+                r"undrawn (?:commitments?|capacity|availability)(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
+            ),
+        )
+    )
     if availability_phrase is not None:
-        values["facility_availability_reported"] = (availability_phrase, "parsed from availability phrase")
+        availability_note = (
+            f"parsed from a dated availability phrase for {dated_availability[1]}"
+            if dated_availability is not None
+            else "parsed from an availability phrase without a date link"
+        )
+        values["facility_availability_reported"] = (
+            availability_phrase,
+            availability_note,
+        )
     else:
         nums = numbers_after_label(text, "Excess availability")
         if nums:
@@ -698,15 +864,28 @@ def extract_facility_values(text: str) -> dict[str, tuple[float, str]]:
     if outstanding_borrowings is not None:
         values["facility_borrowings"] = (outstanding_borrowings, "parsed from outstanding-borrowings sentence")
 
-    letters_of_credit = extract_amount_phrase(
+    respectively_linked_lc = respectively_linked_letters_of_credit(
         text,
-        (
-            r"had \$?\s*([0-9,.]+)\s*(billion|million) in outstanding letters of credit",
-            r"\$?\s*([0-9,.]+)\s*(billion|million) of outstanding letters of credit",
-        ),
+        as_of_date=as_of_date,
+    )
+    letters_of_credit = (
+        respectively_linked_lc[0]
+        if respectively_linked_lc is not None
+        else extract_amount_phrase(
+            text,
+            (
+                r"(?:as of [^.]{0,40},?\s*)?(?:we had|there were)\s+\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:in|of)\s+outstanding letters of credit",
+                r"outstanding letters of credit(?:[^.]{0,50})?(?:were|totaled)\s+\$?\s*([0-9,.]+)\s*(billion|million)",
+            ),
+        )
     )
     if letters_of_credit is not None:
-        values["facility_letters_of_credit"] = (letters_of_credit, "parsed from outstanding-letters-of-credit sentence")
+        lc_note = (
+            f"parsed from a respectively-linked amount/date pair for {respectively_linked_lc[1]}"
+            if respectively_linked_lc is not None
+            else "parsed from a single outstanding-letters-of-credit statement"
+        )
+        values["facility_letters_of_credit"] = (letters_of_credit, lc_note)
 
     for label in ("lenders’ reserves", "lenders' reserves"):
         nums = numbers_after_label(text, label)
@@ -1649,7 +1828,10 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     # Filing-note snippets: useful but not enough for final facility/covenant conclusions.
     raw_text = fetch_text(latest_url)
     filing_text = html_to_text(raw_text)
-    facility_values = extract_facility_values(filing_text)
+    facility_values = extract_facility_values(
+        filing_text,
+        as_of_date=latest_end,
+    )
     for metric_name, (metric_value, metric_note) in facility_values.items():
         rows.append(
             manual_dp(
@@ -1925,6 +2107,77 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         add_validation(validations, "P0-current-debt-vs-lease-check", "MISSING", "Medium", f"Current debt is {fmt_usd(current_debt)}, but standardized current lease tags were not found.", "Near-term obligations may be understated if leases are material.", "Inspect lease note and commitments before final memo.")
     else:
         add_validation(validations, "P0-current-debt-vs-lease-check", "PASS", "Medium", f"Current debt {fmt_usd(current_debt)}; current leases {fmt_usd(current_leases)}.", "Near-term obligations are visible at high level.", "Still include cash interest and capex.")
+
+    facility_reconciliation = assess_facility_reconciliation(facility_values)
+    if facility_reconciliation["status"] == "FAIL":
+        add_validation(
+            validations,
+            "P0-facility-reconciliation",
+            "FAIL",
+            "Critical",
+            (
+                f"Facility commitment {fmt_usd(facility_reconciliation['commitment'])} is below "
+                f"availability plus known reductions "
+                f"{fmt_usd(facility_reconciliation['known_component_total'])}; "
+                f"gap {fmt_usd(facility_reconciliation['gap'])}."
+            ),
+            "At least one facility amount is linked to the wrong instrument, period, or disclosure context.",
+            "Suppress the conflicting facility values and re-extract them from same-instrument, same-date filing evidence.",
+            category="facility_reconciliation",
+            issue_class="HARD_STOP",
+            evidence_ids=[
+                row.evidence_id
+                for name in (
+                    "facility_commitment",
+                    "facility_availability_reported",
+                    "facility_borrowings",
+                    "facility_letters_of_credit",
+                    "facility_lender_reserves",
+                )
+                if (row := m.get(name)) is not None and row.evidence_id
+            ],
+        )
+    elif facility_reconciliation["status"] == "PASS":
+        add_validation(
+            validations,
+            "P0-facility-reconciliation",
+            "PASS",
+            "Critical",
+            (
+                f"Facility commitment {fmt_usd(facility_reconciliation['commitment'])} "
+                f"reconciles to availability and known reductions within "
+                f"{fmt_usd(1_000_000)}."
+            ),
+            "The extracted facility amounts pass the internal arithmetic consistency check.",
+            "Retain note-level review for conditions, maturity, borrowing-base mechanics, and undisclosed restrictions.",
+            category="facility_reconciliation",
+            evidence_ids=[
+                row.evidence_id
+                for name in (
+                    "facility_commitment",
+                    "facility_availability_reported",
+                    "facility_borrowings",
+                    "facility_letters_of_credit",
+                    "facility_lender_reserves",
+                )
+                if (row := m.get(name)) is not None and row.evidence_id
+            ],
+        )
+    elif facility_reconciliation["status"] == "PROVISIONAL":
+        add_validation(
+            validations,
+            "P1-facility-reconciliation",
+            "PROVISIONAL",
+            "High",
+            (
+                f"Facility commitment exceeds availability plus known reductions by "
+                f"{fmt_usd(facility_reconciliation['gap'])}; the residual is not explained."
+            ),
+            "Liquidity may be overstated if an unidentified reserve, borrowing, or other restriction is omitted.",
+            "Identify every availability reduction in the debt note before treating the facility as fully usable.",
+            category="facility_reconciliation",
+            issue_class="WARNING",
+        )
 
     if "facility_availability_reported" in m:
         add_validation(validations, "P1-facility-note-check", "PROVISIONAL", "High", f"Reported facility availability parsed as {fmt_usd(val(m, 'facility_availability_reported'))}; full note still needs review.", "Liquidity view can include a preliminary facility source, but restrictions and borrowing-base mechanics remain analyst-review items.", "Read debt note and confirm commitment, availability, LC, reserves, maturity, borrowing base, and conditions.")
