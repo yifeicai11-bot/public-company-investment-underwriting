@@ -1,0 +1,189 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "session_completion_record",
+  "phase": "B",
+  "session": "S06",
+  "status": "PASS",
+  "completion_date": "2026-07-28",
+  "implementation_commit": "6e285a5a8cd9f24402f7c69549bf868c51183bac",
+  "objective": "Build a machine-readable cross-industry regression matrix and a formal safe-failure taxonomy without adding issuer-specific analytical logic.",
+  "deliverables": [
+    "Versioned cross-industry regression matrix and JSON schema.",
+    "Versioned safe-failure taxonomy and JSON schema.",
+    "Shared matrix, taxonomy, contract-safety, and AST anti-hardcoding validator.",
+    "Matrix-driven network regression runner.",
+    "Automated unit and preserved-contract regression tests.",
+    "Skill and repository usage instructions."
+  ],
+  "contract_changes": {
+    "underwriting_output_contract_changed": false,
+    "data_gate_logic_changed": false,
+    "renderer_analytical_logic_changed": false,
+    "new_governance_contracts": [
+      "cross_industry_regression_matrix",
+      "safe_failure_taxonomy"
+    ],
+    "safe_outcomes": [
+      "VALIDATED_RESULT",
+      "MISSING",
+      "NOT_APPLICABLE",
+      "SUPPRESSED",
+      "WARNING",
+      "HARD_STOP"
+    ]
+  },
+  "matrix_coverage": {
+    "active_case_count": 6,
+    "active_industry_count": 6,
+    "stress_characteristic_count": 19,
+    "actively_tested_stress_count": 12,
+    "planned_stress_count": 7,
+    "active_tickers": [
+      "CROX",
+      "AAPL",
+      "PFGC",
+      "ADBE",
+      "AZO",
+      "ODFL"
+    ],
+    "active_coverage_gaps": [
+      "amended_or_restated_filing",
+      "complex_debt_structure",
+      "convertible_or_preferred",
+      "high_leverage",
+      "material_subsequent_event",
+      "negative_ebitda",
+      "negative_fcf"
+    ],
+    "planned_coverage_is_tested": false,
+    "held_out_s17_issuer_selected": false
+  },
+  "network_regression": {
+    "status": "PASS",
+    "case_count": 6,
+    "failure_count": 0,
+    "results": [
+      {
+        "ticker": "CROX",
+        "report_id": "RPT-0FAB8DFE5BE9BC",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 72,
+        "warning_count": 19,
+        "errors": 0
+      },
+      {
+        "ticker": "AAPL",
+        "report_id": "RPT-98235649A9F715",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 90,
+        "warning_count": 19,
+        "errors": 0
+      },
+      {
+        "ticker": "PFGC",
+        "report_id": "RPT-AB180D1B4BF857",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 103,
+        "warning_count": 20,
+        "errors": 0
+      },
+      {
+        "ticker": "ADBE",
+        "report_id": "RPT-3C006E8E8C5234",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 96,
+        "warning_count": 20,
+        "errors": 0
+      },
+      {
+        "ticker": "AZO",
+        "report_id": "RPT-C42BA8A591D8E1",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 92,
+        "warning_count": 20,
+        "errors": 0
+      },
+      {
+        "ticker": "ODFL",
+        "report_id": "RPT-CEAD720F2637DD",
+        "data_gate": 1,
+        "decision_confidence": "Low",
+        "evidence_count": 65,
+        "warning_count": 21,
+        "errors": 0
+      }
+    ],
+    "common_observed_safe_outcomes": [
+      "MISSING",
+      "NOT_APPLICABLE",
+      "SUPPRESSED",
+      "VALIDATED_RESULT",
+      "WARNING"
+    ],
+    "hard_stop_validation_method": "Synthetic unit tests exercise classification and blocking semantics; no Hard Stop was intentionally injected into live public-company output."
+  },
+  "anti_hardcoding": {
+    "status": "PASS",
+    "method": "Python AST inspection of identity-dependent conditions and fixture-valued configuration containers.",
+    "shared_files_scanned": 4,
+    "active_fixture_values_scanned": 12,
+    "findings": 0
+  },
+  "tests": [
+    {
+      "suite": "shared_unit_tests",
+      "status": "PASS",
+      "passed": 111,
+      "failed": 0
+    },
+    {
+      "suite": "cross_industry_network_regression_and_rendering",
+      "status": "PASS",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "suite": "friday_v1_render_pdf_pixel_baseline",
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0,
+      "baseline_id": "friday-v1",
+      "tag": "v1.0.0-friday"
+    },
+    {
+      "suite": "skill_structure_validation",
+      "status": "PASS",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "suite": "implementation_privacy_boundary_scan",
+      "status": "PASS",
+      "files_checked": 10,
+      "violations": 0
+    }
+  ],
+  "warnings": [
+    "All six live runs intentionally remain public-only Gate 1 screens with Low Decision Confidence; they are not investment recommendations.",
+    "Seven stress characteristics are represented only by unassigned planned slots and must not be described as tested.",
+    "Network-backed evidence and report IDs are dated observations and will change when filings or market dates change."
+  ],
+  "unresolved_issues": [
+    "Active regression coverage is still required for negative FCF, negative EBITDA, high leverage, complex debt, convertible or preferred securities, amended or restated filings, and material subsequent events.",
+    "Full-pipeline diagnostic rendering for every synthetic safe-failure outcome remains a separate release-gate task."
+  ],
+  "next_session_entry": {
+    "session": "S07",
+    "first_action": "Use the S06 taxonomy to build executable negative-path fixtures for all six safe outcomes, verify Hard Stop diagnostic-only rendering and suppression consistency, and close the Phase B release gate.",
+    "constraints": [
+      "Do not alter the S06 matrix to claim planned coverage as tested.",
+      "Do not add ticker-specific analytical branches.",
+      "Do not select or expose the held-out S17 issuer."
+    ]
+  }
+}
