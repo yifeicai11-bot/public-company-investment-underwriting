@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build Step 4 partner / portfolio overlay from Step 3 public data.
+"""Build Step 4 partner / portfolio overlay from a validated Gate 3 contract.
 
-The overlay combines a public-data investment layer with partner-provided
-portfolio constraints. Demo inputs must be explicitly marked as illustrative
+The overlay consumes the immutable shared underwriting contract and
+partner-provided portfolio constraints. It never rebuilds or overwrites
+issuer-level analysis. Demo inputs must be explicitly marked as illustrative
 and are not treated as real fund data.
 """
 
@@ -18,11 +19,12 @@ from pathlib import Path
 from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT = Path(__file__).resolve().parents[3]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from build_public_company_investment_layer import DEFAULT_OUT_ROOT, build_investment_layer  # noqa: E402
+from underwriting_contract import assess_gate3_for_gate4  # noqa: E402
+
+PRIVATE_INPUT_VALIDATOR_STATUS = "NOT_IMPLEMENTED_S03"
 
 
 @dataclass
@@ -104,6 +106,7 @@ FIELD_ZH = {
 }
 
 GATE_ZH = {
+    "O0-gate3-eligibility": "Gate 3 是否满足版本、freshness 与资格要求",
     "O1-public-data-foundation": "公开数据基础是否可靠",
     "O2-overlay-mode": "叠加输入是真实数据还是演示假设",
     "O3-return-hurdle": "预期回报是否超过门槛",
@@ -118,6 +121,7 @@ GATE_ZH = {
 
 RATIONALE_ZH = {
     "Gate 4 prerequisites or human approval are incomplete.": "Gate 4 前置条件或人工审批尚未完成。",
+    "Gate 3 is stale or otherwise ineligible for Gate 4.": "Gate 3 已过期或不符合 Gate 4 资格要求。",
     "Portfolio inputs are illustrative or not validated.": "组合输入仅为演示或尚未验证。",
     "Displaying the explicitly human-approved portfolio decision; the system did not choose it.": "仅展示已由人工明确批准的组合决策；系统并未自动作出该决定。",
     "Public-data scenario is inconclusive.": "公开数据情景结论不够明确。",
@@ -170,18 +174,34 @@ def parse_pct(value: Any) -> float | None:
         return None
 
 
-def scenario_return(data: dict[str, Any], name: str) -> float | None:
+def scenario_price_change(data: dict[str, Any], name: str) -> float | None:
     for row in data.get("scenarios", []):
         if row.get("name") == name:
-            return parse_pct(row.get("total_return"))
+            return parse_pct(row.get("price_change_vs_current"))
     return None
 
 
-def load_step3(step3_dir: Path) -> dict[str, Any]:
-    path = step3_dir / "step3_data.json"
-    if not path.exists():
-        raise FileNotFoundError(f"Missing Step 3 data: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
+def resolve_gate3_contract_path(target: Path) -> Path:
+    if target.is_file():
+        if target.name != "underwriting_output_contract.json":
+            raise ValueError(
+                "Gate 4 requires underwriting_output_contract.json, not a legacy Step 3 file."
+            )
+        return target
+    if target.is_dir():
+        path = target / "underwriting_output_contract.json"
+        if path.exists():
+            return path
+        raise FileNotFoundError(f"Missing Gate 3 underwriting contract: {path}")
+    raise FileNotFoundError(
+        f"Gate 4 requires a validated Gate 3 contract path or Step 3 directory; "
+        f"ticker-only input is not accepted: {target}"
+    )
+
+
+def load_gate3_contract(target: Path) -> tuple[dict[str, Any], Path]:
+    path = resolve_gate3_contract_path(target)
+    return json.loads(path.read_text(encoding="utf-8")), path
 
 
 def load_overlay(path: Path) -> dict[str, Any]:
@@ -205,14 +225,23 @@ def clean_level(value: Any) -> str:
     return "Missing"
 
 
-def return_pack(step3: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
-    public_expected = parse_pct(step3.get("probability_weighted_return"))
-    public_bear = scenario_return(step3, "Bear")
-    public_bull = scenario_return(step3, "Bull")
+def return_pack(
+    step3: dict[str, Any],
+    overlay: dict[str, Any],
+    *,
+    gate3_eligible: bool,
+) -> dict[str, Any]:
+    public_expected = (
+        parse_pct(step3.get("probability_weighted_expected_return"))
+        if gate3_eligible
+        else None
+    )
+    public_bear = scenario_price_change(step3, "Bear") if gate3_eligible else None
+    public_bull = scenario_price_change(step3, "Bull") if gate3_eligible else None
 
-    internal_expected = parse_pct(overlay.get("internal_expected_return"))
-    internal_bear = parse_pct(overlay.get("internal_bear_case"))
-    internal_bull = parse_pct(overlay.get("internal_bull_case"))
+    internal_expected = parse_pct(overlay.get("internal_expected_return")) if gate3_eligible else None
+    internal_bear = parse_pct(overlay.get("internal_bear_case")) if gate3_eligible else None
+    internal_bull = parse_pct(overlay.get("internal_bull_case")) if gate3_eligible else None
     has_internal_return = internal_expected is not None and internal_bear is not None
 
     return {
@@ -226,10 +255,19 @@ def return_pack(step3: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any
         "internal_expected_return": internal_expected,
         "internal_bear_case": internal_bear,
         "internal_bull_case": internal_bull,
+        "public_values_are_price_sensitivities": not bool(
+            step3.get("return_context", {}).get("formal_return_language_allowed")
+        ),
+        "suppressed_for_gate3_ineligibility": not gate3_eligible,
     }
 
 
-def overlay_gates(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[str, Any]) -> list[OverlayGate]:
+def overlay_gates(
+    step3: dict[str, Any],
+    overlay: dict[str, Any],
+    returns: dict[str, Any],
+    eligibility: dict[str, Any],
+) -> list[OverlayGate]:
     gates: list[OverlayGate] = []
     mode = overlay.get("overlay_mode", "")
     target_hurdle = parse_pct(overlay.get("target_return_hurdle"))
@@ -242,6 +280,21 @@ def overlay_gates(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[
     max_size = str(overlay.get("max_position_size", "")).strip()
     opportunity_view = str(overlay.get("opportunity_cost_view", "")).strip().lower()
     variant = str(overlay.get("internal_variant_view", "")).strip()
+
+    eligibility_passed = eligibility.get("eligible") is True
+    gates.append(
+        OverlayGate(
+            "O0-gate3-eligibility",
+            "PASS" if eligibility_passed else "BLOCKED",
+            "INFO" if eligibility_passed else "P0",
+            (
+                f"eligibility_status={eligibility.get('status')}; "
+                f"blocking_checks={eligibility.get('blocking_check_ids', [])}"
+            ),
+            "Gate 4 must not consume stale, unsupported, or otherwise ineligible Gate 3 analysis.",
+            eligibility.get("next_action", "Refresh and revalidate Gate 3."),
+        )
+    )
 
     public_gate = float(step3.get("data_gate", {}).get("level", 0))
     contract_valid = step3.get("contract_validation", {}).get("status") == "PASS"
@@ -257,7 +310,8 @@ def overlay_gates(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[
         )
     )
     real_validated_mode = (
-        mode == "REAL_PARTNER_INPUT"
+        PRIVATE_INPUT_VALIDATOR_STATUS == "AVAILABLE"
+        and mode == "REAL_PARTNER_INPUT"
         and overlay.get("input_status") == "VALIDATED"
         and bool(overlay.get("reviewed_by"))
     )
@@ -266,9 +320,13 @@ def overlay_gates(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[
             "O2-overlay-mode",
             "PASS" if real_validated_mode else "BLOCKED",
             "P1",
-            f"overlay_mode={mode or 'n/a'}; input_status={overlay.get('input_status', 'n/a')}; reviewer={overlay.get('reviewed_by', 'n/a')}",
-            "Illustrative or unreviewed inputs may demonstrate workflow but cannot create Gate 4 outputs.",
-            "Use REAL_PARTNER_INPUT, mark inputs VALIDATED, and record the human reviewer.",
+            (
+                f"private_input_validator={PRIVATE_INPUT_VALIDATOR_STATUS}; "
+                f"overlay_mode={mode or 'n/a'}; input_status={overlay.get('input_status', 'n/a')}; "
+                f"reviewer={overlay.get('reviewed_by', 'n/a')}"
+            ),
+            "Illustrative, unreviewed, or schema-unvalidated inputs may demonstrate workflow but cannot create Gate 4 outputs.",
+            "Complete the private-input schemas and local validator before enabling REAL_PARTNER_INPUT.",
         )
     )
     gates.append(
@@ -366,6 +424,8 @@ def overlay_gates(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[
 
 def choose_overlay_action(gates: list[OverlayGate], overlay: dict[str, Any], returns: dict[str, Any]) -> tuple[str, str, str, str]:
     gate_map = {g.gate_id: g for g in gates}
+    if gate_map["O0-gate3-eligibility"].result == "BLOCKED":
+        return "Not Evaluated", "No position sizing", "Low", "Gate 3 is stale or otherwise ineligible for Gate 4."
     p0_blocked = any(g.result == "BLOCKED" and g.severity == "P0" for g in gates)
     if p0_blocked:
         return "Not Evaluated", "No position sizing", "Low", "Gate 4 prerequisites or human approval are incomplete."
@@ -474,7 +534,17 @@ def overlay_gate_rows(gates: list[OverlayGate]) -> list[dict[str, str]]:
     return rows
 
 
-def build_markdown(step3: dict[str, Any], overlay: dict[str, Any], returns: dict[str, Any], gates: list[OverlayGate], action: str, sizing: str, confidence: str, rationale: str) -> str:
+def build_markdown(
+    step3: dict[str, Any],
+    overlay: dict[str, Any],
+    returns: dict[str, Any],
+    eligibility: dict[str, Any],
+    gates: list[OverlayGate],
+    action: str,
+    sizing: str,
+    confidence: str,
+    rationale: str,
+) -> str:
     company = step3["company"]
     valuation = step3.get("valuation", {})
     public_gates = [g for g in step3.get("validation_gates", []) if g.get("result") in {"BLOCKED", "PROVISIONAL"}]
@@ -487,6 +557,8 @@ def build_markdown(step3: dict[str, Any], overlay: dict[str, Any], returns: dict
         "",
         f"Generated: {utc_now()}",
         f"Overlay mode / 叠加模式: {mode}",
+        f"Gate 3 eligibility / Gate 3 资格状态: {eligibility.get('status')}",
+        f"Gate 3 contract / Gate 3 合同: {eligibility.get('gate3_identity', {}).get('report_id')} | {eligibility.get('gate3_identity', {}).get('contract_hash')}",
         "",
         "This output combines the public-data Step 3 memo with a partner/portfolio overlay. If `overlay_mode` is `ILLUSTRATIVE_DEMO_NOT_FUND_DATA`, the overlay inputs are examples for workflow demonstration, not real fund data.",
         "",
@@ -496,10 +568,11 @@ def build_markdown(step3: dict[str, Any], overlay: dict[str, Any], returns: dict
         "",
         f"- Public action view: {step3.get('action_view')} / 中文：{zh_action(step3.get('action_view'))}",
         f"- Public expected return: {fmt_pct(returns.get('public_expected_return'))} / 公开数据预期回报：{fmt_pct(returns.get('public_expected_return'))}",
-        f"- Public bear / bull: {fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))} / 公开数据熊市/牛市情景：{fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))}",
+        f"- Public bear / bull price change sensitivity: {fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))} / 公开数据熊市/牛市价格变化敏感性：{fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))}",
         f"- Public valuation: P/FCF={fmt_num(valuation.get('p_fcf'))}; P/E={fmt_num(valuation.get('pe'))}; EV/Sales={fmt_num(valuation.get('ev_sales'))} / 公开估值：P/FCF={fmt_num(valuation.get('p_fcf'))}; P/E={fmt_num(valuation.get('pe'))}; EV/Sales={fmt_num(valuation.get('ev_sales'))}",
         f"- Public action rationale: {step3.get('action_rationale')} / 中文：{zh_rationale(step3.get('action_rationale'))}",
         f"- Public provisional/blocked gates: {', '.join(g.get('gate_id', '') for g in public_gates) if public_gates else 'None'} / 公开数据中仍需复核或阻断的检查项：{', '.join(g.get('gate_id', '') for g in public_gates) if public_gates else '无'}",
+        f"- Gate 3 eligibility blockers: {', '.join(eligibility.get('blocking_check_ids', [])) or 'None'} / Gate 3 资格阻断项：{', '.join(eligibility.get('blocking_check_ids', [])) or '无'}",
         "",
         "## Partner Overlay Inputs / Partner 叠加输入",
         "",
@@ -536,8 +609,8 @@ def build_markdown(step3: dict[str, Any], overlay: dict[str, Any], returns: dict
         "",
         "## Source Files / 来源文件",
         "",
-        "- Public-only Step 3: `investment_layer.md` and `step3_data.json` in the same folder.",
-        "- 公开数据 Step 3：同一文件夹下的 `investment_layer.md` 和 `step3_data.json`。",
+        "- Public-only Gate 3: immutable `underwriting_output_contract.json` in the same folder.",
+        "- 公开数据 Gate 3：同一文件夹下不可变的 `underwriting_output_contract.json`。",
         "- Overlay input: partner-provided or illustrative JSON/CSV.",
         "- Overlay 输入：partner 提供或用于演示的 JSON/CSV。",
         "",
@@ -560,16 +633,26 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def build_overlay(step3_dir: Path, overlay_path: Path) -> Path:
-    step3 = load_step3(step3_dir)
+def build_overlay(gate3_target: Path, overlay_path: Path) -> Path:
+    step3, contract_path = load_gate3_contract(gate3_target)
+    step3_dir = contract_path.parent
     overlay = load_overlay(overlay_path)
-    returns = return_pack(step3, overlay)
-    gates = overlay_gates(step3, overlay, returns)
+    eligibility = assess_gate3_for_gate4(
+        step3,
+        policy=overlay.get("gate3_eligibility_policy"),
+        freshness_attestation=overlay.get("gate3_freshness_attestation"),
+    )
+    returns = return_pack(step3, overlay, gate3_eligible=eligibility.get("eligible") is True)
+    gates = overlay_gates(step3, overlay, returns, eligibility)
     action, sizing, confidence, rationale = choose_overlay_action(gates, overlay, returns)
 
     output = {
         "company": step3["company"],
         "build_date": utc_now(),
+        "gate3_contract_path": str(contract_path),
+        "gate3_identity": eligibility.get("gate3_identity"),
+        "gate3_eligibility": eligibility,
+        "gate4_status": eligibility.get("status"),
         "overlay_input_path": str(overlay_path),
         "overlay": overlay,
         "returns": returns,
@@ -583,31 +666,35 @@ def build_overlay(step3_dir: Path, overlay_path: Path) -> Path:
         "overlay_rationale_zh": zh_rationale(rationale),
         "public_action_view": step3.get("action_view"),
         "public_action_view_zh": zh_action(step3.get("action_view")),
-        "public_expected_return": step3.get("probability_weighted_return"),
+        "public_expected_return": returns.get("public_expected_return"),
     }
+    (step3_dir / "gate4_gate3_eligibility.json").write_text(
+        json.dumps(eligibility, indent=2, default=str),
+        encoding="utf-8",
+    )
     (step3_dir / "portfolio_overlay_demo.json").write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
     write_csv(step3_dir / "portfolio_overlay_gates.csv", [asdict(g) for g in gates])
     (step3_dir / "public_only_and_partner_overlay_demo.md").write_text(
-        build_markdown(step3, overlay, returns, gates, action, sizing, confidence, rationale),
+        build_markdown(step3, overlay, returns, eligibility, gates, action, sizing, confidence, rationale),
         encoding="utf-8",
     )
     return step3_dir
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build Step 4 partner portfolio overlay from Step 3 data.")
-    parser.add_argument("company_or_step3_dir", help="Ticker/company name or path to a step3 directory.")
+    parser = argparse.ArgumentParser(
+        description="Build Step 4 partner portfolio overlay from an immutable Gate 3 contract."
+    )
+    parser.add_argument(
+        "gate3_contract_or_dir",
+        help="Path to underwriting_output_contract.json or its Step 3 directory. Ticker-only input is not accepted.",
+    )
     parser.add_argument("--overlay", required=True, help="Path to partner overlay JSON or CSV.")
-    parser.add_argument("--out-root", default=str(DEFAULT_OUT_ROOT), help="Output root when resolving a company.")
     args = parser.parse_args()
 
-    target = Path(args.company_or_step3_dir)
-    if target.exists() and target.is_dir():
-        step3_dir = target
-    else:
-        step3_dir = build_investment_layer(args.company_or_step3_dir, Path(args.out_root))
-    out = build_overlay(step3_dir, Path(args.overlay))
+    out = build_overlay(Path(args.gate3_contract_or_dir), Path(args.overlay))
     print(out)
+    print(out / "gate4_gate3_eligibility.json")
     print(out / "public_only_and_partner_overlay_demo.md")
     print(out / "portfolio_overlay_demo.json")
     print(out / "portfolio_overlay_gates.csv")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
+import hashlib
 import json
 import sys
 import tempfile
@@ -37,10 +39,19 @@ from build_public_company_investment_layer import (  # noqa: E402
     resolve_evidence_references,
     scenario_set,
 )
+from build_partner_portfolio_overlay import (  # noqa: E402
+    build_overlay,
+    choose_overlay_action,
+    load_gate3_contract,
+    overlay_gates,
+    return_pack,
+)
 from render_public_company_artifacts import headline_metrics, render, status_text  # noqa: E402
 from underwriting_contract import (  # noqa: E402
     CashFlowLedgerLine,
+    assess_gate3_for_gate4,
     assess_supported_universe,
+    canonical_json,
     detect_material_conflicts,
     determine_data_gate,
     finalize_output_contract,
@@ -675,6 +686,493 @@ class GateAndScenarioTests(unittest.TestCase):
         self.assertIsNone(final["position_sizing"])
         self.assertEqual(final["portfolio_action"], "Not Evaluated")
         self.assertEqual(final["contract_validation"]["status"], "PASS")
+
+
+class Gate4EligibilityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        contract_path = (
+            TEST_DIR.parent
+            / "friday_v1_outputs"
+            / "crox_crocs_inc"
+            / "step3"
+            / "underwriting_output_contract.json"
+        )
+        cls.contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        cls.autozone_contract = json.loads(
+            (
+                TEST_DIR.parent
+                / "friday_v1_outputs"
+                / "azo_autozone_inc"
+                / "step3"
+                / "underwriting_output_contract.json"
+            ).read_text(encoding="utf-8")
+        )
+
+    def rehash(self, contract: dict[str, object]) -> None:
+        hash_input = {
+            key: value
+            for key, value in contract.items()
+            if key not in {"contract_hash", "contract_validation"}
+        }
+        contract["contract_hash"] = hashlib.sha256(
+            canonical_json(hash_input).encode("utf-8")
+        ).hexdigest()
+
+    def policy(self, **overrides: object) -> dict[str, object]:
+        policy: dict[str, object] = {
+            "max_report_age_days": 2,
+            "max_financial_data_age_days": 150,
+            "max_market_data_age_days": 5,
+            "max_public_source_check_lag_days": 1,
+            "eligible_valuation_statuses": [
+                "RANGE_ONLY",
+                "PARTIALLY_VALIDATED",
+                "MULTI_METHOD_VALIDATED",
+            ],
+            "require_validated_probabilities": False,
+            "allow_warning_escalation": True,
+        }
+        policy.update(overrides)
+        return policy
+
+    def attestation(self, **overrides: object) -> dict[str, object]:
+        warning_ids = [
+            "G3-probability-validation",
+            "G3-peer-valuation-context",
+            "G3-probability-methodology",
+        ]
+        attestation: dict[str, object] = {
+            "as_of_date": "2026-07-17",
+            "latest_earnings_checked_through": "2026-07-17",
+            "latest_known_financial_filing_date": "2026-04-30",
+            "newer_earnings_filing_known": False,
+            "subsequent_events_checked_through": "2026-07-17",
+            "unreviewed_material_subsequent_event_known": False,
+            "reviewed_by": "Eligibility test reviewer",
+            "reviewed_at": "2026-07-17T12:00:00Z",
+            "warning_escalations": [
+                {
+                    "check_id": warning_id,
+                    "reviewed_by": "Eligibility test reviewer",
+                    "review_date": "2026-07-17",
+                    "rationale": "Accepted for the historical Gate 4 interface test.",
+                }
+                for warning_id in warning_ids
+            ],
+        }
+        attestation.update(overrides)
+        return attestation
+
+    def test_fresh_gate3_contract_reaches_private_inputs_required(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_PRIVATE_INPUTS_REQUIRED")
+        self.assertTrue(result["eligible"])
+        self.assertEqual(result["blocking_check_ids"], [])
+        self.assertEqual(
+            result["escalated_warning_ids"],
+            [
+                "G3-peer-valuation-context",
+                "G3-probability-methodology",
+                "G3-probability-validation",
+            ],
+        )
+
+    def test_gate4_policy_has_no_hidden_defaults(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=None,
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-policy-completeness", result["ineligible_check_ids"])
+
+    def test_range_only_requires_explicit_policy_eligibility(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(eligible_valuation_statuses=["MULTI_METHOD_VALIDATED"]),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-valuation-eligibility", result["ineligible_check_ids"])
+
+    def test_probability_requirement_blocks_illustrative_weights(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(require_validated_probabilities=True),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-probability-freshness", result["ineligible_check_ids"])
+
+    def test_unresolved_issuer_warning_blocks_gate4(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(warning_escalations=[]),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn(
+            "G4E-warning:G3-peer-valuation-context",
+            result["ineligible_check_ids"],
+        )
+
+    def test_fresh_autozone_contract_uses_same_gate4_rules(self) -> None:
+        warning_ids = [
+            "P0-current-debt-vs-lease-check",
+            "G3-probability-validation",
+            "G3-peer-valuation-context",
+        ]
+        result = assess_gate3_for_gate4(
+            self.autozone_contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(
+                latest_known_financial_filing_date="2026-06-12",
+                warning_escalations=[
+                    {
+                        "check_id": warning_id,
+                        "reviewed_by": "Eligibility test reviewer",
+                        "review_date": "2026-07-17",
+                        "rationale": "Accepted for the cross-company Gate 4 interface test.",
+                    }
+                    for warning_id in warning_ids
+                ],
+            ),
+        )
+        self.assertEqual(result["status"], "GATE_4_PRIVATE_INPUTS_REQUIRED")
+        self.assertTrue(result["eligible"])
+        self.assertEqual(result["blocking_check_ids"], [])
+
+    def test_stale_market_data_blocks_gate4(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(max_report_age_days=30),
+            freshness_attestation=self.attestation(
+                as_of_date="2026-07-28",
+                latest_earnings_checked_through="2026-07-28",
+                subsequent_events_checked_through="2026-07-28",
+                reviewed_at="2026-07-28T12:00:00Z",
+                warning_escalations=[
+                    {
+                        "check_id": warning_id,
+                        "reviewed_by": "Eligibility test reviewer",
+                        "review_date": "2026-07-28",
+                        "rationale": "Accepted for the stale-market-data test.",
+                    }
+                    for warning_id in [
+                        "G3-probability-validation",
+                        "G3-peer-valuation-context",
+                        "G3-probability-methodology",
+                    ]
+                ],
+            ),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-market-data-age", result["stale_check_ids"])
+
+    def test_newer_earnings_filing_blocks_gate4_as_stale(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(
+                newer_earnings_filing_known=True,
+                latest_known_financial_filing_date="2026-07-17",
+            ),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-newer-earnings", result["stale_check_ids"])
+
+    def test_data_hard_stop_cannot_be_escalated(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["hard_stops"] = [
+            {
+                "check_id": "P0-test-hard-stop",
+                "status": "FAIL",
+                "issue_class": "HARD_STOP",
+            }
+        ]
+        self.rehash(contract)
+        attestation = self.attestation()
+        attestation["warning_escalations"].append(
+            {
+                "check_id": "P0-test-hard-stop",
+                "reviewed_by": "Eligibility test reviewer",
+                "review_date": "2026-07-17",
+                "rationale": "Attempted escalation must not work.",
+            }
+        )
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=attestation,
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-data-hard-stops", result["ineligible_check_ids"])
+
+    def test_unsupported_contract_schema_blocks_gate4(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["schema_version"] = "999.0.0"
+        self.rehash(contract)
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-contract-version", result["ineligible_check_ids"])
+
+    def test_modified_contract_with_stale_hash_blocks_gate4(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["action_view"] = "Modified after validation"
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-contract-hash", result["ineligible_check_ids"])
+
+    def test_stored_pass_cannot_bypass_current_contract_validation(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract.pop("investment_question")
+        self.rehash(contract)
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn("G4E-contract-validation", result["ineligible_check_ids"])
+        self.assertTrue(result["contract_validation_errors"])
+
+    def test_expired_probability_blocks_even_when_probabilities_are_optional(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["probability_validation"]["expiration_review_date"] = "2026-07-16"
+        self.rehash(contract)
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
+
+    def test_probability_without_review_expiration_blocks_as_stale(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["probability_validation"]["expiration_review_date"] = None
+        self.rehash(contract)
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
+
+    def test_unknown_probability_freshness_blocks_as_stale(self) -> None:
+        contract = copy.deepcopy(self.contract)
+        contract["probability_validation"]["freshness_status"] = None
+        self.rehash(contract)
+        result = assess_gate3_for_gate4(
+            contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
+
+    def test_invalid_reviewer_timestamp_blocks_as_stale(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(reviewed_at="not-a-date"),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-freshness-attestation", result["stale_check_ids"])
+
+    def test_attestation_cannot_predate_gate3_report(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(max_report_age_days=30),
+            freshness_attestation=self.attestation(
+                reviewed_at="2026-07-16T12:00:00Z",
+            ),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+        self.assertIn("G4E-attestation-chronology", result["stale_check_ids"])
+
+
+class Gate4OverlayContractTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.contract_path = (
+            TEST_DIR.parent
+            / "friday_v1_outputs"
+            / "crox_crocs_inc"
+            / "step3"
+            / "underwriting_output_contract.json"
+        )
+        cls.contract = json.loads(cls.contract_path.read_text(encoding="utf-8"))
+
+    def test_loader_accepts_only_shared_gate3_contract(self) -> None:
+        contract, resolved = load_gate3_contract(self.contract_path.parent)
+        self.assertEqual(resolved, self.contract_path)
+        self.assertEqual(contract["contract_hash"], self.contract["contract_hash"])
+        with self.assertRaises(FileNotFoundError):
+            load_gate3_contract(Path("CROX"))
+        with self.assertRaises(ValueError):
+            load_gate3_contract(self.contract_path.parent / "step3_data.json")
+
+    def test_stale_gate3_suppresses_return_inputs(self) -> None:
+        overlay = {
+            "internal_expected_return": "25%",
+            "internal_bear_case": "-15%",
+            "internal_bull_case": "40%",
+        }
+        returns = return_pack(self.contract, overlay, gate3_eligible=False)
+        self.assertIsNone(returns["expected_return"])
+        self.assertIsNone(returns["bear_case"])
+        self.assertIsNone(returns["bull_case"])
+        self.assertTrue(returns["suppressed_for_gate3_ineligibility"])
+
+    def test_legacy_approved_fields_cannot_unlock_gate4_before_s03(self) -> None:
+        policy = {
+            "max_report_age_days": 2,
+            "max_financial_data_age_days": 150,
+            "max_market_data_age_days": 5,
+            "max_public_source_check_lag_days": 1,
+            "eligible_valuation_statuses": ["RANGE_ONLY"],
+            "require_validated_probabilities": False,
+            "allow_warning_escalation": True,
+        }
+        warning_ids = [
+            "G3-probability-validation",
+            "G3-peer-valuation-context",
+            "G3-probability-methodology",
+        ]
+        attestation = {
+            "as_of_date": "2026-07-17",
+            "latest_earnings_checked_through": "2026-07-17",
+            "latest_known_financial_filing_date": "2026-04-30",
+            "newer_earnings_filing_known": False,
+            "subsequent_events_checked_through": "2026-07-17",
+            "unreviewed_material_subsequent_event_known": False,
+            "reviewed_by": "Synthetic test reviewer",
+            "reviewed_at": "2026-07-17T12:00:00Z",
+            "warning_escalations": [
+                {
+                    "check_id": warning_id,
+                    "reviewed_by": "Synthetic test reviewer",
+                    "review_date": "2026-07-17",
+                    "rationale": "Accepted for the fail-closed interface test.",
+                }
+                for warning_id in warning_ids
+            ],
+        }
+        overlay = {
+            "overlay_mode": "REAL_PARTNER_INPUT",
+            "input_status": "VALIDATED",
+            "reviewed_by": "Synthetic test reviewer",
+            "internal_expected_return": "30%",
+            "internal_bear_case": "-10%",
+            "internal_bull_case": "50%",
+            "target_return_hurdle": "20%",
+            "max_bear_case_downside": "-20%",
+            "internal_variant_view": "Synthetic differentiated view",
+            "internal_conviction": "High",
+            "catalyst_quality": "High",
+            "existing_exposure": "none",
+            "opportunity_cost_view": "better",
+            "max_position_size": "5%",
+            "human_approval": "APPROVED",
+            "approved_by": "Synthetic approver",
+            "approved_portfolio_action": "Buy",
+            "approved_position_range": "1%-2%",
+        }
+        eligibility = assess_gate3_for_gate4(
+            self.contract,
+            policy=policy,
+            freshness_attestation=attestation,
+        )
+        returns = return_pack(self.contract, overlay, gate3_eligible=True)
+        gates = overlay_gates(self.contract, overlay, returns, eligibility)
+        action, sizing, _, _ = choose_overlay_action(gates, overlay, returns)
+        gate_map = {gate.gate_id: gate for gate in gates}
+
+        self.assertEqual(eligibility["status"], "GATE_4_PRIVATE_INPUTS_REQUIRED")
+        self.assertEqual(gate_map["O2-overlay-mode"].result, "BLOCKED")
+        self.assertEqual(action, "Not Evaluated")
+        self.assertEqual(sizing, "No position sizing")
+
+    def test_build_overlay_does_not_rebuild_or_modify_gate3_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            step3_dir = Path(tmp) / "step3"
+            step3_dir.mkdir()
+            copied_contract = step3_dir / "underwriting_output_contract.json"
+            original_bytes = self.contract_path.read_bytes()
+            copied_contract.write_bytes(original_bytes)
+            overlay_path = Path(tmp) / "overlay.json"
+            overlay_path.write_text(
+                json.dumps(
+                    {
+                        "overlay_mode": "ILLUSTRATIVE_DEMO_NOT_FUND_DATA",
+                        "gate3_eligibility_policy": {
+                            "max_report_age_days": 30,
+                            "max_financial_data_age_days": 180,
+                            "max_market_data_age_days": 5,
+                            "max_public_source_check_lag_days": 1,
+                            "eligible_valuation_statuses": ["RANGE_ONLY"],
+                            "require_validated_probabilities": False,
+                            "allow_warning_escalation": True,
+                        },
+                        "gate3_freshness_attestation": {
+                            "as_of_date": "2026-07-28",
+                            "latest_earnings_checked_through": "2026-07-28",
+                            "latest_known_financial_filing_date": "2026-04-30",
+                            "newer_earnings_filing_known": False,
+                            "subsequent_events_checked_through": "2026-07-28",
+                            "unreviewed_material_subsequent_event_known": False,
+                            "reviewed_by": "Synthetic test reviewer",
+                            "reviewed_at": "2026-07-28T12:00:00Z",
+                            "warning_escalations": [
+                                {
+                                    "check_id": warning_id,
+                                    "reviewed_by": "Synthetic test reviewer",
+                                    "review_date": "2026-07-28",
+                                    "rationale": "Accepted only to isolate the stale-contract control.",
+                                }
+                                for warning_id in [
+                                    "G3-probability-validation",
+                                    "G3-peer-valuation-context",
+                                    "G3-probability-methodology",
+                                ]
+                            ],
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            output_dir = build_overlay(step3_dir, overlay_path)
+            eligibility = json.loads(
+                (output_dir / "gate4_gate3_eligibility.json").read_text(encoding="utf-8")
+            )
+            overlay_output = json.loads(
+                (output_dir / "portfolio_overlay_demo.json").read_text(encoding="utf-8")
+            )
+
+            self.assertEqual(copied_contract.read_bytes(), original_bytes)
+            self.assertEqual(eligibility["status"], "GATE_4_BLOCKED_STALE_GATE_3")
+            self.assertIn("G4E-market-data-age", eligibility["stale_check_ids"])
+            self.assertEqual(overlay_output["gate4_status"], "GATE_4_BLOCKED_STALE_GATE_3")
+            self.assertEqual(overlay_output["overlay_action_view"], "Not Evaluated")
+            self.assertTrue(overlay_output["returns"]["suppressed_for_gate3_ineligibility"])
+            self.assertIsNone(overlay_output["returns"]["expected_return"])
+            self.assertIsNone(overlay_output["public_expected_return"])
 
 
 class SupportedUniverseTests(unittest.TestCase):

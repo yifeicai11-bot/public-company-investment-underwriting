@@ -112,9 +112,11 @@ Use `external_evidence` for public facts that are not already extracted from SEC
 
 When partner/fund-specific context is available, run the Step 4 portfolio overlay:
 
-`partner-demo/investment_decision_v2/scripts/build_partner_portfolio_overlay.py "<ticker or company name>" --overlay "<overlay json or csv>"`
+`partner-demo/investment_decision_v2/scripts/build_partner_portfolio_overlay.py "<path to underwriting_output_contract.json or its Step 3 directory>" --overlay "<overlay json>"`
 
-The overlay may run only after Gate 3. It combines validated underwriting with target return, downside tolerance, holding period, exposure, limits, opportunity cost, and partner-owned assumptions. Illustrative data can demonstrate the template but cannot unlock Gate 4. Portfolio action and position range may appear only when explicitly human-approved and must never trigger a trade.
+Gate 4 accepts only the immutable shared `underwriting_output_contract.json`; ticker-only input and legacy `step3_data.json` are prohibited because Gate 4 must not rebuild or overwrite issuer analysis. Before any portfolio calculation, validate the contract version and hash, Data Gate, report/financial/market dates, latest filing, subsequent-event review, probability freshness, valuation eligibility, Hard Stops, and unresolved issuer warnings. Age limits, eligible valuation statuses, probability requirements, and warning-escalation rules must be supplied explicitly; do not invent defaults.
+
+If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. An eligible Gate 3 contract with no private inputs returns `GATE_4_PRIVATE_INPUTS_REQUIRED`. Illustrative data can demonstrate the interface but cannot unlock Gate 4. Portfolio action and position range may appear only when explicitly human-approved and must never trigger a trade.
 
 Do not tune the Step 3 builder to a single regression company. PFGC may be used to catch regressions, but the rules must remain company-agnostic and usable for any SEC-reporting public company resolved from a ticker or company name.
 

@@ -138,6 +138,33 @@ Formal probability validation requires a declared method type, method-specific d
 
 Require target return, downside tolerance, horizon, liquidity, limits, existing exposure, opportunity cost, partner-owned assumptions, and explicit human approval. Display only the approved position range and portfolio action. Never place a trade.
 
+#### Gate 4 Entry Contract and Freshness
+
+Gate 4 must consume the exact shared `underwriting_output_contract.json` produced at Gate 3. It must not accept ticker-only input, rebuild issuer analysis, read legacy `step3_data.json`, change issuer conclusions, or overwrite the Gate 3 contract.
+
+Before reading private portfolio inputs, the shared eligibility engine must verify:
+
+- supported Gate 3 schema version
+- canonical contract hash and contract-validation status
+- Data Gate 3 or above
+- no active Data Integrity Hard Stop
+- report, financial-statement, market-price, and latest-filing dates
+- explicit maximum ages for report, financial, market, and public-source checks
+- a dated reviewer-owned attestation that no newer earnings filing or unreviewed material subsequent event is known
+- valuation status against an explicit list of eligible statuses
+- probability status, as-of date, expiration review date, freshness, and approval when formal probabilities are required
+- every active issuer-level Warning is resolved or covered by an allowed, dated, reviewer-owned escalation
+
+The eligibility policy must explicitly provide age thresholds, eligible valuation statuses, whether validated probabilities are required, and whether Warning escalation is allowed. The engine must not supply hidden defaults. A `RANGE_ONLY` valuation is eligible only when the policy explicitly permits it.
+
+Use:
+
+- `GATE_4_PRIVATE_INPUTS_REQUIRED` when Gate 3 is eligible but private inputs are not yet available.
+- `GATE_4_BLOCKED_STALE_GATE_3` when dates, filings, subsequent events, or probability freshness require a Gate 3 update.
+- `GATE_4_BLOCKED_INELIGIBLE_GATE_3` when the contract version/hash, validation, Data Gate, valuation policy, Hard Stops, or Warning governance fails.
+
+When Gate 3 is stale or ineligible, suppress Gate 4 return, risk, sizing, and action calculations. A diagnostic may identify the contract and blocking checks, but it must not silently reuse stale scenario values. Hard Stops can never be escalated.
+
 ## Decision Confidence
 
 Keep Decision Confidence separate from Data Gate.
@@ -225,7 +252,7 @@ One-Page and Full Report must consume the same versioned object. Required fields
 - catalysts, thesis breaks, decision rules
 - evidence records, source registry, Hard Stops, and Warnings
 
-Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless all return-context fields are validated. Formal probability-weighted output remains null unless probability governance and the return context both pass. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated.
+Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless all return-context fields are validated. Formal probability-weighted output remains null unless probability governance and the return context both pass. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated. A stale or ineligible Gate 3 contract must also suppress all Gate 4 calculations.
 
 ## Required Testing
 

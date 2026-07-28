@@ -105,6 +105,7 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Data and Evidence | [`build_public_company_decision_pack.py`](partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
 | Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
 | Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
+| Gate 4 Entry | [`build_partner_portfolio_overlay.py`](partner-demo/investment_decision_v2/scripts/build_partner_portfolio_overlay.py) | Immutable Gate 3 intake, freshness and eligibility checks, and portfolio-calculation suppression |
 | Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
 | Independent QA | [`validate_friday_v1_delivery.py`](partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py) | Reproduces market cap, FCF bridge, reverse valuation, scenarios, dates, contract identity, and output boundaries |
 
@@ -120,6 +121,29 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | 4 | Fund inputs validated and human-approved | Approved portfolio overlay and position range |
 
 The system never places a trade. Gate 4 requires real fund constraints and explicit human approval.
+
+### Gate 4 Entry Check / Gate 4 接入检查
+
+Gate 4 does not accept a ticker and does not rebuild issuer analysis. It consumes the exact
+`underwriting_output_contract.json` produced by Gate 3:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/build_partner_portfolio_overlay.py \
+  path/to/step3/underwriting_output_contract.json \
+  --overlay path/to/local_overlay.json
+```
+
+The overlay JSON must explicitly contain `gate3_eligibility_policy` and
+`gate3_freshness_attestation`. No age threshold, valuation-eligibility rule, probability
+requirement, or Warning-escalation rule is assumed. The entry check validates contract identity
+and hash, Data Gate, report/financial/market dates, latest filing, subsequent events,
+probability freshness, valuation status, Hard Stops, and issuer Warnings.
+
+过期或不合资格的 Gate 3 会返回 `GATE_4_BLOCKED_STALE_GATE_3` 或
+`GATE_4_BLOCKED_INELIGIBLE_GATE_3`，并压制所有 Gate 4 回报、风险、仓位和行动计算。
+合资格但尚无私有组合输入时返回 `GATE_4_PRIVATE_INPUTS_REQUIRED`。空白模板、合成示例及
+仓位/政策 schema 将在下一开发阶段加入；当前接口不会虚构任何基金参数，也不会因为旧版
+overlay 字段被手工标记为 `VALIDATED` 或 `APPROVED` 而提前生成组合行动或仓位。
 
 ## Run Locally / 本地运行
 
@@ -176,7 +200,7 @@ python3 -m unittest discover \
 
 ## Current Validation / 当前验证
 
-- 38 shared accounting, evidence, market-data, gate, scenario, and rendering tests passed locally.
+- 59 shared accounting, evidence, market-data, gate, scenario, rendering, and Gate 4 entry tests passed locally.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - AutoZone: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - Both One-Page PDFs are one A4 page; both Full Reports are 11 A4 pages and were visually reviewed after page rendering.

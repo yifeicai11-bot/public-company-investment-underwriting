@@ -18,6 +18,8 @@ from typing import Any, Iterable
 
 SCHEMA_VERSION = "5.0.0"
 SUPPORTED_UNIVERSE_VERSION = "1.0.0"
+GATE4_ELIGIBILITY_CONTRACT_VERSION = "1.0.0"
+SUPPORTED_GATE3_SCHEMA_VERSIONS = {SCHEMA_VERSION}
 
 EVIDENCE_CLASSES = {"FACT", "CALC", "INFERENCE", "JUDGMENT", "MISSING"}
 CONFIDENCE_LEVELS = {"High", "Medium", "Low"}
@@ -75,6 +77,12 @@ KNOWN_SUBSEQUENT_EVENT_STATUSES = {
     "REVIEWED_CHANGE_REFLECTED",
     "REVIEWED_CHANGE_NOT_INCORPORATED",
 }
+GATE4_GATE3_ELIGIBILITY_STATUSES = {
+    "GATE_4_PRIVATE_INPUTS_REQUIRED",
+    "GATE_4_BLOCKED_STALE_GATE_3",
+    "GATE_4_BLOCKED_INELIGIBLE_GATE_3",
+}
+GATE4_ELIGIBILITY_CHECK_STATUSES = {"PASS", "BLOCKED", "ESCALATED", "NOT_APPLICABLE"}
 
 PROBABILITY_METHOD_REQUIRED_DETAILS: dict[str, set[str]] = {
     "HISTORICAL_FREQUENCY": {"reference_class", "sample_period", "sample_size", "event_definition"},
@@ -176,6 +184,20 @@ class ValidationIssue:
     remediation: str
     evidence_ids: list[str] = field(default_factory=list)
     scope: str = "system"
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class Gate4EligibilityCheck:
+    check_id: str
+    category: str
+    status: str
+    blocking_class: str
+    detail: str
+    decision_impact: str
+    remediation: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -364,6 +386,557 @@ def active_warnings(issues: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
         if issue.get("issue_class") == "WARNING"
         and issue.get("status") in {"WARNING", "MISSING", "PROVISIONAL", "FAIL", "BLOCKED"}
     ]
+
+
+def parse_iso_date(value: Any) -> date | None:
+    if value is None or value == "":
+        return None
+    text = str(value).strip()
+    try:
+        return date.fromisoformat(text[:10])
+    except ValueError:
+        return None
+
+
+def assess_gate3_for_gate4(
+    contract: dict[str, Any],
+    *,
+    policy: dict[str, Any] | None,
+    freshness_attestation: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Assess whether an immutable Gate 3 contract may enter Gate 4.
+
+    The caller must provide explicit age limits and a public-data freshness
+    attestation. This function never refreshes issuer data, invents a policy
+    default, or treats a Data Integrity Hard Stop as an escalation.
+    """
+
+    policy = dict(policy or {})
+    attestation = dict(freshness_attestation or {})
+    checks: list[Gate4EligibilityCheck] = []
+
+    def is_missing(value: Any) -> bool:
+        return value is None or value == ""
+
+    def add(
+        check_id: str,
+        category: str,
+        status: str,
+        blocking_class: str,
+        detail: str,
+        decision_impact: str,
+        remediation: str,
+    ) -> None:
+        checks.append(
+            Gate4EligibilityCheck(
+                check_id=check_id,
+                category=category,
+                status=status,
+                blocking_class=blocking_class,
+                detail=detail,
+                decision_impact=decision_impact,
+                remediation=remediation,
+            )
+        )
+
+    schema_version = str(contract.get("schema_version") or "")
+    add(
+        "G4E-contract-version",
+        "contract",
+        "PASS" if schema_version in SUPPORTED_GATE3_SCHEMA_VERSIONS else "BLOCKED",
+        "" if schema_version in SUPPORTED_GATE3_SCHEMA_VERSIONS else "INELIGIBLE",
+        f"schema_version={schema_version or 'missing'}; supported={sorted(SUPPORTED_GATE3_SCHEMA_VERSIONS)}",
+        "Gate 4 must consume a supported, versioned Gate 3 contract.",
+        "Rebuild or migrate the issuer contract with a supported shared schema.",
+    )
+
+    try:
+        current_contract_errors = validate_output_contract(contract)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        current_contract_errors = [f"Contract validator could not parse the object: {exc}"]
+    stored_validation_status = contract.get("contract_validation", {}).get("status")
+    contract_valid = stored_validation_status == "PASS" and not current_contract_errors
+    add(
+        "G4E-contract-validation",
+        "contract",
+        "PASS" if contract_valid else "BLOCKED",
+        "" if contract_valid else "INELIGIBLE",
+        (
+            f"stored_status={stored_validation_status or 'missing'}; "
+            f"current_error_count={len(current_contract_errors)}"
+        ),
+        "An invalid shared contract cannot support a portfolio assessment.",
+        "Resolve shared contract validation errors before Gate 4.",
+    )
+
+    stored_contract_hash = str(contract.get("contract_hash") or "")
+    hash_input = {
+        key: value
+        for key, value in contract.items()
+        if key not in {"contract_hash", "contract_validation"}
+    }
+    calculated_contract_hash = hashlib.sha256(
+        canonical_json(hash_input).encode("utf-8")
+    ).hexdigest()
+    contract_hash_valid = bool(stored_contract_hash) and stored_contract_hash == calculated_contract_hash
+    add(
+        "G4E-contract-hash",
+        "contract",
+        "PASS" if contract_hash_valid else "BLOCKED",
+        "" if contract_hash_valid else "INELIGIBLE",
+        (
+            f"stored_hash={stored_contract_hash or 'missing'}; "
+            f"calculated_hash={calculated_contract_hash}"
+        ),
+        "Gate 4 must consume the exact validated Gate 3 object, not a modified copy with stale validation metadata.",
+        "Rebuild and independently validate the Gate 3 contract before Gate 4.",
+    )
+
+    gate_level = contract.get("data_gate", {}).get("level")
+    try:
+        gate3_or_above = float(gate_level) >= 3
+    except (TypeError, ValueError):
+        gate3_or_above = False
+    add(
+        "G4E-data-gate",
+        "contract",
+        "PASS" if gate3_or_above else "BLOCKED",
+        "" if gate3_or_above else "INELIGIBLE",
+        f"data_gate={gate_level}",
+        "Issuer underwriting, valuation, and scenario prices must reach Gate 3 before portfolio use.",
+        "Complete and validate Gate 3 first.",
+    )
+
+    issue_rows = list(contract.get("validation_issues", []))
+    hard_stops = list(contract.get("hard_stops", []))
+    known_hard_stop_ids = {
+        str(row.get("check_id") or row.get("id") or "")
+        for row in hard_stops + active_hard_stops(issue_rows)
+        if row.get("check_id") or row.get("id")
+    }
+    add(
+        "G4E-data-hard-stops",
+        "data_integrity",
+        "PASS" if not known_hard_stop_ids else "BLOCKED",
+        "" if not known_hard_stop_ids else "INELIGIBLE",
+        f"active_hard_stop_ids={sorted(known_hard_stop_ids)}",
+        "Data Integrity Hard Stops cannot be escalated into Gate 4.",
+        "Correct and revalidate every active Hard Stop; escalation is not permitted.",
+    )
+
+    required_policy_fields = {
+        "max_report_age_days",
+        "max_financial_data_age_days",
+        "max_market_data_age_days",
+        "max_public_source_check_lag_days",
+        "eligible_valuation_statuses",
+        "require_validated_probabilities",
+        "allow_warning_escalation",
+    }
+    missing_policy_fields = sorted(
+        field for field in required_policy_fields if field not in policy or is_missing(policy.get(field))
+    )
+    numeric_policy_fields = (
+        "max_report_age_days",
+        "max_financial_data_age_days",
+        "max_market_data_age_days",
+        "max_public_source_check_lag_days",
+    )
+    invalid_numeric_policy_fields: list[str] = []
+    for field in numeric_policy_fields:
+        if field not in policy or is_missing(policy.get(field)):
+            continue
+        try:
+            if isinstance(policy[field], bool) or int(policy[field]) < 0:
+                invalid_numeric_policy_fields.append(field)
+        except (TypeError, ValueError):
+            invalid_numeric_policy_fields.append(field)
+    eligible_valuation_statuses = policy.get("eligible_valuation_statuses")
+    policy_types_valid = (
+        isinstance(eligible_valuation_statuses, list)
+        and bool(eligible_valuation_statuses)
+        and set(eligible_valuation_statuses).issubset(VALUATION_SCOPE_STATUSES)
+        and isinstance(policy.get("require_validated_probabilities"), bool)
+        and isinstance(policy.get("allow_warning_escalation"), bool)
+    )
+    policy_complete = not missing_policy_fields and not invalid_numeric_policy_fields and policy_types_valid
+    add(
+        "G4E-policy-completeness",
+        "policy",
+        "PASS" if policy_complete else "BLOCKED",
+        "" if policy_complete else "INELIGIBLE",
+        (
+            f"missing={missing_policy_fields}; invalid_numeric={invalid_numeric_policy_fields}; "
+            f"types_valid={policy_types_valid}"
+        ),
+        "Gate 4 cannot invent age limits, valuation eligibility, probability requirements, or escalation rules.",
+        "Complete the Gate 4 eligibility policy with explicit, reviewed values.",
+    )
+
+    required_attestation_fields = {
+        "as_of_date",
+        "latest_earnings_checked_through",
+        "latest_known_financial_filing_date",
+        "newer_earnings_filing_known",
+        "subsequent_events_checked_through",
+        "unreviewed_material_subsequent_event_known",
+        "reviewed_by",
+        "reviewed_at",
+    }
+    missing_attestation_fields = sorted(
+        field
+        for field in required_attestation_fields
+        if field not in attestation or is_missing(attestation.get(field))
+    )
+    attestation_as_of_date = parse_iso_date(attestation.get("as_of_date"))
+    reviewed_at_date = parse_iso_date(attestation.get("reviewed_at"))
+    attestation_boolean_types_valid = (
+        isinstance(attestation.get("newer_earnings_filing_known"), bool)
+        and isinstance(attestation.get("unreviewed_material_subsequent_event_known"), bool)
+    )
+    attestation_dates_valid = (
+        attestation_as_of_date is not None
+        and reviewed_at_date is not None
+        and reviewed_at_date <= attestation_as_of_date
+    )
+    attestation_complete = (
+        not missing_attestation_fields
+        and attestation_boolean_types_valid
+        and attestation_dates_valid
+    )
+    add(
+        "G4E-freshness-attestation",
+        "freshness",
+        "PASS" if attestation_complete else "BLOCKED",
+        "" if attestation_complete else "STALE",
+        (
+            f"missing={missing_attestation_fields}; "
+            f"boolean_types_valid={attestation_boolean_types_valid}; "
+            f"dates_valid={attestation_dates_valid}"
+        ),
+        "Gate 4 requires a dated, reviewer-owned check for newer earnings and material events.",
+        "Refresh public-source checks and record the reviewer, dates, and explicit event answers.",
+    )
+
+    as_of_date = attestation_as_of_date
+    report_dates = contract.get("report_dates", {})
+    report_date = parse_iso_date(report_dates.get("analysis_generated_at"))
+    financial_date = parse_iso_date(report_dates.get("financial_statement_date"))
+    market_date = parse_iso_date(report_dates.get("market_price_date"))
+    contract_date_fields_present = all((report_date, financial_date, market_date))
+    add(
+        "G4E-required-report-dates",
+        "freshness",
+        "PASS" if contract_date_fields_present else "BLOCKED",
+        "" if contract_date_fields_present else "INELIGIBLE",
+        (
+            f"report={report_dates.get('analysis_generated_at')}; "
+            f"financial={report_dates.get('financial_statement_date')}; "
+            f"market={report_dates.get('market_price_date')}"
+        ),
+        "Report, financial-data, and market-data dates are required for freshness controls.",
+        "Rebuild the Gate 3 contract with complete report dates.",
+    )
+
+    attestation_after_report = (
+        report_date is not None
+        and reviewed_at_date is not None
+        and reviewed_at_date >= report_date
+    )
+    add(
+        "G4E-attestation-chronology",
+        "freshness",
+        "PASS" if attestation_after_report else "BLOCKED",
+        "" if attestation_after_report else "STALE",
+        f"report_date={report_date}; attestation_reviewed_at={reviewed_at_date}",
+        "A Gate 4 freshness attestation cannot predate the Gate 3 report it reviews.",
+        "Repeat the freshness review after the Gate 3 contract is generated.",
+    )
+
+    def age_check(
+        check_id: str,
+        label: str,
+        source_date: date | None,
+        threshold_field: str,
+    ) -> None:
+        threshold = policy.get(threshold_field)
+        if not as_of_date or not source_date or threshold is None:
+            add(
+                check_id,
+                "freshness",
+                "BLOCKED",
+                "STALE",
+                f"{label}_date={source_date}; as_of_date={as_of_date}; {threshold_field}={threshold}",
+                f"{label} freshness cannot be established.",
+                "Provide valid dates and an explicit nonnegative age limit.",
+            )
+            return
+        try:
+            max_age = int(threshold)
+        except (TypeError, ValueError):
+            max_age = -1
+        age_days = (as_of_date - source_date).days
+        passed = 0 <= age_days <= max_age
+        add(
+            check_id,
+            "freshness",
+            "PASS" if passed else "BLOCKED",
+            "" if passed else "STALE",
+            f"{label}_date={source_date}; as_of_date={as_of_date}; age_days={age_days}; max_age_days={max_age}",
+            f"Stale or future-dated {label} cannot be used silently in Gate 4.",
+            f"Refresh the {label} and rebuild or re-attest Gate 3 before portfolio assessment.",
+        )
+
+    age_check("G4E-report-age", "report", report_date, "max_report_age_days")
+    age_check("G4E-financial-data-age", "financial_data", financial_date, "max_financial_data_age_days")
+    age_check("G4E-market-data-age", "market_data", market_date, "max_market_data_age_days")
+
+    max_check_lag = policy.get("max_public_source_check_lag_days")
+    earnings_checked = parse_iso_date(attestation.get("latest_earnings_checked_through"))
+    events_checked = parse_iso_date(attestation.get("subsequent_events_checked_through"))
+
+    def public_check_lag(
+        check_id: str,
+        label: str,
+        checked_through: date | None,
+    ) -> None:
+        if not as_of_date or not checked_through or max_check_lag is None:
+            passed = False
+            lag_days = None
+            max_lag = None
+        else:
+            try:
+                max_lag = int(max_check_lag)
+            except (TypeError, ValueError):
+                max_lag = -1
+            lag_days = (as_of_date - checked_through).days
+            passed = 0 <= lag_days <= max_lag
+        add(
+            check_id,
+            "freshness",
+            "PASS" if passed else "BLOCKED",
+            "" if passed else "STALE",
+            f"{label}_checked_through={checked_through}; as_of_date={as_of_date}; lag_days={lag_days}; max_lag_days={max_lag}",
+            f"The {label} review must be current enough for Gate 4.",
+            f"Refresh the {label} review and update the attestation.",
+        )
+
+    public_check_lag("G4E-earnings-check-lag", "earnings", earnings_checked)
+    public_check_lag("G4E-subsequent-event-check-lag", "subsequent_events", events_checked)
+
+    newer_earnings_known = attestation.get("newer_earnings_filing_known")
+    latest_known_filing = parse_iso_date(attestation.get("latest_known_financial_filing_date"))
+    contract_filing = parse_iso_date(report_dates.get("latest_financial_filing_date"))
+    filing_date_consistent = (
+        newer_earnings_known is False
+        and latest_known_filing is not None
+        and contract_filing is not None
+        and latest_known_filing == contract_filing
+    )
+    add(
+        "G4E-newer-earnings",
+        "freshness",
+        "PASS" if filing_date_consistent else "BLOCKED",
+        "" if filing_date_consistent else "STALE",
+        (
+            f"newer_earnings_filing_known={newer_earnings_known}; "
+            f"latest_known_filing={latest_known_filing}; contract_filing={contract_filing}"
+        ),
+        "A known newer earnings filing makes the current Gate 3 contract stale.",
+        "Rebuild Gate 3 from the newer filing before portfolio assessment.",
+    )
+
+    unreviewed_event_known = attestation.get("unreviewed_material_subsequent_event_known")
+    add(
+        "G4E-unreviewed-material-event",
+        "freshness",
+        "PASS" if unreviewed_event_known is False else "BLOCKED",
+        "" if unreviewed_event_known is False else "STALE",
+        f"unreviewed_material_subsequent_event_known={unreviewed_event_known}",
+        "A known unreviewed material event can invalidate the issuer and valuation view.",
+        "Review and incorporate the event in Gate 3 before portfolio assessment.",
+    )
+
+    valuation_status = contract.get("valuation_status", {}).get("status")
+    valuation_eligible = (
+        isinstance(eligible_valuation_statuses, list)
+        and valuation_status in eligible_valuation_statuses
+    )
+    add(
+        "G4E-valuation-eligibility",
+        "valuation",
+        "PASS" if valuation_eligible else "BLOCKED",
+        "" if valuation_eligible else "INELIGIBLE",
+        f"valuation_status={valuation_status}; eligible={eligible_valuation_statuses}",
+        "Gate 4 may use only valuation states explicitly allowed by the reviewed policy.",
+        "Complete the required valuation work or revise the policy through human review.",
+    )
+
+    probability = contract.get("probability_validation", {})
+    probability_status = probability.get("status")
+    probability_freshness = probability.get("freshness_status")
+    probability_as_of_date = parse_iso_date(probability.get("as_of_date"))
+    probability_expiration = parse_iso_date(probability.get("expiration_review_date"))
+    probability_not_provided = probability_status == "NOT_PROVIDED"
+    probability_dates_missing = (
+        not probability_not_provided
+        and (probability_as_of_date is None or probability_expiration is None)
+    )
+    probability_dates_invalid = (
+        not probability_not_provided
+        and probability_as_of_date is not None
+        and probability_expiration is not None
+        and (
+            probability_as_of_date > probability_expiration
+            or (as_of_date is not None and probability_as_of_date > as_of_date)
+        )
+    )
+    probability_freshness_unknown = (
+        not probability_not_provided
+        and probability_freshness not in {"CURRENT", "EXPIRING_SOON", "STALE", "SUPERSEDED"}
+    )
+    probability_expired = (
+        probability_status == "STALE"
+        or probability_freshness in {"STALE", "SUPERSEDED"}
+        or (
+            as_of_date is not None
+            and probability_expiration is not None
+            and probability_expiration < as_of_date
+        )
+    )
+    probability_required = policy.get("require_validated_probabilities")
+    probability_validated = (
+        probability_status == "VALIDATED"
+        and probability_freshness in {"CURRENT", "EXPIRING_SOON"}
+        and not probability_expired
+        and probability.get("approval", {}).get("status") == "APPROVED"
+    )
+    if probability_not_provided and probability_required is False:
+        probability_check_status = "NOT_APPLICABLE"
+        probability_blocking_class = ""
+    elif probability_status == "INVALID" or probability_dates_invalid:
+        probability_check_status = "BLOCKED"
+        probability_blocking_class = "INELIGIBLE"
+    elif probability_dates_missing:
+        probability_check_status = "BLOCKED"
+        probability_blocking_class = "STALE"
+    elif probability_freshness_unknown:
+        probability_check_status = "BLOCKED"
+        probability_blocking_class = "STALE"
+    elif probability_expired:
+        probability_check_status = "BLOCKED"
+        probability_blocking_class = "STALE"
+    elif probability_required is True and not probability_validated:
+        probability_check_status = "BLOCKED"
+        probability_blocking_class = "INELIGIBLE"
+    else:
+        probability_check_status = "PASS"
+        probability_blocking_class = ""
+    add(
+        "G4E-probability-freshness",
+        "probability",
+        probability_check_status,
+        probability_blocking_class,
+        (
+            f"required={probability_required}; status={probability_status}; "
+            f"freshness={probability_freshness}; as_of={probability_as_of_date}; "
+            f"expiration={probability_expiration}"
+        ),
+        "Expired probabilities cannot enter Gate 4; validated probabilities are required only when policy says so.",
+        "Refresh, validate, and approve probabilities, or mark them not required under the reviewed policy.",
+    )
+
+    warning_rows = active_warnings(issue_rows) + active_warnings(contract.get("warnings", []))
+    issuer_warning_map: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in warning_rows:
+        if row.get("category") == "portfolio":
+            continue
+        key = (str(row.get("check_id") or ""), str(row.get("category") or ""))
+        issuer_warning_map.setdefault(key, row)
+    issuer_warnings = list(issuer_warning_map.values())
+    escalations = {
+        str(row.get("check_id")): row
+        for row in attestation.get("warning_escalations", [])
+        if isinstance(row, dict) and row.get("check_id")
+    }
+    allow_escalation = policy.get("allow_warning_escalation") is True
+    escalated_warning_ids: set[str] = set()
+    for warning in issuer_warnings:
+        warning_id = str(warning.get("check_id") or "")
+        escalation = escalations.get(warning_id, {})
+        escalation_date = parse_iso_date(escalation.get("review_date"))
+        escalation_valid = (
+            allow_escalation
+            and bool(escalation.get("reviewed_by"))
+            and bool(escalation.get("rationale"))
+            and escalation_date is not None
+            and report_date is not None
+            and escalation_date >= report_date
+            and as_of_date is not None
+            and escalation_date <= as_of_date
+        )
+        if escalation_valid:
+            escalated_warning_ids.add(warning_id)
+        add(
+            f"G4E-warning:{warning_id or 'missing-id'}",
+            "warning_escalation",
+            "ESCALATED" if escalation_valid else "BLOCKED",
+            "" if escalation_valid else "INELIGIBLE",
+            (
+                f"warning={warning_id}; escalation_allowed={allow_escalation}; "
+                f"reviewer={escalation.get('reviewed_by', 'missing')}; review_date={escalation.get('review_date', 'missing')}"
+            ),
+            "Material issuer warnings must be resolved or explicitly escalated before Gate 4.",
+            "Resolve the warning or record a dated reviewer-owned escalation rationale.",
+        )
+
+    invalid_blocks = [
+        check.check_id
+        for check in checks
+        if check.status == "BLOCKED" and check.blocking_class == "INELIGIBLE"
+    ]
+    stale_blocks = [
+        check.check_id
+        for check in checks
+        if check.status == "BLOCKED" and check.blocking_class == "STALE"
+    ]
+    if invalid_blocks:
+        status = "GATE_4_BLOCKED_INELIGIBLE_GATE_3"
+    elif stale_blocks:
+        status = "GATE_4_BLOCKED_STALE_GATE_3"
+    else:
+        status = "GATE_4_PRIVATE_INPUTS_REQUIRED"
+    return {
+        "eligibility_contract_version": GATE4_ELIGIBILITY_CONTRACT_VERSION,
+        "status": status,
+        "eligible": status == "GATE_4_PRIVATE_INPUTS_REQUIRED",
+        "warning_escalation_used": bool(escalated_warning_ids),
+        "evaluated_at": utc_now(),
+        "as_of_date": attestation.get("as_of_date"),
+        "gate3_identity": {
+            "schema_version": contract.get("schema_version"),
+            "report_id": contract.get("report_id"),
+            "contract_hash": contract.get("contract_hash"),
+            "company": contract.get("company"),
+        },
+        "contract_validation_errors": current_contract_errors,
+        "policy": policy,
+        "freshness_attestation": attestation,
+        "blocking_check_ids": invalid_blocks + stale_blocks,
+        "stale_check_ids": stale_blocks,
+        "ineligible_check_ids": invalid_blocks,
+        "escalated_warning_ids": sorted(escalated_warning_ids),
+        "checks": [check.to_dict() for check in checks],
+        "next_action": (
+            "Provide validated private portfolio inputs."
+            if status == "GATE_4_PRIVATE_INPUTS_REQUIRED"
+            else (
+                "Refresh and rebuild or re-attest Gate 3 before Gate 4."
+                if status == "GATE_4_BLOCKED_STALE_GATE_3"
+                else "Resolve Gate 3 eligibility failures before Gate 4."
+            )
+        ),
+    }
 
 
 def determine_data_gate(
