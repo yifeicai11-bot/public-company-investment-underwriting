@@ -19,6 +19,33 @@ The One-Page Summary presents the investment question, public-data view, what is
 
 一页摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。两者来自同一个 validated contract，不独立重算数字或结论。
 
+## Frozen Friday V1 Baseline / 已冻结的 Friday V1 基线
+
+The Partner-submitted Friday V1 is preserved at Git tag `v1.0.0-friday` and commit
+`15b328137d615ca85e84cb997f3acfc2b15ca03b`. The baseline manifest records the
+runtime, contract and renderer versions, source dates, frozen-input hashes,
+submitted-output hashes, rounding rules, and regeneration command.
+
+已提交给 Partner 的 Friday V1 已冻结在 Git tag `v1.0.0-friday`。后续开发不会静默改变该版本；
+基线文件保存了运行环境、contract 和 renderer 版本、来源日期、输入与输出 hash、显示舍入规则和复现命令。
+
+Verify the frozen files without network access:
+
+```bash
+python3 release-baselines/friday-v1/verify_baseline.py
+```
+
+Regenerate CROX and AZO from the frozen contracts and compare HTML, PDF page
+counts, and rendered pixels:
+
+```bash
+python3 release-baselines/friday-v1/verify_baseline.py \
+  --render --pdf --pixel-compare
+```
+
+See [`release-baselines/friday-v1/baseline_manifest.json`](release-baselines/friday-v1/baseline_manifest.json)
+for the authoritative baseline record.
+
 ## Use with Codex / 在 Codex 中使用
 
 GitHub hosts the files but does not run the analysis by itself. Download the entire repository, open the repository root in Codex, replace `[公司名称或股票代码]` in the prompt below, and submit it in the Codex chat. Do not open or install only the `public-firm-credit-liquidity-skill` subfolder because the full analysis engine is stored under `partner-demo/`.
