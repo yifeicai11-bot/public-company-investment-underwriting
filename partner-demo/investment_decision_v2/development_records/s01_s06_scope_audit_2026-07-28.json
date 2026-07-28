@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_scope_audit",
+  "audit_date": "2026-07-28",
+  "branch": "codex/phase-b-cross-company",
+  "purpose": "Preserve the agreed S01-S06 scope and the current implementation status before corrective work resumes.",
+  "implementation_changes_in_this_record": false,
+  "strict_summary": {
+    "fully_accepted": 3,
+    "partial_not_accepted": 2,
+    "wrong_scope_not_accepted": 1,
+    "binary_accepted": 3,
+    "binary_not_accepted": 3
+  },
+  "sessions": [
+    {
+      "session": "S01",
+      "name": "Freeze Friday V1",
+      "required_scope": [
+        "Create the V1 Git tag and baseline manifest.",
+        "Record commit, Python, dependencies, OS, browser, fonts, locale, timezone, rounding, contract and renderer versions, inputs, sources, hashes, and the exact regeneration command.",
+        "Regenerate CROX and AZO from frozen inputs and identify any unexplained material difference."
+      ],
+      "audit_status": "ACCEPTED",
+      "evidence": [
+        "Tag v1.0.0-friday resolves to commit 15b328137d615ca85e84cb997f3acfc2b15ca03b.",
+        "release-baselines/friday-v1/baseline_manifest.json records the required environment and identity fields.",
+        "The full render, PDF, and pixel baseline passed 82 of 82 checks."
+      ],
+      "unresolved": []
+    },
+    {
+      "session": "S02",
+      "name": "Gate 3 Eligibility and Freshness Contract",
+      "required_scope": [
+        "Gate 4 consumes only the standardized immutable Gate 3 contract.",
+        "Validate contract version, report date, financial date, market date, latest filing, subsequent events, probability freshness, valuation status, and issuer warnings.",
+        "Return GATE_4_BLOCKED_STALE_GATE_3 when stale and do not recreate or overwrite issuer analysis."
+      ],
+      "audit_status": "ACCEPTED",
+      "evidence": [
+        "assess_gate3_for_gate4 validates contract identity, hash, gate, dates, filings, events, probabilities, valuation, and warnings.",
+        "Ticker-only and legacy Step 3 input paths are rejected.",
+        "Stale and ineligible Gate 3 contracts suppress Gate 4 calculations."
+      ],
+      "unresolved": []
+    },
+    {
+      "session": "S03",
+      "name": "Private Portfolio Schemas",
+      "required_scope": [
+        "Create policy, exposure, holdings, opportunity-set, and approval schemas.",
+        "Support EXPOSURE_ONLY, AGGREGATED_PORTFOLIO, and FULL_HOLDINGS modes.",
+        "Classify fields as CORE_REQUIRED, CONDITIONAL, OPTIONAL, or REVIEWER_CONFIRMED_NOT_APPLICABLE."
+      ],
+      "audit_status": "PARTIAL_NOT_ACCEPTED",
+      "completed": [
+        "Policy, holdings, opportunity-set, approval, freshness-attestation, and workspace-manifest schemas exist.",
+        "Private-input structural validation, reconciliation, and synthetic examples exist."
+      ],
+      "missing_or_incorrect": [
+        "No independent exposure schema exists.",
+        "The workspace manifest currently requires FULL_PORTFOLIO only.",
+        "EXPOSURE_ONLY and AGGREGATED_PORTFOLIO are not supported.",
+        "The four required field-governance categories are not implemented system-wide."
+      ]
+    },
+    {
+      "session": "S04",
+      "name": "Privacy Controls and Input Diagnostics",
+      "required_scope": [
+        "Use a private workspace outside the repository and separate private output directories.",
+        "Protect Git, logs, caches, temporary files, PDF metadata, diagnostics, and sensitive files.",
+        "Keep private Gate 4 calculations offline by default.",
+        "Return privacy-safe diagnostics for missing, expired, or contradictory inputs without invented defaults."
+      ],
+      "audit_status": "PARTIAL_NOT_ACCEPTED",
+      "completed": [
+        "Repository-external private workspace and separate private output directory are enforced.",
+        "Git, filename, content, notebook, log, cache, temporary-file, symlink, and diagnostic controls exist.",
+        "Private modules prohibit network, telemetry, and logging clients.",
+        "Missing, expired, contradictory, nonfinite, formula, and reconciliation failures produce privacy-safe diagnostics.",
+        "No policy or portfolio default is invented."
+      ],
+      "missing_or_incorrect": [
+        "Private PDF generation is disabled rather than protected by a tested metadata-sanitization pipeline."
+      ]
+    },
+    {
+      "session": "S05",
+      "name": "Reproducible Blind-Test Baseline",
+      "required_scope": [
+        "Freeze the blind-test manifest before the first run.",
+        "Record company, selection date, industry, intended stress characteristics, and the pre-run commit.",
+        "Preserve first-run output, errors, warnings, diagnostics, and do not replace the company after failure."
+      ],
+      "audit_status": "ACCEPTED_WITH_SCOPE_LEAKAGE",
+      "evidence": [
+        "ODFL was selected deterministically and frozen before the first run.",
+        "The first run, stdout, stderr, builder output, warning set, diagnostic, execution context, and artifact hashes are preserved.",
+        "The company was not replaced after defects were found."
+      ],
+      "scope_leakage": [
+        "Shared facility parsing, reconciliation, and working-capital coverage fixes were implemented during S05 even though follow-on Data Layer strengthening belongs under S06."
+      ]
+    },
+    {
+      "session": "S06",
+      "name": "Period, XBRL and Accounting Controls",
+      "required_scope": [
+        "Use first-run failures to strengthen quarter, YTD, FY, LTM, instant versus flow, unit, currency, share count, non-calendar fiscal year, 53-week fiscal year, negative denominator, and missing XBRL-tag controls.",
+        "Place every implementation change only in the shared Data and Evidence Layer."
+      ],
+      "audit_status": "WRONG_SCOPE_NOT_ACCEPTED",
+      "work_incorrectly_labeled_as_s06": [
+        "Cross-industry regression matrix.",
+        "Safe-failure taxonomy.",
+        "AST anti-hardcoding checks.",
+        "Six-company matrix-driven regression."
+      ],
+      "preservation_rule": "The regression-governance work remains useful and should be retained, but it must be relabeled as supplemental Phase B testing governance and must not count as S06 completion.",
+      "actual_s06_gaps": [
+        "No complete S06 implementation record exists.",
+        "Non-calendar and 53-week fiscal-year handling lack dedicated shared-data validation.",
+        "Unit, currency, share-count, and negative-denominator controls are not consistently owned by the shared Data Layer.",
+        "Missing XBRL handling is only partially strengthened.",
+        "The complete S06 requirement set has not been run through dedicated acceptance tests."
+      ]
+    }
+  ],
+  "correction_sequence": [
+    {
+      "order": 1,
+      "session": "S03",
+      "action": "Add the exposure contract, three input modes, and four field-governance categories."
+    },
+    {
+      "order": 2,
+      "session": "S04",
+      "action": "Implement and test private PDF metadata sanitization, or formally revise the accepted requirement if private PDF output remains prohibited."
+    },
+    {
+      "order": 3,
+      "session": "S06",
+      "action": "Implement the complete Period, XBRL and Accounting Controls scope only in the shared Data and Evidence Layer."
+    }
+  ],
+  "resume_instruction": "Resume from S03 corrective work. Do not mark S03, S04, or S06 complete until their missing acceptance requirements and tests pass."
+}
