@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_forward_test_manifest",
+  "phase": "B",
+  "session": "S05",
+  "status": "SELECTED_NOT_RUN",
+  "selection_date": "2026-07-28",
+  "pre_run_commit": "d6e093de0e700819ed514f9929aabb0ef720ca87",
+  "pre_run_shared_logic": {
+    "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py": "7dd4880e7d17ab912469fa70562a92cee672885c",
+    "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py": "ae0736f69bde6b26770149a5bd78d408ce232295",
+    "partner-demo/investment_decision_v2/scripts/underwriting_contract.py": "dfad3a82b96d232914d3e9b0e725dc5f19742001",
+    "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py": "9727648e93ef69dd2388acaf4a8c853c0306583a"
+  },
+  "selection_method": {
+    "method": "SHA256_MODULO_PREDECLARED_POOL",
+    "seed_material": "d6e093de0e700819ed514f9929aabb0ef720ca87|2026-07-28|S05",
+    "seed_sha256": "4a8f12a7796e4ee577bff5f7be829fc633bbff6c53da1eff71b38b3369a76f47",
+    "index_formula": "int(seed_sha256, 16) % candidate_pool_length",
+    "selected_index": 7
+  },
+  "candidate_pool": [
+    "CTAS",
+    "FAST",
+    "CPRT",
+    "CASY",
+    "RSG",
+    "URI",
+    "GPC",
+    "ODFL",
+    "HUBB",
+    "MKC",
+    "ULTA",
+    "DECK",
+    "VRT",
+    "WSM",
+    "LYV",
+    "TPL"
+  ],
+  "excluded_prior_issuers": [
+    {"ticker": "CROX", "reason": "Friday V1 regression and partner demo fixture."},
+    {"ticker": "AZO", "reason": "Friday V1 regression and partner demo fixture."},
+    {"ticker": "CRM", "reason": "Existing subscription-software development fixture."},
+    {"ticker": "AAPL", "reason": "Previously used cash and capital-allocation fixture."},
+    {"ticker": "PFGC", "reason": "Previously used working-capital and liquidity fixture."},
+    {"ticker": "BA", "reason": "Previously used liquidity and refinancing sample."},
+    {"ticker": "CMT", "reason": "Previously used partner-facing company review."},
+    {"ticker": "ADBE", "reason": "Already named as the legacy blind-forward fixture."}
+  ],
+  "selected_issuer": {
+    "ticker": "ODFL",
+    "company_name": "Old Dominion Freight Line, Inc.",
+    "exchange": "Nasdaq",
+    "industry": "Ground Freight Transportation / Less-than-Truckload"
+  },
+  "intended_stress_characteristics": [
+    "Asset-heavy service business with material capital expenditure.",
+    "Receivables and cash conversion are more relevant than inventory.",
+    "Inventory metrics should become NOT_APPLICABLE or MISSING rather than forced.",
+    "Debt, leases, liquidity, and capital allocation must remain complete even if leverage is low.",
+    "The first run must distinguish an absent metric from a data-ingestion failure."
+  ],
+  "blindness_attestation": {
+    "selected_before_first_run": true,
+    "no_ticker_specific_adjustment_before_first_run": true,
+    "selected_ticker_absent_from_pre_run_shared_logic": true,
+    "company_will_not_be_replaced_if_first_run_fails": true,
+    "selection_not_based_on_expected_result": true
+  },
+  "first_run_protocol": {
+    "builder": "build_public_company_investment_layer.py",
+    "research_input": null,
+    "output_directory": "first_run",
+    "network_scope": "PUBLIC_DATA_ONLY",
+    "overwrite_existing_first_run": false
+  },
+  "required_preservation": [
+    "EXACT_COMMAND",
+    "RUNTIME_AND_COMMIT",
+    "STDOUT",
+    "STDERR",
+    "BUILDER_OUTPUT",
+    "ERRORS",
+    "WARNINGS",
+    "DIAGNOSTIC_REPORT",
+    "FIX_RECORD",
+    "POST_FIX_REGRESSION"
+  ]
+}
