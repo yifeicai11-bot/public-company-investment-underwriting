@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/gate3_freshness_attestation.schema.json",
+  "title": "Gate 3 Freshness Attestation for Gate 4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_type",
+    "data_classification",
+    "gate3_report_id",
+    "gate3_contract_hash",
+    "as_of_date",
+    "latest_earnings_checked_through",
+    "latest_known_financial_filing_date",
+    "newer_earnings_filing_known",
+    "subsequent_events_checked_through",
+    "unreviewed_material_subsequent_event_known",
+    "reviewed_by",
+    "reviewed_at",
+    "warning_escalations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "document_type": {"const": "gate3_freshness_attestation"},
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "gate3_report_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "gate3_contract_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "as_of_date": {"type": "string", "format": "date"},
+    "latest_earnings_checked_through": {"type": "string", "format": "date"},
+    "latest_known_financial_filing_date": {"type": "string", "format": "date"},
+    "newer_earnings_filing_known": {"type": "boolean"},
+    "subsequent_events_checked_through": {"type": "string", "format": "date"},
+    "unreviewed_material_subsequent_event_known": {"type": "boolean"},
+    "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "warning_escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check_id", "reviewed_by", "review_date", "rationale"],
+        "properties": {
+          "check_id": {"type": "string", "minLength": 1, "maxLength": 256},
+          "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+          "review_date": {"type": "string", "format": "date"},
+          "rationale": {"type": "string", "minLength": 1, "maxLength": 2000}
+        }
+      }
+    }
+  }
+}

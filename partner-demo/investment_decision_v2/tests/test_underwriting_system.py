@@ -743,6 +743,8 @@ class Gate4EligibilityTests(unittest.TestCase):
             "G3-probability-methodology",
         ]
         attestation: dict[str, object] = {
+            "gate3_report_id": self.contract["report_id"],
+            "gate3_contract_hash": self.contract["contract_hash"],
             "as_of_date": "2026-07-17",
             "latest_earnings_checked_through": "2026-07-17",
             "latest_known_financial_filing_date": "2026-04-30",
@@ -831,6 +833,8 @@ class Gate4EligibilityTests(unittest.TestCase):
             self.autozone_contract,
             policy=self.policy(),
             freshness_attestation=self.attestation(
+                gate3_report_id=self.autozone_contract["report_id"],
+                gate3_contract_hash=self.autozone_contract["contract_hash"],
                 latest_known_financial_filing_date="2026-06-12",
                 warning_escalations=[
                     {
@@ -920,7 +924,9 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
         self.assertIn("G4E-contract-version", result["ineligible_check_ids"])
@@ -931,7 +937,9 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
         self.assertIn("G4E-contract-hash", result["ineligible_check_ids"])
@@ -943,11 +951,27 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
         self.assertIn("G4E-contract-validation", result["ineligible_check_ids"])
         self.assertTrue(result["contract_validation_errors"])
+
+    def test_freshness_attestation_is_bound_to_exact_gate3_contract(self) -> None:
+        result = assess_gate3_for_gate4(
+            self.contract,
+            policy=self.policy(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash="0" * 64,
+            ),
+        )
+        self.assertEqual(result["status"], "GATE_4_BLOCKED_INELIGIBLE_GATE_3")
+        self.assertIn(
+            "G4E-attestation-contract-identity",
+            result["ineligible_check_ids"],
+        )
 
     def test_expired_probability_blocks_even_when_probabilities_are_optional(self) -> None:
         contract = copy.deepcopy(self.contract)
@@ -956,7 +980,9 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
         self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
@@ -968,7 +994,9 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
         self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
@@ -980,7 +1008,9 @@ class Gate4EligibilityTests(unittest.TestCase):
         result = assess_gate3_for_gate4(
             contract,
             policy=self.policy(),
-            freshness_attestation=self.attestation(),
+            freshness_attestation=self.attestation(
+                gate3_contract_hash=contract["contract_hash"],
+            ),
         )
         self.assertEqual(result["status"], "GATE_4_BLOCKED_STALE_GATE_3")
         self.assertIn("G4E-probability-freshness", result["stale_check_ids"])
@@ -1055,6 +1085,8 @@ class Gate4OverlayContractTests(unittest.TestCase):
             "G3-probability-methodology",
         ]
         attestation = {
+            "gate3_report_id": self.contract["report_id"],
+            "gate3_contract_hash": self.contract["contract_hash"],
             "as_of_date": "2026-07-17",
             "latest_earnings_checked_through": "2026-07-17",
             "latest_known_financial_filing_date": "2026-04-30",
@@ -1130,6 +1162,8 @@ class Gate4OverlayContractTests(unittest.TestCase):
                             "allow_warning_escalation": True,
                         },
                         "gate3_freshness_attestation": {
+                            "gate3_report_id": self.contract["report_id"],
+                            "gate3_contract_hash": self.contract["contract_hash"],
                             "as_of_date": "2026-07-28",
                             "latest_earnings_checked_through": "2026-07-28",
                             "latest_known_financial_filing_date": "2026-04-30",

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/opportunity_row.schema.json",
+  "title": "Gate 4 Opportunity Set Row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "data_classification",
+    "as_of_date",
+    "opportunity_id",
+    "security_identifier",
+    "issuer_name",
+    "security_type",
+    "sector",
+    "country",
+    "expected_return",
+    "bear_case_downside",
+    "holding_period_days",
+    "estimated_days_to_exit",
+    "decision_confidence",
+    "return_status",
+    "source_contract_hash",
+    "opportunity_status",
+    "reviewed_by"
+  ],
+  "properties": {
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "as_of_date": {"type": "string", "format": "date"},
+    "opportunity_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "security_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
+    "issuer_name": {"type": "string", "minLength": 1, "maxLength": 256},
+    "security_type": {
+      "enum": ["EQUITY", "BOND", "ETF", "CASH", "OTHER"]
+    },
+    "sector": {"type": "string", "minLength": 1, "maxLength": 128},
+    "country": {"type": "string", "minLength": 2, "maxLength": 128},
+    "expected_return": {"type": ["number", "null"], "minimum": -1, "maximum": 10},
+    "bear_case_downside": {"type": ["number", "null"], "minimum": -1, "maximum": 10},
+    "holding_period_days": {"type": "integer", "minimum": 1, "maximum": 3650},
+    "estimated_days_to_exit": {"type": "number", "minimum": 0, "maximum": 3650},
+    "decision_confidence": {"enum": ["High", "Medium", "Low"]},
+    "return_status": {"enum": ["VALIDATED", "PROVISIONAL", "MISSING"]},
+    "source_contract_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "opportunity_status": {"enum": ["ACTIVE", "WATCH", "EXCLUDED"]},
+    "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"return_status": {"const": "VALIDATED"}},
+        "required": ["return_status"]
+      },
+      "then": {
+        "properties": {
+          "expected_return": {"type": "number"},
+          "bear_case_downside": {"type": "number"},
+          "source_contract_hash": {"type": "string"}
+        }
+      }
+    }
+  ]
+}

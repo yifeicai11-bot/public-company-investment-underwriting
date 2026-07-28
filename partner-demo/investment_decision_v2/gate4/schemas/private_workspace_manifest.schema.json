@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/private_workspace_manifest.schema.json",
+  "title": "Gate 4 Private Workspace Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_type",
+    "data_classification",
+    "workspace_id",
+    "as_of_date",
+    "portfolio_nav",
+    "base_currency",
+    "weight_reconciliation_tolerance",
+    "holdings_scope",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "document_type": {"const": "gate4_private_workspace_manifest"},
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "workspace_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "as_of_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "portfolio_nav": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "base_currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "weight_reconciliation_tolerance": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.05
+    },
+    "holdings_scope": {
+      "const": "FULL_PORTFOLIO"
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "portfolio_policy",
+        "current_holdings",
+        "opportunity_set",
+        "approval_config",
+        "gate3_freshness_attestation",
+        "private_output_dir"
+      ],
+      "properties": {
+        "portfolio_policy": {"type": "string", "minLength": 1},
+        "current_holdings": {"type": "string", "minLength": 1},
+        "opportunity_set": {"type": "string", "minLength": 1},
+        "approval_config": {"type": "string", "minLength": 1},
+        "gate3_freshness_attestation": {"type": "string", "minLength": 1},
+        "private_output_dir": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

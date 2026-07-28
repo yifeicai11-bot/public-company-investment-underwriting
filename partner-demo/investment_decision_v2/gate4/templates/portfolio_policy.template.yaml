@@ -1,0 +1,44 @@
+schema_version: "1.0.0"
+document_type: portfolio_policy
+data_classification: TEMPLATE_NO_DATA
+policy_id:
+as_of_date:
+expiration_review_date:
+base_currency:
+target_return:
+downside_tolerance:
+holding_period_days:
+single_name_position_limit:
+sector_concentration_limit:
+country_limit_status:
+country_concentration_limit:
+country_limit_rationale:
+liquidity_requirement:
+  minimum_liquid_portfolio_weight:
+  maximum_days_to_exit:
+  minimum_average_daily_value_traded:
+risk_budget_limit:
+opportunity_cost_requirement:
+  comparison_required: true
+  minimum_excess_return:
+  minimum_comparable_opportunities:
+permitted_hedge_instruments: []
+maximum_hedge_ratio:
+escalation_thresholds:
+  single_name_limit_utilization:
+  sector_limit_utilization:
+  country_limit_utilization:
+  downside_limit_utilization:
+  risk_budget_utilization:
+  liquidity_days_utilization:
+designated_reviewer:
+reviewed_by:
+reviewed_at:
+gate3_eligibility_policy:
+  max_report_age_days:
+  max_financial_data_age_days:
+  max_market_data_age_days:
+  max_public_source_check_lag_days:
+  eligible_valuation_statuses: []
+  require_validated_probabilities:
+  allow_warning_escalation:

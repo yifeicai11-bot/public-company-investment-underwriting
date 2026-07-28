@@ -1,0 +1,26 @@
+schema_version: "1.0.0"
+document_type: gate3_freshness_attestation
+data_classification: SYNTHETIC_PUBLIC_EXAMPLE
+gate3_report_id: RPT-D12C3A257792FC
+gate3_contract_hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d
+as_of_date: "2026-07-17"
+latest_earnings_checked_through: "2026-07-17"
+latest_known_financial_filing_date: "2026-04-30"
+newer_earnings_filing_known: false
+subsequent_events_checked_through: "2026-07-17"
+unreviewed_material_subsequent_event_known: false
+reviewed_by: Synthetic Freshness Reviewer
+reviewed_at: "2026-07-17T12:00:00Z"
+warning_escalations:
+  - check_id: G3-probability-validation
+    reviewed_by: Synthetic Freshness Reviewer
+    review_date: "2026-07-17"
+    rationale: Synthetic workflow accepts non-formal probabilities because they are not used for expected return.
+  - check_id: G3-peer-valuation-context
+    reviewed_by: Synthetic Freshness Reviewer
+    review_date: "2026-07-17"
+    rationale: Synthetic workflow permits RANGE_ONLY valuation solely for interface testing.
+  - check_id: G3-probability-methodology
+    reviewed_by: Synthetic Freshness Reviewer
+    review_date: "2026-07-17"
+    rationale: Synthetic workflow keeps probability-weighted return suppressed.

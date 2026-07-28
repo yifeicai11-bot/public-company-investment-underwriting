@@ -1,0 +1,3 @@
+data_classification,as_of_date,opportunity_id,security_identifier,issuer_name,security_type,sector,country,expected_return,bear_case_downside,holding_period_days,estimated_days_to_exit,decision_confidence,return_status,source_contract_hash,opportunity_status,reviewed_by
+SYNTHETIC_PUBLIC_EXAMPLE,2026-07-17,SYNTH-OPP-001,SYNTH-GAMMA,Synthetic Gamma Corp,EQUITY,Consumer,United States,0.30,-0.18,365,1.0,Medium,VALIDATED,eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d,ACTIVE,Synthetic Opportunity Reviewer
+SYNTHETIC_PUBLIC_EXAMPLE,2026-07-17,SYNTH-OPP-002,SYNTH-DELTA,Synthetic Delta Corp,EQUITY,Consumer,United States,0.22,-0.14,365,1.5,Medium,VALIDATED,66aa84cd69284a1d79de398ac27cf06c63905427f03f04113adb50abe122c0cd,ACTIVE,Synthetic Opportunity Reviewer

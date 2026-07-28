@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/holding_row.schema.json",
+  "title": "Gate 4 Holding Row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "data_classification",
+    "as_of_date",
+    "position_id",
+    "security_identifier",
+    "issuer_identifier",
+    "issuer_name",
+    "security_type",
+    "position_side",
+    "position_weight",
+    "market_value_base_currency",
+    "base_currency",
+    "sector",
+    "country",
+    "average_daily_value_traded",
+    "estimated_days_to_exit",
+    "current_thesis_status",
+    "correlation_bucket",
+    "existing_hedge_identifier",
+    "hedge_ratio",
+    "data_owner"
+  ],
+  "properties": {
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "as_of_date": {"type": "string", "format": "date"},
+    "position_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "security_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
+    "issuer_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
+    "issuer_name": {"type": "string", "minLength": 1, "maxLength": 256},
+    "security_type": {
+      "enum": ["EQUITY", "BOND", "ETF", "CASH", "HEDGE", "OTHER"]
+    },
+    "position_side": {"enum": ["LONG", "SHORT", "CASH", "HEDGE"]},
+    "position_weight": {"type": "number", "minimum": -2, "maximum": 2},
+    "market_value_base_currency": {"type": "number"},
+    "base_currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "sector": {"type": "string", "minLength": 1, "maxLength": 128},
+    "country": {"type": "string", "minLength": 2, "maxLength": 128},
+    "average_daily_value_traded": {"type": "number", "minimum": 0},
+    "estimated_days_to_exit": {"type": "number", "minimum": 0, "maximum": 3650},
+    "current_thesis_status": {
+      "enum": [
+        "ACTIVE",
+        "STRENGTHENED",
+        "UNCHANGED",
+        "WEAKENED",
+        "BROKEN",
+        "NOT_REVIEWED"
+      ]
+    },
+    "correlation_bucket": {"type": "string", "minLength": 1, "maxLength": 128},
+    "existing_hedge_identifier": {"type": ["string", "null"], "maxLength": 128},
+    "hedge_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+    "data_owner": {"type": "string", "minLength": 2, "maxLength": 256}
+  }
+}

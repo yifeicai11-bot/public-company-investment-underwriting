@@ -1,0 +1,14 @@
+schema_version: "1.0.0"
+document_type: gate3_freshness_attestation
+data_classification: TEMPLATE_NO_DATA
+gate3_report_id:
+gate3_contract_hash:
+as_of_date:
+latest_earnings_checked_through:
+latest_known_financial_filing_date:
+newer_earnings_filing_known:
+subsequent_events_checked_through:
+unreviewed_material_subsequent_event_known:
+reviewed_by:
+reviewed_at:
+warning_escalations: []

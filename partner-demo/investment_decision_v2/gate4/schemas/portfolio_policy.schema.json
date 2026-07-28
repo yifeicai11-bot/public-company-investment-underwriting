@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/portfolio_policy.schema.json",
+  "title": "Gate 4 Portfolio Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_type",
+    "data_classification",
+    "policy_id",
+    "as_of_date",
+    "expiration_review_date",
+    "base_currency",
+    "target_return",
+    "downside_tolerance",
+    "holding_period_days",
+    "single_name_position_limit",
+    "sector_concentration_limit",
+    "country_limit_status",
+    "country_concentration_limit",
+    "liquidity_requirement",
+    "risk_budget_limit",
+    "opportunity_cost_requirement",
+    "permitted_hedge_instruments",
+    "maximum_hedge_ratio",
+    "escalation_thresholds",
+    "designated_reviewer",
+    "reviewed_by",
+    "reviewed_at",
+    "gate3_eligibility_policy"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "document_type": {"const": "portfolio_policy"},
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "policy_id": {"type": "string", "minLength": 3, "maxLength": 128},
+    "as_of_date": {"type": "string", "format": "date"},
+    "expiration_review_date": {"type": "string", "format": "date"},
+    "base_currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "target_return": {"type": "number", "minimum": -1, "maximum": 10},
+    "downside_tolerance": {"type": "number", "minimum": -1, "maximum": 0},
+    "holding_period_days": {"type": "integer", "minimum": 1, "maximum": 3650},
+    "single_name_position_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "sector_concentration_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "country_limit_status": {"enum": ["APPLICABLE", "NOT_APPLICABLE"]},
+    "country_concentration_limit": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "country_limit_rationale": {"type": ["string", "null"], "maxLength": 1000},
+    "liquidity_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_liquid_portfolio_weight",
+        "maximum_days_to_exit",
+        "minimum_average_daily_value_traded"
+      ],
+      "properties": {
+        "minimum_liquid_portfolio_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "maximum_days_to_exit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        },
+        "minimum_average_daily_value_traded": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "risk_budget_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "opportunity_cost_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "comparison_required",
+        "minimum_excess_return",
+        "minimum_comparable_opportunities"
+      ],
+      "properties": {
+        "comparison_required": {"const": true},
+        "minimum_excess_return": {"type": "number", "minimum": -1, "maximum": 10},
+        "minimum_comparable_opportunities": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      }
+    },
+    "permitted_hedge_instruments": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 128}
+    },
+    "maximum_hedge_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+    "escalation_thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "single_name_limit_utilization",
+        "sector_limit_utilization",
+        "country_limit_utilization",
+        "downside_limit_utilization",
+        "risk_budget_utilization",
+        "liquidity_days_utilization"
+      ],
+      "properties": {
+        "single_name_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "sector_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "country_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "downside_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "risk_budget_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "liquidity_days_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      }
+    },
+    "designated_reviewer": {"type": "string", "minLength": 2, "maxLength": 256},
+    "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "gate3_eligibility_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_report_age_days",
+        "max_financial_data_age_days",
+        "max_market_data_age_days",
+        "max_public_source_check_lag_days",
+        "eligible_valuation_statuses",
+        "require_validated_probabilities",
+        "allow_warning_escalation"
+      ],
+      "properties": {
+        "max_report_age_days": {"type": "integer", "minimum": 0, "maximum": 365},
+        "max_financial_data_age_days": {"type": "integer", "minimum": 0, "maximum": 730},
+        "max_market_data_age_days": {"type": "integer", "minimum": 0, "maximum": 30},
+        "max_public_source_check_lag_days": {"type": "integer", "minimum": 0, "maximum": 30},
+        "eligible_valuation_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["RANGE_ONLY", "PARTIALLY_VALIDATED", "MULTI_METHOD_VALIDATED"]
+          }
+        },
+        "require_validated_probabilities": {"type": "boolean"},
+        "allow_warning_escalation": {"type": "boolean"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"country_limit_status": {"const": "APPLICABLE"}},
+        "required": ["country_limit_status"]
+      },
+      "then": {
+        "properties": {"country_concentration_limit": {"type": "number"}}
+      },
+      "else": {
+        "properties": {
+          "country_concentration_limit": {"type": "null"},
+          "country_limit_rationale": {"type": "string", "minLength": 1}
+        },
+        "required": ["country_limit_rationale"]
+      }
+    }
+  ]
+}

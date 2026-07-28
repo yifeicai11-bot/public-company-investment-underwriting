@@ -1,0 +1,4 @@
+data_classification,as_of_date,position_id,security_identifier,issuer_identifier,issuer_name,security_type,position_side,position_weight,market_value_base_currency,base_currency,sector,country,average_daily_value_traded,estimated_days_to_exit,current_thesis_status,correlation_bucket,existing_hedge_identifier,hedge_ratio,data_owner
+SYNTHETIC_PUBLIC_EXAMPLE,2026-07-17,SYNTH-POS-001,SYNTH-ALPHA,SYNTH-ISSUER-ALPHA,Synthetic Alpha Corp,EQUITY,LONG,0.30,3000000,USD,Consumer,United States,25000000,1.0,ACTIVE,Consumer Growth,,0,Synthetic Data Owner
+SYNTHETIC_PUBLIC_EXAMPLE,2026-07-17,SYNTH-POS-002,SYNTH-BETA,SYNTH-ISSUER-BETA,Synthetic Beta Corp,EQUITY,LONG,0.20,2000000,USD,Software,United States,50000000,0.5,UNCHANGED,Long Duration Growth,,0,Synthetic Data Owner
+SYNTHETIC_PUBLIC_EXAMPLE,2026-07-17,SYNTH-POS-003,SYNTH-CASH,SYNTH-CASH,Synthetic Cash,CASH,CASH,0.50,5000000,USD,Cash,United States,0,0,NOT_REVIEWED,Cash,,0,Synthetic Data Owner

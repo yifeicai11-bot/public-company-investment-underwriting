@@ -574,6 +574,8 @@ def assess_gate3_for_gate4(
     )
 
     required_attestation_fields = {
+        "gate3_report_id",
+        "gate3_contract_hash",
         "as_of_date",
         "latest_earnings_checked_through",
         "latest_known_financial_filing_date",
@@ -616,6 +618,23 @@ def assess_gate3_for_gate4(
         ),
         "Gate 4 requires a dated, reviewer-owned check for newer earnings and material events.",
         "Refresh public-source checks and record the reviewer, dates, and explicit event answers.",
+    )
+
+    attested_identity_valid = (
+        attestation.get("gate3_report_id") == contract.get("report_id")
+        and attestation.get("gate3_contract_hash") == contract.get("contract_hash")
+    )
+    add(
+        "G4E-attestation-contract-identity",
+        "contract",
+        "PASS" if attested_identity_valid else "BLOCKED",
+        "" if attested_identity_valid else "INELIGIBLE",
+        (
+            f"report_id_match={attestation.get('gate3_report_id') == contract.get('report_id')}; "
+            f"contract_hash_match={attestation.get('gate3_contract_hash') == contract.get('contract_hash')}"
+        ),
+        "A freshness attestation is valid only for the exact Gate 3 contract it reviewed.",
+        "Repeat the freshness review and bind it to the current report ID and contract hash.",
     )
 
     as_of_date = attestation_as_of_date

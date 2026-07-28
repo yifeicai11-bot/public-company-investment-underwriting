@@ -1,0 +1,49 @@
+schema_version: "1.0.0"
+document_type: portfolio_policy
+data_classification: SYNTHETIC_PUBLIC_EXAMPLE
+policy_id: SYNTHETIC-POLICY-001
+as_of_date: "2026-07-17"
+expiration_review_date: "2026-12-31"
+base_currency: USD
+target_return: 0.20
+downside_tolerance: -0.25
+holding_period_days: 365
+single_name_position_limit: 0.10
+sector_concentration_limit: 0.35
+country_limit_status: APPLICABLE
+country_concentration_limit: 0.80
+country_limit_rationale:
+liquidity_requirement:
+  minimum_liquid_portfolio_weight: 0.25
+  maximum_days_to_exit: 5
+  minimum_average_daily_value_traded: 1000000
+risk_budget_limit: 0.15
+opportunity_cost_requirement:
+  comparison_required: true
+  minimum_excess_return: 0.03
+  minimum_comparable_opportunities: 2
+permitted_hedge_instruments:
+  - SYNTHETIC_INDEX_HEDGE
+  - SYNTHETIC_SECTOR_HEDGE
+maximum_hedge_ratio: 0.50
+escalation_thresholds:
+  single_name_limit_utilization: 0.80
+  sector_limit_utilization: 0.80
+  country_limit_utilization: 0.80
+  downside_limit_utilization: 0.80
+  risk_budget_utilization: 0.80
+  liquidity_days_utilization: 0.80
+designated_reviewer: Synthetic Partner
+reviewed_by: Synthetic Policy Reviewer
+reviewed_at: "2026-07-17T12:00:00Z"
+gate3_eligibility_policy:
+  max_report_age_days: 2
+  max_financial_data_age_days: 150
+  max_market_data_age_days: 5
+  max_public_source_check_lag_days: 1
+  eligible_valuation_statuses:
+    - RANGE_ONLY
+    - PARTIALLY_VALIDATED
+    - MULTI_METHOD_VALIDATED
+  require_validated_probabilities: false
+  allow_warning_escalation: true
