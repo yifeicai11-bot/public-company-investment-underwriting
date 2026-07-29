@@ -13,12 +13,14 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from notes_events_controls import (  # noqa: E402
     NOTE_MODULE_ORDER,
+    acquisition_facts,
     build_notes_and_events_assessment,
     index_financial_amendments,
     index_subsequent_events,
     link_assessment_evidence,
     supplier_finance_facts,
 )
+from underwriting_contract import detect_material_conflicts  # noqa: E402
 
 
 SELECTED = {
@@ -36,17 +38,24 @@ CORE_METRICS = {
     "operating_lease_noncurrent",
     "accounts_receivable_net",
     "allowance_for_credit_losses_ar",
+    "facility_commitment",
+    "facility_availability_reported",
+    "latest_quarter_business_acquisitions",
 }
 
 COMPLETE_NOTE_TEXT = """
 Accounts receivable are evaluated for credit risk using an aging analysis and
 customer concentration information. The allowance for credit losses includes
 provisions and write-offs. Long-term debt includes senior notes and a revolving
-credit facility. Contractual debt maturities include principal payments due in
-2027. We were in compliance with all financial covenants and disclosed covenant
-headroom under the facility. Operating lease liabilities are supported by
-a schedule of future minimum lease payments. Our supplier finance program
-obligation is included in accounts payable.
+credit facility with aggregate commitments and available borrowing capacity.
+The revolving credit facility matures in 2029 and is subject to a borrowing
+base. Contractual debt maturities include principal payments due in 2027. We
+were in compliance with all financial covenants and disclosed covenant headroom
+under the facility. Operating lease liabilities are supported by a schedule of
+future minimum lease payments. Our supplier finance program obligation is
+included in accounts payable. We acquired the business during the quarter for
+cash consideration. The purchase price allocation included goodwill and
+identifiable intangible assets.
 """
 
 
@@ -92,6 +101,20 @@ def supplier_facts_payload() -> dict[str, object]:
                             }
                         ]
                     }
+                },
+                "PaymentsToAcquireBusinessesNetOfCashAcquired": {
+                    "units": {
+                        "USD": [
+                            {
+                                "val": 300,
+                                "start": "2026-01-01",
+                                "end": "2026-03-31",
+                                "filed": "2026-05-01",
+                                "form": "10-Q",
+                                "accn": "0000000000-26-000001",
+                            }
+                        ]
+                    }
                 }
             }
         }
@@ -119,15 +142,18 @@ def assess(
 class S07NoteModuleTests(unittest.TestCase):
     def test_complete_note_set_covers_all_required_modules(self) -> None:
         result = assess()
+        self.assertEqual(result["control_version"], "1.1.0")
         modules = result["modules"]
         self.assertEqual(tuple(modules), NOTE_MODULE_ORDER)
         for module_id in (
             "debt",
+            "revolver",
             "leases",
             "covenants",
             "receivables",
             "bad_debt",
             "supplier_finance",
+            "acquisitions",
         ):
             self.assertEqual(modules[module_id]["status"], "VALIDATED", module_id)
         self.assertEqual(modules["amendments"]["status"], "NOT_APPLICABLE")
@@ -139,6 +165,32 @@ class S07NoteModuleTests(unittest.TestCase):
         debt = result["modules"]["debt"]
         self.assertEqual(debt["status"], "WARNING")
         self.assertEqual(debt["required_elements"]["contractual_maturity_schedule"], "MISSING")
+
+    def test_revolver_signal_requires_capacity_maturity_and_terms(self) -> None:
+        result = assess(
+            text="Long-term debt includes a revolving credit facility.",
+            metrics={"current_debt", "long_term_debt"},
+        )
+        revolver = result["modules"]["revolver"]
+        self.assertEqual(revolver["status"], "WARNING")
+        self.assertEqual(
+            revolver["required_elements"][
+                "availability_not_equated_to_covenant_headroom"
+            ],
+            "ENFORCED",
+        )
+        self.assertEqual(
+            revolver["required_elements"]["maturity_or_expiration"],
+            "MISSING",
+        )
+
+    def test_completed_revolver_scan_can_be_not_applicable(self) -> None:
+        result = assess(
+            text="The company has no borrowings or committed credit facilities.",
+            facts={"facts": {}},
+            metrics=set(),
+        )
+        self.assertEqual(result["modules"]["revolver"]["status"], "NOT_APPLICABLE")
 
     def test_lease_carrying_value_is_not_contractual_payment_schedule(self) -> None:
         result = assess(text="We report operating lease liabilities.")
@@ -215,6 +267,94 @@ class S07NoteModuleTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["taxonomy"], "custom-taxonomy")
         self.assertEqual(rows[0]["unit"], "EUR")
+
+    def test_acquisition_signal_without_complete_note_is_warning(self) -> None:
+        result = assess(
+            text="The company completed an acquisition during the quarter.",
+            facts=supplier_facts_payload(),
+            metrics={"latest_quarter_business_acquisitions"},
+        )
+        acquisition = result["modules"]["acquisitions"]
+        self.assertEqual(acquisition["status"], "WARNING")
+        self.assertEqual(
+            acquisition["required_elements"][
+                "period_matched_cash_flow_or_structured_fact"
+            ],
+            "FOUND",
+        )
+        self.assertEqual(
+            acquisition["required_elements"][
+                "transaction_consideration_or_purchase_price"
+            ],
+            "MISSING",
+        )
+
+    def test_completed_acquisition_scan_can_be_not_applicable(self) -> None:
+        result = assess(
+            text="No business-combination disclosure applies to the reviewed period.",
+            facts={"facts": {}},
+            metrics=set(),
+        )
+        acquisition = result["modules"]["acquisitions"]
+        self.assertEqual(acquisition["status"], "NOT_APPLICABLE")
+        self.assertEqual(
+            acquisition["required_elements"]["absence_requires_completed_scan"],
+            "ENFORCED",
+        )
+
+    def test_acquisition_fact_scan_is_period_and_accession_bound(self) -> None:
+        payload = supplier_facts_payload()
+        rows = payload["facts"]["us-gaap"][
+            "PaymentsToAcquireBusinessesNetOfCashAcquired"
+        ]["units"]["USD"]
+        rows.extend(
+            [
+                {
+                    "val": 999,
+                    "start": "2026-01-01",
+                    "end": "2026-03-31",
+                    "filed": "2026-05-10",
+                    "form": "10-Q/A",
+                    "accn": "0000000000-26-000099",
+                },
+                {
+                    "val": 888,
+                    "start": "2025-01-01",
+                    "end": "2025-03-31",
+                    "filed": "2025-05-01",
+                    "form": "10-Q",
+                    "accn": "0000000000-25-000001",
+                },
+            ]
+        )
+        selected = acquisition_facts(payload, selected_filing=SELECTED)
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["value"], 300)
+        self.assertEqual(selected[0]["accession"], SELECTED["accession"])
+
+    def test_material_acquisition_source_conflict_is_hard_stop(self) -> None:
+        grain = {
+            "metric_name": "latest_quarter_business_acquisitions",
+            "period_start": "2026-01-01",
+            "period_end": "2026-03-31",
+            "period_type": "quarter",
+            "as_of_date": "2026-03-31",
+            "measurement_basis": "cash paid net of cash acquired",
+            "unit": "USD",
+            "currency": "USD",
+        }
+        issues = detect_material_conflicts(
+            [
+                {**grain, "value": 300, "evidence_id": "EV-PRIMARY"},
+                {**grain, "value": 900, "evidence_id": "EV-SECONDARY"},
+            ]
+        )
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0].issue_class, "HARD_STOP")
+        self.assertEqual(
+            set(issues[0].evidence_ids),
+            {"EV-PRIMARY", "EV-SECONDARY"},
+        )
 
 
 class S07AmendmentAndRestatementTests(unittest.TestCase):
@@ -341,6 +481,32 @@ class S07SubsequentEventTests(unittest.TestCase):
         self.assertIn("refinancing", event["event_categories"])
         self.assertEqual(
             event_module["required_elements"]["events_not_mixed_into_historical_balances"],
+            "ENFORCED",
+        )
+
+    def test_later_acquisition_event_is_not_silently_mixed(self) -> None:
+        accession = "0000000000-26-000044"
+        result = assess(
+            submissions_payload=submissions(
+                {
+                    "form": "8-K",
+                    "filingDate": "2026-05-18",
+                    "reportDate": "2026-05-18",
+                    "accessionNumber": accession,
+                    "primaryDocument": "acquisition.htm",
+                    "items": "2.01",
+                }
+            ),
+            document_texts={
+                accession: "The company completed the acquisition after quarter end."
+            },
+        )
+        event = result["subsequent_event_filings"][0]
+        self.assertIn("acquisition_or_disposition", event["event_categories"])
+        module = result["modules"]["subsequent_events"]
+        self.assertEqual(module["status"], "WARNING")
+        self.assertEqual(
+            module["required_elements"]["events_not_mixed_into_historical_balances"],
             "ENFORCED",
         )
 

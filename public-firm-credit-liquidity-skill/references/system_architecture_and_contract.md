@@ -36,9 +36,9 @@ Do not force an unsupported issuer through the core rules. Generate diagnostics 
 - Stable evidence and source IDs.
 - Source hierarchy and conflict logging.
 - Subsequent-event index review.
-- The shared notes-and-events control object for debt, leases, covenants,
-  receivables, bad debt, supplier finance, amendments, restatements, and
-  subsequent events.
+- The shared notes-and-events control object for debt, revolvers, leases,
+  covenants, receivables, bad debt, supplier finance, acquisitions, amendments,
+  restatements, and subsequent events.
 - Calculation formulas and input evidence IDs.
 - CFO double-counting ledger.
 - Data-integrity validations and Data Gate foundation.

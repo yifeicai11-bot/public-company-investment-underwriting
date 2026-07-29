@@ -1,8 +1,8 @@
 # Notes and Events Controls
 
-Read this reference before changing or independently reproducing debt, lease,
-covenant, receivable, bad-debt, supplier-finance, amendment, restatement, or
-subsequent-event logic.
+Read this reference before changing or independently reproducing debt, revolver,
+lease, covenant, receivable, bad-debt, supplier-finance, acquisition,
+amendment, restatement, or subsequent-event logic.
 
 ## Binding Statuses
 
@@ -23,9 +23,18 @@ generation and produce diagnostics.
 
 ### Debt
 
-Keep carrying values, contractual principal maturities, facility availability,
-and amendments or waivers separate. A debt balance without a debt-note or
-maturity schedule is incomplete.
+Keep carrying values, contractual principal maturities, and amendments or
+waivers separate. A debt balance without a debt-note or maturity schedule is
+incomplete.
+
+### Revolver
+
+Keep facility disclosure, commitment, borrowings, letters of credit, reserves,
+reported availability, maturity, borrowing-base restrictions, and conditions
+to borrowing separate. Reported availability is not covenant headroom. A
+facility signal with incomplete capacity, maturity, or restriction evidence is
+a `WARNING`; a completed filing scan with no facility signal may be
+`NOT_APPLICABLE`.
 
 ### Leases
 
@@ -50,6 +59,15 @@ Search both filing text and all available SEC taxonomy concepts containing
 supplier-finance or supply-chain-finance semantics. Filing silence remains
 `MISSING`. Use `NOT_APPLICABLE` only when the filing or a reviewer explicitly
 supports it.
+
+### Acquisitions
+
+Reconcile the selected-period acquisition cash-flow or structured fact to the
+transaction disclosure, consideration, purchase accounting, and pro forma
+impact. A cash amount without a note bridge is a `WARNING`. Use
+`NOT_APPLICABLE` only after both the selected filing and period-matched
+structured-fact scan are complete. Keep post-period acquisitions in the
+subsequent-event module until an explicit historical-to-current bridge exists.
 
 ### Amendments and Restatements
 
@@ -78,6 +96,12 @@ Every located disclosure or indexed filing must retain:
 - Stable evidence ID after ingestion.
 - Review status and decision impact.
 - Missing information required to validate the module.
+
+Material values at the same metric grain must pass the shared source-conflict
+check. Conflicts create a Hard Stop until reconciled; source hierarchy cannot
+silently override a contradictory value. A later amendment, earnings filing,
+or material event makes the earlier current-state conclusion stale until the
+required bridge or freshness review is complete.
 
 The One-Page, Full Report, Evidence Appendix, and Validation Report must consume
 the same validated object. Renderers must not reinterpret these statuses.

@@ -186,7 +186,8 @@ Examples:
 - "AR aging was not located in the reviewed public filings; confidence on receivables quality is Medium."
 - "Covenant headroom was not disclosed in the extracted data; refinancing pressure should be treated as provisional until the debt note is reviewed."
 
-For executable classification, amendment/restatement handling, supplier-finance
-silence, and subsequent-event Hard Stops, apply
+For executable classification, revolver and acquisition evidence,
+amendment/restatement handling, supplier-finance silence, source conflicts,
+freshness, and subsequent-event Hard Stops, apply
 `references/notes_and_events_controls.md`. This checklist identifies what to
 read; that reference controls how the result is stored and gated.

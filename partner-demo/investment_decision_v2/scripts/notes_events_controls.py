@@ -7,7 +7,7 @@ import re
 from typing import Any, Iterable
 
 
-S07_NOTES_EVENTS_CONTROL_VERSION = "1.0.0"
+S07_NOTES_EVENTS_CONTROL_VERSION = "1.1.0"
 
 SAFE_STATUSES = {
     "VALIDATED",
@@ -19,11 +19,13 @@ SAFE_STATUSES = {
 
 NOTE_MODULE_ORDER = (
     "debt",
+    "revolver",
     "leases",
     "covenants",
     "receivables",
     "bad_debt",
     "supplier_finance",
+    "acquisitions",
     "amendments",
     "restatements",
     "subsequent_events",
@@ -101,6 +103,31 @@ NOTE_PATTERNS: dict[str, tuple[str, ...]] = {
         r"\bdebt covenant waiver\b",
         r"\bforbearance agreement\b",
     ),
+    "revolver": (
+        r"\brevolving credit facilit(?:y|ies)\b",
+        r"\brevolving facilit(?:y|ies)\b",
+        r"\bcredit agreement\b",
+        r"\basset[- ]based (?:lending |credit )?facilit(?:y|ies)\b",
+    ),
+    "revolver_capacity": (
+        r"\baggregate commitments?\b",
+        r"\bborrowing availability\b",
+        r"\bavailable borrowing capacity\b",
+        r"\bexcess availability\b",
+        r"\boutstanding borrowings\b",
+        r"\bletters? of credit\b",
+    ),
+    "revolver_maturity": (
+        r"\b(?:revolving credit facility|revolving facility|credit agreement)\b.{0,240}\b(?:matures?|expires?|terminates?)\b",
+        r"\b(?:matures?|expires?|terminates?)\b.{0,240}\b(?:revolving credit facility|revolving facility|credit agreement)\b",
+    ),
+    "revolver_restrictions": (
+        r"\bborrowing base\b",
+        r"\bspringing covenant\b",
+        r"\bavailability block\b",
+        r"\blender reserves?\b",
+        r"\bconditions? to borrowing\b",
+    ),
     "lease": (
         r"\boperating lease liabilit(?:y|ies)\b",
         r"\bfinance lease liabilit(?:y|ies)\b",
@@ -169,6 +196,26 @@ NOTE_PATTERNS: dict[str, tuple[str, ...]] = {
         r"\bwe do not (?:have|participate in|use) (?:a |any )?supplier finance programs?\b",
         r"\bno supplier finance program(?:s)?\b",
         r"\bdoes not (?:have|participate in|use) (?:a |any )?supplier finance programs?\b",
+    ),
+    "acquisition": (
+        r"\bbusiness combinations?\b",
+        r"\bacquisition(?:s)?\b",
+        r"\bacquired (?:all|substantially all|a controlling|the outstanding|the business)\b",
+        r"\bpurchase of (?:a |the )?business\b",
+    ),
+    "acquisition_terms": (
+        r"\bpurchase price\b",
+        r"\bpurchase consideration\b",
+        r"\btotal consideration\b",
+        r"\bcash consideration\b",
+        r"\bconsideration transferred\b",
+    ),
+    "acquisition_accounting": (
+        r"\bgoodwill\b",
+        r"\bidentifiable intangible assets?\b",
+        r"\bpurchase price allocation\b",
+        r"\bpro forma (?:revenue|net income|results)\b",
+        r"\bmeasurement period\b",
     ),
     "restatement_high_confidence": (
         r"\bshould no longer be relied upon\b",
@@ -320,6 +367,76 @@ def supplier_finance_facts(
     return matches
 
 
+def acquisition_facts(
+    companyfacts: dict[str, Any],
+    *,
+    selected_filing: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Return one period-matched acquisition fact per taxonomy/tag/unit.
+
+    The selected filing accession is preferred so a later filing cannot silently
+    replace the period under review. If accession metadata is unavailable, only
+    facts published no later than the selected filing are eligible.
+    """
+
+    period_end = str(selected_filing.get("period", ""))
+    selected_accession = str(selected_filing.get("accession", ""))
+    selected_filed = str(selected_filing.get("filed", ""))
+    candidates: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    for taxonomy, concepts in companyfacts.get("facts", {}).items():
+        if not isinstance(concepts, dict):
+            continue
+        for tag, concept in concepts.items():
+            normalized_tag = re.sub(r"[^a-z]", "", str(tag).lower())
+            if not any(
+                marker in normalized_tag
+                for marker in (
+                    "paymentstoacquirebusiness",
+                    "businesscombination",
+                    "acquisitionrelated",
+                )
+            ):
+                continue
+            for unit, facts in concept.get("units", {}).items():
+                for fact in facts:
+                    if fact.get("end") != period_end:
+                        continue
+                    accession = str(fact.get("accn", ""))
+                    filing_date = str(fact.get("filed", ""))
+                    if selected_accession and accession and accession != selected_accession:
+                        continue
+                    if selected_filed and filing_date and filing_date > selected_filed:
+                        continue
+                    key = (str(taxonomy), str(tag), str(unit))
+                    candidates.setdefault(key, []).append(
+                        {
+                            "taxonomy": taxonomy,
+                            "tag": tag,
+                            "unit": unit,
+                            "value": fact.get("val"),
+                            "period_start": fact.get("start", ""),
+                            "period_end": fact.get("end", ""),
+                            "filing_date": filing_date,
+                            "form": fact.get("form", ""),
+                            "accession": accession,
+                        }
+                    )
+
+    matches: list[dict[str, Any]] = []
+    for rows in candidates.values():
+        rows.sort(
+            key=lambda row: (
+                row["accession"] == selected_accession,
+                row["filing_date"],
+                row["period_start"],
+            ),
+            reverse=True,
+        )
+        matches.append(rows[0])
+    matches.sort(key=lambda row: (row["taxonomy"], row["tag"], row["unit"]))
+    return matches
+
+
 def _evidence_row(
     metric_name: str,
     value: Any,
@@ -385,6 +502,7 @@ def _build_note_modules(
     selected_filing: dict[str, Any],
     metric_names: set[str],
     supplier_facts: list[dict[str, Any]],
+    acquisition_fact_rows: list[dict[str, Any]],
 ) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     modules: dict[str, dict[str, Any]] = {}
     evidence_rows: list[dict[str, Any]] = []
@@ -442,6 +560,119 @@ def _build_note_modules(
                 ("Debt carrying value", debt_balance_found),
                 ("Debt note disclosure", debt_found),
                 ("Contractual maturity schedule", debt_maturity_found),
+            )
+            if not found
+        ],
+    )
+
+    revolver_text_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["revolver"])
+    )
+    revolver_capacity_text_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["revolver_capacity"])
+    )
+    revolver_maturity_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["revolver_maturity"])
+    )
+    revolver_restrictions_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["revolver_restrictions"])
+    )
+    revolver_commitment_found = _metric_present(
+        metric_names,
+        "facility_commitment",
+    )
+    revolver_usage_or_availability_found = _metric_present(
+        metric_names,
+        "facility_availability_reported",
+        "facility_borrowings",
+        "facility_letters_of_credit",
+        "facility_lender_reserves",
+    )
+    revolver_metric_signal = _metric_present(
+        metric_names,
+        "facility_note_snippet",
+        "facility_commitment",
+        "facility_availability_reported",
+        "facility_borrowings",
+        "facility_letters_of_credit",
+        "facility_lender_reserves",
+    )
+    revolver_evidence: list[str] = []
+    if revolver_text_found:
+        revolver_evidence.append("note_revolver_disclosure")
+        evidence_rows.append(
+            _evidence_row(
+                "note_revolver_disclosure",
+                _snippet(
+                    filing_text,
+                    NOTE_PATTERNS["revolver"]
+                    + NOTE_PATTERNS["revolver_capacity"]
+                    + NOTE_PATTERNS["revolver_maturity"],
+                ),
+                selected_filing,
+                source_location="Latest financial filing; revolver or credit-facility disclosure",
+                source_tag="note-keyword:revolver",
+            )
+        )
+    revolver_signal = revolver_text_found or revolver_metric_signal
+    if not filing_text and not revolver_metric_signal:
+        revolver_status = "MISSING"
+        revolver_summary = "The filing text was unavailable, so revolver applicability and terms could not be established."
+    elif not revolver_signal:
+        revolver_status = "NOT_APPLICABLE"
+        revolver_summary = "The reviewed filing and structured liquidity evidence contained no revolver or committed credit-facility signal."
+    elif (
+        revolver_text_found
+        and revolver_commitment_found
+        and revolver_usage_or_availability_found
+        and revolver_maturity_found
+    ):
+        revolver_status = "VALIDATED"
+        revolver_summary = "Revolver disclosure, commitment, usage or availability, and maturity evidence were located."
+    else:
+        revolver_status = "WARNING"
+        revolver_summary = "A revolver or credit-facility signal was located, but commitment, usage or availability, maturity, or restriction evidence is incomplete."
+    modules["revolver"] = _module(
+        "revolver",
+        revolver_status,
+        revolver_summary,
+        required_elements={
+            "facility_disclosure": "FOUND" if revolver_text_found else "MISSING",
+            "commitment_or_capacity": "FOUND"
+            if revolver_commitment_found or revolver_capacity_text_found
+            else "MISSING",
+            "borrowings_or_availability": "FOUND"
+            if revolver_usage_or_availability_found or revolver_capacity_text_found
+            else "MISSING",
+            "maturity_or_expiration": "FOUND"
+            if revolver_maturity_found
+            else "MISSING",
+            "borrowing_base_reserves_or_conditions": "FOUND"
+            if revolver_restrictions_found
+            else "MISSING",
+            "availability_not_equated_to_covenant_headroom": "ENFORCED",
+        },
+        evidence_metric_names=revolver_evidence,
+        missing_information=[]
+        if revolver_status == "NOT_APPLICABLE"
+        else [
+            label
+            for label, found in (
+                ("Revolver or credit-facility disclosure", revolver_text_found),
+                (
+                    "Commitment or stated capacity",
+                    revolver_commitment_found or revolver_capacity_text_found,
+                ),
+                (
+                    "Borrowings or available capacity",
+                    revolver_usage_or_availability_found
+                    or revolver_capacity_text_found,
+                ),
+                ("Maturity or expiration", revolver_maturity_found),
+                (
+                    "Borrowing-base, reserve, or borrowing-condition detail",
+                    revolver_restrictions_found,
+                ),
             )
             if not found
         ],
@@ -747,6 +978,125 @@ def _build_note_modules(
             for label, found in (
                 ("Supplier-finance program disclosure", supplier_text_found),
                 ("Period-matched supplier-finance obligation", bool(supplier_facts)),
+            )
+            if not found
+        ],
+    )
+
+    acquisition_text_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["acquisition"])
+    )
+    acquisition_terms_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["acquisition_terms"])
+    )
+    acquisition_accounting_found = bool(
+        _patterns_found(filing_text, NOTE_PATTERNS["acquisition_accounting"])
+    )
+    acquisition_cash_metrics = sorted(
+        name
+        for name in metric_names
+        if name.endswith("_business_acquisitions")
+    )
+    acquisition_evidence: list[str] = list(acquisition_cash_metrics)
+    if acquisition_text_found:
+        acquisition_evidence.append("note_acquisition_disclosure")
+        evidence_rows.append(
+            _evidence_row(
+                "note_acquisition_disclosure",
+                _snippet(
+                    filing_text,
+                    NOTE_PATTERNS["acquisition"]
+                    + NOTE_PATTERNS["acquisition_terms"]
+                    + NOTE_PATTERNS["acquisition_accounting"],
+                ),
+                selected_filing,
+                source_location="Latest financial filing; acquisition or business-combination disclosure",
+                source_tag="note-keyword:acquisition",
+            )
+        )
+    for index, fact in enumerate(acquisition_fact_rows, start=1):
+        metric_name = f"acquisition_structured_fact_{index}"
+        acquisition_evidence.append(metric_name)
+        unit = str(fact.get("unit", ""))
+        currency = unit if re.fullmatch(r"[A-Z]{3}", unit) else ""
+        evidence_rows.append(
+            _evidence_row(
+                metric_name,
+                fact.get("value"),
+                selected_filing,
+                source_location="SEC companyfacts; acquisition or business-combination concept",
+                source_tag=f"{fact.get('taxonomy')}:{fact.get('tag')}",
+                filing_type=str(fact.get("form", "")),
+                filing_date=str(fact.get("filing_date", "")),
+                period_end=str(fact.get("period_end", "")),
+                unit=unit,
+                currency=currency,
+                confidence="High",
+                validation_status="auto-checked",
+            )
+        )
+    acquisition_structured_found = bool(
+        acquisition_cash_metrics or acquisition_fact_rows
+    )
+    acquisition_signal = (
+        acquisition_text_found or acquisition_structured_found
+    )
+    if not filing_text and not acquisition_structured_found:
+        acquisition_status = "MISSING"
+        acquisition_summary = "The filing text and period-matched acquisition evidence were unavailable, so acquisition applicability could not be established."
+    elif not acquisition_signal:
+        acquisition_status = "NOT_APPLICABLE"
+        acquisition_summary = "The completed selected-filing and structured-fact scan found no acquisition signal for the reviewed period."
+    elif (
+        acquisition_text_found
+        and acquisition_structured_found
+        and acquisition_terms_found
+        and acquisition_accounting_found
+    ):
+        acquisition_status = "VALIDATED"
+        acquisition_summary = "Period-matched acquisition amount, transaction terms, and acquisition-accounting disclosure were located."
+    else:
+        acquisition_status = "WARNING"
+        acquisition_summary = "An acquisition signal was located, but the period-matched amount, transaction consideration, purchase accounting, or pro forma impact is incomplete."
+    modules["acquisitions"] = _module(
+        "acquisitions",
+        acquisition_status,
+        acquisition_summary,
+        required_elements={
+            "selected_filing_scan": "COMPLETED"
+            if filing_text
+            else "MISSING",
+            "period_matched_cash_flow_or_structured_fact": "FOUND"
+            if acquisition_structured_found
+            else "MISSING",
+            "transaction_consideration_or_purchase_price": "FOUND"
+            if acquisition_terms_found
+            else "MISSING",
+            "purchase_accounting_or_pro_forma_impact": "FOUND"
+            if acquisition_accounting_found
+            else "MISSING",
+            "absence_requires_completed_scan": "ENFORCED",
+            "post_period_events_separately_bridged": "ENFORCED",
+        },
+        evidence_metric_names=acquisition_evidence,
+        missing_information=[]
+        if acquisition_status == "NOT_APPLICABLE"
+        else [
+            label
+            for label, found in (
+                ("Selected financial filing acquisition review", bool(filing_text)),
+                (
+                    "Period-matched acquisition cash flow or structured fact",
+                    acquisition_structured_found,
+                ),
+                (
+                    "Transaction consideration or purchase price",
+                    acquisition_terms_found,
+                ),
+                (
+                    "Purchase accounting or pro forma impact",
+                    acquisition_accounting_found,
+                ),
             )
             if not found
         ],
@@ -1134,11 +1484,16 @@ def build_notes_and_events_assessment(
         companyfacts,
         period_end=str(selected_filing.get("period", "")),
     )
+    acquisition_fact_rows = acquisition_facts(
+        companyfacts,
+        selected_filing=selected_filing,
+    )
     modules, evidence_rows = _build_note_modules(
         filing_text,
         selected_filing,
         metric_names,
         supplier_facts,
+        acquisition_fact_rows,
     )
     amendment_module, amendment_rows, amendment_hard_stop = _build_amendment_module(
         amendments,
