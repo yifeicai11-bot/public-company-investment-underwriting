@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_completion_record",
+  "phase": "B",
+  "session": "S06",
+  "name": "Period, XBRL and Accounting Controls",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "implementation_commit": "52d1a3e3346d42b1038d4df1061f6b5e5f5cdd65",
+  "required_scope": [
+    "Use first-run failures to strengthen quarter, YTD, FY, LTM, instant versus flow, unit, currency, share count, non-calendar fiscal year, 53-week fiscal year, negative denominator, and missing XBRL-tag controls.",
+    "Place every analytical implementation change in the shared Data and Evidence Layer."
+  ],
+  "scope_ownership": {
+    "authoritative_component": "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py",
+    "control_version": "1.0.0",
+    "downstream_integration": "build_public_company_investment_layer.py deletes duplicate fact-selection, share-count, FY/YTD, and LTM logic and delegates to the shared Data and Evidence Layer. It adds no independent period, unit, currency, share-count, or LTM rule.",
+    "renderer_changed": false,
+    "company_fixture_changed": false,
+    "ticker_specific_branch_added": false,
+    "hard_coded_company_value_added": false
+  },
+  "requirement_acceptance": [
+    {
+      "control": "quarter",
+      "status": "PASS",
+      "implementation": "Reported and derived standalone quarters require a validated 10-Q flow context and a 70-105 day interval. Q2/Q3 cumulative contexts cannot be relabelled as quarters."
+    },
+    {
+      "control": "YTD",
+      "status": "PASS",
+      "implementation": "Q1, Q2, and Q3 cumulative periods have separate duration boundaries; the longest valid same-end-date YTD fact is selected and a standalone Q2/Q3 quarter is rejected as YTD."
+    },
+    {
+      "control": "FY",
+      "status": "PASS",
+      "implementation": "FY selection requires a 10-K/10-K/A flow context of 350-380 days, covering date-based, 52-week, and 53-week reporting years."
+    },
+    {
+      "control": "LTM",
+      "status": "PASS",
+      "implementation": "LTM uses one XBRL concept and one unit/currency: validated FY plus current YTD less prior comparable YTD. A seven-day comparable-period tolerance is allowed for 53-week calendars; unsafe inputs fall back to annual or MISSING."
+    },
+    {
+      "control": "instant_vs_flow",
+      "status": "PASS",
+      "implementation": "Instant facts require an end date and no start date; flow facts require both. Incompatible contexts are rejected before evidence creation and all selected rows receive a P0 context validation."
+    },
+    {
+      "control": "unit",
+      "status": "PASS",
+      "implementation": "Units are classified as MONETARY, MONETARY_PER_SHARE, SHARES, PURE, or UNKNOWN before selection. Financial-statement amounts reject per-share and unknown units."
+    },
+    {
+      "control": "currency",
+      "status": "PASS",
+      "implementation": "Currency is derived from the SEC unit instead of being assumed. Arithmetic requires one compatible monetary currency and calculated rows are checked against linked input evidence."
+    },
+    {
+      "control": "share_count",
+      "status": "PASS",
+      "implementation": "Only published point-in-time share facts on or before the requested market date are eligible. Weighted-average flow shares, future publication leakage, and unresolved same-date conflicts are blocked."
+    },
+    {
+      "control": "non_calendar_fiscal_year",
+      "status": "PASS",
+      "implementation": "Fiscal boundaries are inferred from reported annual start/end dates; no December year-end or calendar-quarter assumption is used."
+    },
+    {
+      "control": "53_week_fiscal_year",
+      "status": "PASS",
+      "implementation": "Annual periods of 368-374 days are identified as 53-week years and comparable YTD periods may shift by up to seven days."
+    },
+    {
+      "control": "negative_denominator",
+      "status": "PASS",
+      "implementation": "Zero, negative, missing, or non-finite denominators produce structured suppression. DSO, DIO, and DPO are generated only after the shared positive-denominator control passes."
+    },
+    {
+      "control": "missing_XBRL_tag",
+      "status": "PASS",
+      "implementation": "Every selection records attempted tags, expected context, unit, rejection reason, and missing_value_assumed_zero=false. Missing facts remain MISSING or require analyst classification; they are never converted to zero."
+    }
+  ],
+  "shared_data_object_changes": [
+    "data_control_version",
+    "fiscal_calendar_profile",
+    "xbrl_selection_log",
+    "ltm_control_results",
+    "share_count_control",
+    "denominator_control_log"
+  ],
+  "shared_validation_ids": [
+    "P0-fiscal-calendar-control",
+    "P0-instant-flow-period-control",
+    "P0-unit-currency-control",
+    "P0-share-count-control",
+    "P0-ltm-construction-control",
+    "P0-missing-xbrl-safe-handling",
+    "P0-negative-denominator-control",
+    "P0-calculation-unit-currency-lineage"
+  ],
+  "first_run_traceability": {
+    "fixture": "ODFL",
+    "preserved_first_run": true,
+    "source_record": "partner-demo/investment_decision_v2/blind_tests/s05_odfl/fix_record.json",
+    "first_run_defects_used": [
+      "period alignment",
+      "instrument and date context contamination",
+      "missing or non-comparable XBRL coverage",
+      "partial working-capital coverage"
+    ],
+    "rule": "ODFL remains a preserved forward-test fixture. No ODFL value, ticker branch, or company-specific workaround was added."
+  },
+  "tests": [
+    {
+      "suite": "S06 dedicated positive and negative controls",
+      "command": "python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_s06_data_controls.py' -v",
+      "status": "PASS",
+      "passed": 19,
+      "failed": 0
+    },
+    {
+      "suite": "complete unit and regression suite",
+      "command": "python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_*.py' -v",
+      "status": "PASS",
+      "passed": 141,
+      "failed": 0
+    },
+    {
+      "suite": "network-backed cross-company regression and bilingual rendering",
+      "command": "python partner-demo/investment_decision_v2/tests/run_company_regression.py --out-root <temporary-output> --report <temporary-report>",
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AAPL",
+        "PFGC",
+        "ADBE",
+        "AZO",
+        "ODFL"
+      ],
+      "failed": 0,
+      "render_failures": 0
+    },
+    {
+      "suite": "Friday V1 frozen render, PDF, and pixel baseline",
+      "command": "python release-baselines/friday-v1/verify_baseline.py --render --pdf --pixel-compare",
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0
+    },
+    {
+      "suite": "skill structure validation",
+      "status": "PASS"
+    },
+    {
+      "suite": "supplemental regression governance and AST anti-hardcoding",
+      "status": "PASS",
+      "active_companies": 6,
+      "findings": 0
+    },
+    {
+      "suite": "actual historical 53-week observation",
+      "status": "PASS",
+      "issuer": "AZO",
+      "validated_period": "2023-08-27 to 2024-08-31",
+      "duration_days": 371,
+      "note": "This is a public SEC companyfacts observation used to verify the generic calendar rule, not a company-specific branch."
+    }
+  ],
+  "warnings": [
+    "Network-backed company observations are dated and may change when new filings are published; the rule tests and Friday V1 baseline are reproducible.",
+    "The latest AZO annual period is a 52-week year; the immediately prior public annual context contains the validated 371-day 53-week observation.",
+    "The shared core remains limited to SEC-reporting, US-GAAP, non-financial issuers until the planned specialized overlays are implemented."
+  ],
+  "unresolved_outside_s06": [
+    "Active fixtures for amended/restated filings, complex debt, convertibles/preferreds, high leverage, material subsequent events, negative EBITDA, and negative FCF remain future regression-coverage work.",
+    "These are supplemental coverage gaps and do not represent missing S06 period, XBRL, or accounting controls."
+  ],
+  "next_session_entry": {
+    "session": "S07",
+    "first_action": "Build executable negative-path fixtures for all safe outcomes and verify Hard Stop diagnostic-only rendering and suppression consistency.",
+    "starting_commit": "52d1a3e3346d42b1038d4df1061f6b5e5f5cdd65"
+  }
+}

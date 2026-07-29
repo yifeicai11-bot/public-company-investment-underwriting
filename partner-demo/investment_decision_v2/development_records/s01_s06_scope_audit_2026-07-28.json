@@ -4,6 +4,7 @@
   "audit_date": "2026-07-28",
   "branch": "codex/phase-b-cross-company",
   "purpose": "Preserve the agreed S01-S06 scope and the current implementation status before corrective work resumes.",
+  "superseded_by": "s01_s06_reaudit_2026-07-29.json",
   "implementation_changes_in_this_record": false,
   "strict_summary": {
     "fully_accepted": 3,

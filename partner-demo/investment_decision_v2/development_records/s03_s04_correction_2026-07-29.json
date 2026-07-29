@@ -5,6 +5,7 @@
   "branch": "codex/phase-b-cross-company",
   "base_commit": "23f27fe48779c5bb81d6a41a86b123f50c3e2324",
   "supersedes_status_in": "s01_s06_scope_audit_2026-07-28.json",
+  "subsequent_cumulative_audit": "s01_s06_reaudit_2026-07-29.json",
   "scope_rule": "This record corrects S03 and S04 only. No S06 Data and Evidence Layer change is claimed.",
   "sessions": [
     {
