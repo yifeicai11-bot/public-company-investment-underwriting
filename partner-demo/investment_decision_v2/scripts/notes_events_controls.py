@@ -1015,33 +1015,40 @@ def _build_note_modules(
             )
         )
     for index, fact in enumerate(acquisition_fact_rows, start=1):
-        metric_name = f"acquisition_structured_fact_{index}"
+        metric_name = f"acquisition_unselected_fact_signal_{index}"
         acquisition_evidence.append(metric_name)
-        unit = str(fact.get("unit", ""))
-        currency = unit if re.fullmatch(r"[A-Z]{3}", unit) else ""
         evidence_rows.append(
             _evidence_row(
                 metric_name,
-                fact.get("value"),
+                (
+                    f"tag={fact.get('taxonomy')}:{fact.get('tag')}; "
+                    f"accession={fact.get('accession')}; "
+                    "amount not duplicated; use the shared S06 period selector"
+                ),
                 selected_filing,
-                source_location="SEC companyfacts; acquisition or business-combination concept",
+                source_location="SEC companyfacts; unselected acquisition concept signal",
                 source_tag=f"{fact.get('taxonomy')}:{fact.get('tag')}",
                 filing_type=str(fact.get("form", "")),
                 filing_date=str(fact.get("filing_date", "")),
                 period_end=str(fact.get("period_end", "")),
-                unit=unit,
-                currency=currency,
-                confidence="High",
-                validation_status="auto-checked",
+                unit="text",
+                currency="",
+                confidence="Medium",
+                validation_status="review-required",
             )
         )
-    acquisition_structured_found = bool(
-        acquisition_cash_metrics or acquisition_fact_rows
-    )
+    acquisition_structured_found = bool(acquisition_cash_metrics)
+    acquisition_unselected_fact_signal = bool(acquisition_fact_rows)
     acquisition_signal = (
-        acquisition_text_found or acquisition_structured_found
+        acquisition_text_found
+        or acquisition_structured_found
+        or acquisition_unselected_fact_signal
     )
-    if not filing_text and not acquisition_structured_found:
+    if (
+        not filing_text
+        and not acquisition_structured_found
+        and not acquisition_unselected_fact_signal
+    ):
         acquisition_status = "MISSING"
         acquisition_summary = "The filing text and period-matched acquisition evidence were unavailable, so acquisition applicability could not be established."
     elif not acquisition_signal:
@@ -1068,6 +1075,8 @@ def _build_note_modules(
             else "MISSING",
             "period_matched_cash_flow_or_structured_fact": "FOUND"
             if acquisition_structured_found
+            else "UNSELECTED_SIGNAL"
+            if acquisition_unselected_fact_signal
             else "MISSING",
             "transaction_consideration_or_purchase_price": "FOUND"
             if acquisition_terms_found
@@ -1076,6 +1085,7 @@ def _build_note_modules(
             if acquisition_accounting_found
             else "MISSING",
             "absence_requires_completed_scan": "ENFORCED",
+            "unselected_fact_not_promoted_to_amount": "ENFORCED",
             "post_period_events_separately_bridged": "ENFORCED",
         },
         evidence_metric_names=acquisition_evidence,

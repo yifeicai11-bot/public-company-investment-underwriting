@@ -332,6 +332,30 @@ class S07NoteModuleTests(unittest.TestCase):
         self.assertEqual(selected[0]["value"], 300)
         self.assertEqual(selected[0]["accession"], SELECTED["accession"])
 
+    def test_acquisition_fact_signal_does_not_duplicate_an_unvalidated_amount(self) -> None:
+        result = assess()
+        module = result["modules"]["acquisitions"]
+        self.assertIn(
+            "latest_quarter_business_acquisitions",
+            module["evidence_metric_names"],
+        )
+        signals = [
+            row
+            for row in result["_evidence_rows"]
+            if row["metric_name"].startswith(
+                "acquisition_unselected_fact_signal_"
+            )
+        ]
+        self.assertEqual(len(signals), 1)
+        self.assertEqual(signals[0]["unit"], "text")
+        self.assertIn("amount not duplicated", signals[0]["value"])
+        self.assertEqual(
+            module["required_elements"][
+                "unselected_fact_not_promoted_to_amount"
+            ],
+            "ENFORCED",
+        )
+
     def test_material_acquisition_source_conflict_is_hard_stop(self) -> None:
         grain = {
             "metric_name": "latest_quarter_business_acquisitions",
