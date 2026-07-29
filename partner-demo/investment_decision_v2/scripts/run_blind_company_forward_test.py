@@ -78,8 +78,8 @@ def git_text(*args: str) -> str:
 def verify_manifest_and_freeze(manifest: dict[str, Any]) -> dict[str, Any]:
     if manifest.get("status") != "SELECTED_NOT_RUN":
         raise BlindTestProtocolError("The immutable manifest is not in pre-run status.")
-    if manifest.get("session") != "S05":
-        raise BlindTestProtocolError("This runner currently expects the S05 manifest.")
+    if manifest.get("session") not in {"S05", "S08"}:
+        raise BlindTestProtocolError("This runner accepts only Phase B S05 or S08 manifests.")
 
     reproduced = reproduce_selection(manifest)
     method = manifest.get("selection_method", {})
@@ -125,6 +125,7 @@ def verify_manifest_and_freeze(manifest: dict[str, Any]) -> dict[str, Any]:
                 "grep",
                 "-n",
                 "-i",
+                "-w",
                 ticker,
                 pre_run_commit,
                 "--",

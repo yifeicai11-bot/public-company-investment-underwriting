@@ -1,0 +1,13 @@
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/investment_layer.md
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/step3_data.json
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/step3_validation_report.md
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/valuation_metrics.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/public_data_drivers.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/market_expectations.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/scenario_model.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/committee_snapshot.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/partner_overlay_template.csv
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/partner_overlay_template.md
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/underwriting_output_contract.json
+/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run/builder_output/itt_itt_inc/step3/analyst_input_template.json

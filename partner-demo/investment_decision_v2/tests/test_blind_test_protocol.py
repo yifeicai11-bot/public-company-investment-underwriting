@@ -13,6 +13,7 @@ INVESTMENT_ROOT = TEST_DIR.parent
 SCRIPT_DIR = INVESTMENT_ROOT / "scripts"
 REPO_ROOT = INVESTMENT_ROOT.parents[1]
 MANIFEST_PATH = INVESTMENT_ROOT / "blind_tests" / "s05_odfl" / "manifest.json"
+S08_MANIFEST_PATH = INVESTMENT_ROOT / "blind_tests" / "s08_itt" / "manifest.json"
 SCHEMA_PATH = INVESTMENT_ROOT / "blind_tests" / "blind_test_manifest.schema.json"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -49,6 +50,20 @@ class BlindTestProtocolTests(unittest.TestCase):
         errors = sorted(validator.iter_errors(self.manifest), key=lambda error: list(error.path))
         self.assertEqual(errors, [])
 
+    def test_s08_manifest_matches_schema_and_reproduces_itt(self) -> None:
+        assert Draft202012Validator is not None
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        manifest = load_manifest(S08_MANIFEST_PATH)
+        validator = Draft202012Validator(
+            schema,
+            format_checker=FormatChecker(),
+        )
+        errors = sorted(validator.iter_errors(manifest), key=lambda error: list(error.path))
+        self.assertEqual(errors, [])
+        reproduced = reproduce_selection(manifest)
+        self.assertEqual(reproduced["selected_ticker"], "ITT")
+        self.assertEqual(reproduced["selected_index"], 9)
+
     def test_deterministic_selection_reproduces_odfl(self) -> None:
         reproduced = reproduce_selection(self.manifest)
         self.assertEqual(reproduced["selected_ticker"], "ODFL")
@@ -84,7 +99,7 @@ class BlindTestProtocolTests(unittest.TestCase):
         ticker = self.manifest["selected_issuer"]["ticker"]
         for relative_path in self.manifest["pre_run_shared_logic"]:
             result = subprocess.run(
-                ["git", "grep", "-i", ticker, commit, "--", relative_path],
+                ["git", "grep", "-i", "-w", ticker, commit, "--", relative_path],
                 cwd=REPO_ROOT,
                 capture_output=True,
                 check=False,

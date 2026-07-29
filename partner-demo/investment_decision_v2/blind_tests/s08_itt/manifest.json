@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_forward_test_manifest",
+  "phase": "B",
+  "session": "S08",
+  "status": "SELECTED_NOT_RUN",
+  "selection_date": "2026-07-29",
+  "pre_run_commit": "d4040ff8db74715dc4e89559695785c8e57f9543",
+  "pre_run_shared_logic": {
+    "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py": "c2d9661890100b752a03d7a5aeaff556dcf666f9",
+    "partner-demo/investment_decision_v2/scripts/notes_events_controls.py": "4939938503378782361375f90e76d9120dcc4048",
+    "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py": "0ddd10b1ff198fc4603095aa19d148c235cd866a",
+    "partner-demo/investment_decision_v2/scripts/underwriting_contract.py": "dfad3a82b96d232914d3e9b0e725dc5f19742001",
+    "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py": "9727648e93ef69dd2388acaf4a8c853c0306583a"
+  },
+  "selection_method": {
+    "method": "SHA256_MODULO_PREDECLARED_POOL",
+    "seed_material": "d4040ff8db74715dc4e89559695785c8e57f9543|2026-07-29|S08-NEW-UNFAMILIAR",
+    "seed_sha256": "5998871f548b49e14ecc02aa7142350231773c7db3f0c395ca85b3dc67f9f979",
+    "index_formula": "int(seed_sha256, 16) % candidate_pool_length",
+    "selected_index": 9
+  },
+  "candidate_pool": [
+    "ALLE",
+    "AME",
+    "AVY",
+    "BWA",
+    "CSL",
+    "DOV",
+    "EMN",
+    "FLS",
+    "GWW",
+    "ITT",
+    "JBL",
+    "LECO",
+    "MAS",
+    "NDSN",
+    "PNR",
+    "SNA"
+  ],
+  "excluded_prior_issuers": [
+    {
+      "ticker": "CROX",
+      "reason": "Existing Friday V1 and S08 regression fixture."
+    },
+    {
+      "ticker": "AZO",
+      "reason": "Existing Friday V1 and S08 regression fixture."
+    },
+    {
+      "ticker": "ODFL",
+      "reason": "Preserved S05 blind-company fixture."
+    },
+    {
+      "ticker": "AAPL",
+      "reason": "Existing cross-industry fixture."
+    },
+    {
+      "ticker": "PFGC",
+      "reason": "Existing cross-industry fixture."
+    },
+    {
+      "ticker": "ADBE",
+      "reason": "Existing cross-industry fixture."
+    },
+    {
+      "ticker": "CRM",
+      "reason": "Existing development fixture."
+    }
+  ],
+  "selected_issuer": {
+    "ticker": "ITT",
+    "company_name": "ITT Inc.",
+    "exchange": "NYSE",
+    "industry": "Engineered Industrial Components"
+  },
+  "intended_stress_characteristics": [
+    "Unseen industrial business model with receivables, inventory, and capital expenditure.",
+    "Acquisition evidence must remain linked to filing periods and transaction disclosures.",
+    "Debt, revolver, lease, covenant, and subsequent-event evidence must remain independently qualified.",
+    "Missing supplier-finance or bad-debt detail must not be converted to zero or NOT_APPLICABLE without a documented basis.",
+    "No ITT-specific analytical branch or hard-coded value may be added after the first run."
+  ],
+  "blindness_attestation": {
+    "selected_before_first_run": true,
+    "no_ticker_specific_adjustment_before_first_run": true,
+    "selected_ticker_absent_from_pre_run_shared_logic": true,
+    "company_will_not_be_replaced_if_first_run_fails": true,
+    "selection_not_based_on_expected_result": true
+  },
+  "first_run_protocol": {
+    "builder": "build_public_company_investment_layer.py",
+    "research_input": null,
+    "output_directory": "first_run",
+    "network_scope": "PUBLIC_DATA_ONLY",
+    "overwrite_existing_first_run": false
+  },
+  "required_preservation": [
+    "EXACT_COMMAND",
+    "RUNTIME_AND_COMMIT",
+    "STDOUT",
+    "STDERR",
+    "BUILDER_OUTPUT",
+    "ERRORS",
+    "WARNINGS",
+    "DIAGNOSTIC_REPORT",
+    "FIX_RECORD",
+    "POST_FIX_REGRESSION"
+  ]
+}
