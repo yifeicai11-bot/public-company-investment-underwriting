@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.1.0",
+  "document_type": "development_session_completion_record",
+  "phase": "C",
+  "session": "S09",
+  "name": "Shared Valuation Contract",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-29",
+  "branch": "codex/phase-c-equity-valuation",
+  "phase_ab_main_baseline": "8156f5d168f897054822fd54be7b39a97a62543d",
+  "implementation_commit": "625dc8c89a5681a546e68d8971095a0db026de1d",
+  "shared_contract": {
+    "underwriting_schema_version": "5.1.0",
+    "valuation_contract_version": "1.0.0",
+    "accepted_gate3_schema_versions": [
+      "5.0.0",
+      "5.1.0"
+    ],
+    "authoritative_component": "partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py",
+    "renderer_recalculation_allowed": false
+  },
+  "required_scope": [
+    "Add valuation as-of date, target date, holding period, forecast period, metric period, dividend, share basis, and exit basis to one shared valuation contract.",
+    "Separate Price Sensitivity, Base-Case Return, Probability-Weighted Return, and Partner Internal Return.",
+    "Preserve frozen schema 5.0.0 Gate 3 compatibility while requiring schema 5.1.0 for new S09 outputs.",
+    "Do not implement the S10 forward business-model driver library."
+  ],
+  "four_output_acceptance": [
+    {
+      "output": "price_sensitivity",
+      "status": "PASS",
+      "rule": "Available at Gate 3 only when Bear, Base, and Bull implied prices and price changes reproduce; it makes no holding-period or formal-return claim."
+    },
+    {
+      "output": "base_case_return",
+      "status": "PASS",
+      "rule": "Requires a validated dated horizon, controlled forecast/metric/dividend/exit semantics, target-date forward shares, and authoritative Base scenario binding; probability approval is not required."
+    },
+    {
+      "output": "probability_weighted_return",
+      "status": "PASS",
+      "rule": "Requires the Base-Case Return prerequisites plus validated, current, approved probability governance and probabilities totaling 100 percent."
+    },
+    {
+      "output": "partner_internal_return",
+      "status": "PASS",
+      "rule": "Always DISABLED_PRIVATE_GATE_4_ONLY in the public contract; supplied private values are discarded."
+    }
+  ],
+  "semantic_controls": [
+    "Valuation as-of date must equal the authoritative market-price date and holding days must reproduce from dated endpoints.",
+    "S09 formal forecasts use HOLDING_PERIOD_FORECAST and must begin on the valuation date or next day and end on the target date.",
+    "Metric periods must explicitly end at, begin at, or represent a point-in-time value at the target date.",
+    "Dividend basis, timing, currency, non-reinvestment treatment, and reviewer ownership are explicit; missing dividend is not zero.",
+    "S09 exit basis is limited to the controlled SCENARIO_EXIT_MULTIPLE method and EXIT timing.",
+    "Current market capitalization uses reported point-in-time shares; scenario prices may use a separately validated target-date forward share bridge.",
+    "Formal output validation binds displayed values to authoritative market price, scenario price, dividend, dates, currency, probabilities, and share basis. A merely self-consistent edited output fails.",
+    "Below Gate 3, price and return values are suppressed without making the shared contract internally invalid.",
+    "Public Bear and Bull price sensitivities are never used as Gate 4 downside or upside return inputs.",
+    "Non-FCF multiple-based metrics require their own positive, dated, currency-matched, evidence-linked, reviewer-owned metric basis."
+  ],
+  "independent_review_resolution": [
+    {
+      "finding": "Self-consistent tampered returns could pass validation.",
+      "status": "RESOLVED",
+      "control": "Base and weighted returns are recalculated from authoritative parent inputs and independently compared with every displayed input and result."
+    },
+    {
+      "finding": "Gate 2.5 suppression created an exit-basis validation conflict.",
+      "status": "RESOLVED",
+      "control": "Suppressed exit basis receives an explicit SUPPRESSED_BELOW_GATE_3 status and remains self-validating."
+    },
+    {
+      "finding": "Independent delivery QA substituted forward shares into current market capitalization.",
+      "status": "RESOLVED",
+      "control": "QA now uses valuation-reported shares for current market cap and validates the forward scenario denominator separately."
+    },
+    {
+      "finding": "Period, dividend, and exit fields lacked economic semantics.",
+      "status": "RESOLVED",
+      "control": "Controlled enums and target-date relationship tests were added; free-text labels alone cannot unlock formal returns."
+    },
+    {
+      "finding": "Gate 4 mixed public price sensitivities with formal return inputs.",
+      "status": "RESOLVED",
+      "control": "Public sensitivities have separate fields and are null in the return/downside pack."
+    },
+    {
+      "finding": "Scenario integration was unnecessarily restricted to positive normalized FCF and hard-coded USD.",
+      "status": "RESOLVED",
+      "control": "The shared multiple scenario accepts a validated generic metric basis and carries the authoritative valuation currency and metric unit."
+    }
+  ],
+  "verification": {
+    "dedicated_s09_tests": {
+      "status": "PASS",
+      "passed": 35,
+      "failed": 0
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 211,
+      "failed": 0
+    },
+    "friday_v1_frozen_render_pdf_pixel_baseline": {
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0,
+      "tag": "v1.0.0-friday"
+    },
+    "crox_schema_5_1_delivery_qa": {
+      "status": "PASS",
+      "passed": 40,
+      "failed": 0,
+      "visual_pages_reviewed": [
+        "One-Page page 1",
+        "Full Report page 8"
+      ]
+    },
+    "skill_structure_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "gate4_commit_privacy_scan": "PASS"
+  },
+  "cross_company_migration": [
+    {
+      "ticker": "CROX",
+      "contract_validation": "PASS",
+      "price_sensitivity": "VALIDATED",
+      "base_case_return": "NOT_EVALUATED",
+      "probability_weighted_return": "NOT_EVALUATED",
+      "partner_internal_return": "DISABLED_PRIVATE_GATE_4_ONLY"
+    },
+    {
+      "ticker": "AZO",
+      "contract_validation": "PASS",
+      "price_sensitivity": "VALIDATED",
+      "base_case_return": "NOT_EVALUATED",
+      "probability_weighted_return": "NOT_EVALUATED",
+      "partner_internal_return": "DISABLED_PRIVATE_GATE_4_ONLY"
+    },
+    {
+      "ticker": "CRM",
+      "contract_validation": "PASS",
+      "price_sensitivity": "VALIDATED",
+      "base_case_return": "NOT_EVALUATED",
+      "probability_weighted_return": "NOT_EVALUATED",
+      "partner_internal_return": "DISABLED_PRIVATE_GATE_4_ONLY"
+    }
+  ],
+  "synthetic_formal_return_fixture": {
+    "status": "PASS",
+    "current_price": 100.0,
+    "base_exit_price": 110.0,
+    "probability_weighted_exit_price": 116.0,
+    "cumulative_dividend_per_share": 2.0,
+    "base_case_total_return": 0.12,
+    "probability_weighted_total_return": 0.18,
+    "probabilities": {
+      "Bear": 0.2,
+      "Base": 0.5,
+      "Bull": 0.3
+    },
+    "note": "Synthetic values verify formulas and controls only; they are not company facts or investment conclusions."
+  },
+  "scope_boundary": [
+    "CROX, AZO, and CRM remain price-sensitivity-only because their stored public demo inputs do not contain a complete validated S09 horizon and target-date forward share bridge.",
+    "S09 accepts an explicit generic multiple-based metric basis but does not generate business-model forecasts. Driver selection and forward operating bridges remain S10.",
+    "S09 does not add peer, historical, reverse-valuation cross-check governance beyond the existing shared controls; that remains S11.",
+    "S09 does not create a fund-specific expected return, hurdle comparison, position size, portfolio action, or trade."
+  ],
+  "exact_next_starting_point": {
+    "session": "S10",
+    "name": "Modular Forward Operating Bridges",
+    "first_action": "Freeze the shared forward-valuation driver interface, then implement business-model driver modules and a forward share-count bridge with DRIVER_MODEL_NOT_AVAILABLE as the fail-closed fallback.",
+    "starting_commit": "625dc8c89a5681a546e68d8971095a0db026de1d"
+  }
+}
