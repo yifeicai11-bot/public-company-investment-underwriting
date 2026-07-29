@@ -455,8 +455,28 @@ def scenario_evidence(contract: dict[str, Any], scenario_name: str, suffix: str)
     return evidence_by_metric(contract).get(f"scenario_{scenario_name.lower()}_{suffix}")
 
 
+def display_scenarios(contract: dict[str, Any]) -> list[dict[str, Any]]:
+    """Read scenario numbers from S09, with a 5.0 rendering fallback."""
+
+    valuation_contract = contract.get("valuation_contract")
+    if not isinstance(valuation_contract, dict):
+        return list(contract.get("scenarios", []))
+    price_output = valuation_contract.get("outputs", {}).get("price_sensitivity", {})
+    if price_output.get("status") != "VALIDATED":
+        return []
+    narrative_by_name = {
+        str(row.get("name") or ""): row for row in contract.get("scenarios", [])
+    }
+    rows: list[dict[str, Any]] = []
+    for numeric in price_output.get("scenarios", []):
+        merged = dict(narrative_by_name.get(str(numeric.get("name") or ""), {}))
+        merged.update(numeric)
+        rows.append(merged)
+    return rows
+
+
 def scenario_table(contract: dict[str, Any], *, compact: bool = False) -> str:
-    scenarios = contract.get("scenarios", [])
+    scenarios = display_scenarios(contract)
     if not scenarios or float(contract.get("data_gate", {}).get("level", 0)) < 3:
         return '<div class="answer-box warning">Scenario price sensitivities are suppressed until Gate 3. / Gate 3之前不展示情景价格敏感性。</div>'
     probability = contract.get("probability_validation", {})
@@ -513,7 +533,7 @@ def scenario_band(contract: dict[str, Any]) -> str:
         "VALIDATED": "validated p / 已验证概率",
         "ILLUSTRATIVE": "illustrative p / 示意概率",
     }.get(probability_status, "p / 概率")
-    for scenario in contract.get("scenarios", []):
+    for scenario in display_scenarios(contract):
         name = str(scenario.get("name") or "")
         tone = name.lower() if name.lower() in {"bear", "bull"} else "base"
         return_value = safe_float(scenario.get("price_change_vs_current"))
@@ -526,6 +546,68 @@ def scenario_band(contract: dict[str, Any]) -> str:
             f'<div class="small muted">{esc(probability_prefix)}={probability_value} | {fmt_multiple(scenario.get("exit_multiple"))}</div></div>'
         )
     return '<div class="scenario-band">' + "".join(cards) + "</div>" if cards else ""
+
+
+def valuation_return_outputs_html(contract: dict[str, Any], *, compact: bool = False) -> str:
+    valuation_contract = contract.get("valuation_contract")
+    if not isinstance(valuation_contract, dict):
+        return ""
+    outputs = valuation_contract.get("outputs", {})
+    price = outputs.get("price_sensitivity", {})
+    base = outputs.get("base_case_return", {})
+    weighted = outputs.get("probability_weighted_return", {})
+    partner = outputs.get("partner_internal_return", {})
+
+    def result_text(output: dict[str, Any], *, price_only: bool = False) -> str:
+        if output.get("status") != "VALIDATED":
+            return "Not evaluated / 未评估"
+        if price_only:
+            return "See Bear/Base/Bull range above / 见上方三情景区间"
+        total = fmt_percent(output.get("total_return"))
+        annualized = fmt_percent(output.get("annualized_return"))
+        return f"Total {total}; annualized {annualized} / 总回报{total}；年化{annualized}"
+
+    rows = [
+        (
+            "Price Sensitivity / 价格敏感性",
+            price.get("status"),
+            result_text(price, price_only=True),
+        ),
+        (
+            "Base-Case Return / 基准情景回报",
+            base.get("status"),
+            result_text(base),
+        ),
+        (
+            "Probability-Weighted Return / 概率加权回报",
+            weighted.get("status"),
+            result_text(weighted),
+        ),
+        (
+            "Partner Internal Return / Partner内部回报",
+            partner.get("status"),
+            "Private Gate 4 only / 仅限私有Gate 4",
+        ),
+    ]
+    table = (
+        "<table><thead><tr><th>Output class / 输出类别</th><th>Status / 状态</th>"
+        "<th>Result / 结果</th></tr></thead><tbody>"
+        + "".join(
+            f"<tr><td><b>{esc(label)}</b></td><td>{esc(status)}</td><td>{esc(result)}</td></tr>"
+            for label, status, result in rows
+        )
+        + "</tbody></table>"
+    )
+    if compact:
+        return table
+    return (
+        table
+        + f'<p class="small muted"><b>Valuation as-of / 估值时点:</b> '
+        f'{esc(valuation_contract.get("valuation_as_of_date"))}; '
+        f'<b>Target / 目标日期:</b> {esc(valuation_contract.get("target_date"))}; '
+        f'<b>Horizon status / 时间口径状态:</b> {esc(valuation_contract.get("status"))}. '
+        f'{esc(contract.get("return_context", {}).get("disclosure"))}</p>'
+    )
 
 
 def investment_decision_summary_html(contract: dict[str, Any], *, compact: bool = False) -> str:
@@ -970,12 +1052,22 @@ def one_page_html(contract: dict[str, Any]) -> str:
     body += what_is_priced_in_html(contract, compact=True)
     body += headline_metrics(contract)
     body += "<h2>Scenario Price Sensitivity / 情景价格敏感性</h2>" + scenario_table(contract, compact=True)
+    body += valuation_return_outputs_html(contract, compact=True)
     body += bundle_badge(contract, "scenario_sensitivity")
     body += '<div class="two-col"><section><h2>Key Debates / 核心争议</h2>'
     body += "".join(debate_html(debate, compact=True) for debate in contract.get("key_debates", []))
     body += f'{bundle_badge(contract, "key_debates")}</section><section><h2>Decision Boundaries / 决策边界</h2>'
     body += valuation_status_html(contract, compact=True)
-    body += f'<p><b>Probability / 概率:</b> {esc(contract.get("probability_validation", {}).get("status"))}; formal weighted outcome NOT_EVALUATED.</p>'
+    weighted_status = (
+        contract.get("valuation_contract", {})
+        .get("outputs", {})
+        .get("probability_weighted_return", {})
+        .get("status", "NOT_EVALUATED")
+    )
+    body += (
+        f'<p><b>Probability / 概率:</b> {esc(contract.get("probability_validation", {}).get("status"))}; '
+        f'formal weighted outcome {esc(weighted_status)}.</p>'
+    )
     body += "<h3>More attractive / 提升吸引力</h3>" + list_html(
         decision.get("what_would_make_attractive", []), limit=1
     )
@@ -1203,8 +1295,10 @@ def full_report_html(contract: dict[str, Any]) -> str:
 
     body += '<section class="page-break"><h2>7. Scenario Price Sensitivity: Bear, Base and Bull / 情景价格敏感性：悲观、基准与乐观</h2>'
     body += scenario_table(contract, compact=True)
+    body += "<h3>Separated valuation outputs / 分离估值输出</h3>"
+    body += valuation_return_outputs_html(contract)
     scenario_zh = {"Bear": "悲观", "Base": "基准", "Bull": "乐观"}
-    for scenario in contract.get("scenarios", []):
+    for scenario in display_scenarios(contract):
         body += (
             '<div class="module">'
             f"<h3>{esc(scenario.get('name'))} scenario / "
@@ -1344,6 +1438,7 @@ def qa_summary_html(contract: dict[str, Any]) -> str:
     share = contract.get("share_count_basis", {})
     probability = contract.get("probability_validation", {})
     valuation = contract.get("valuation_status", {})
+    valuation_outputs = contract.get("valuation_contract", {}).get("outputs", {})
     checks = [
         ("Contract validation / 合同验证", contract.get("contract_validation", {}).get("status")),
         ("Data validation / 数据验证", contract.get("validation_status")),
@@ -1358,6 +1453,13 @@ def qa_summary_html(contract: dict[str, Any]) -> str:
         ("Probability governance / 概率治理", probability.get("status")),
         ("Formal weighted outcome / 正式概率加权结果", probability.get("formal_probability_weighted_expected_return_status")),
         ("Return context / 回报语境", contract.get("return_context", {}).get("status")),
+        ("Price sensitivity / 价格敏感性", valuation_outputs.get("price_sensitivity", {}).get("status")),
+        ("Base-case return / 基准情景回报", valuation_outputs.get("base_case_return", {}).get("status")),
+        (
+            "Probability-weighted return / 概率加权回报",
+            valuation_outputs.get("probability_weighted_return", {}).get("status"),
+        ),
+        ("Partner internal return / Partner内部回报", valuation_outputs.get("partner_internal_return", {}).get("status")),
         ("Portfolio overlay / 组合叠加", contract.get("portfolio_context", {}).get("status")),
     ]
     rows = "".join(f'<tr><td>{esc(label)}</td><td><b>{esc(value)}</b></td></tr>' for label, value in checks)

@@ -53,6 +53,8 @@ Read `references/system_architecture_and_contract.md` before changing any script
 
 Read `references/probability_and_peer_governance.md` whenever scenarios, probability-weighted return, peer valuation, or historical valuation context is requested. Its method, freshness, approval, and forced-comparison rules are binding.
 
+Read `references/shared_valuation_contract.md` whenever producing, validating, or rendering equity price sensitivities or returns. Its dated-horizon fields, four-output separation, formulas, forward-share requirement, and private Gate 4 boundary are binding.
+
 When the user or partner wants the memo to help make an investment decision, read `references/investment_committee_layer.md` after the investment decision upgrade rules. Use it to structure bull/bear debate, risk review, portfolio fit, and final action view without replacing validation or valuation evidence.
 
 When using any third-party library, GitHub skill, MCP server, market-data source, or hosted API to support the review, read `references/external_tool_policy.md`. External tools may accelerate data extraction, market data retrieval, note reading, or portfolio analytics, but they must not bypass source logging, period validation, provider labeling, or investment-gate limits.
@@ -102,13 +104,13 @@ When the user wants Step 3 investment decision support, run the generic investme
 
 This rebuilds the data/evidence pack, adds dated public market observations, trailing valuation observations, issuer-underwriting status, Investment Question, Key Debates, Decision Confidence, partner input templates, and the shared versioned output contract.
 
-In public-data-only mode, do not auto-create scenario probabilities, exit multiples, formal targets, or expected returns from historical growth, trailing multiples, leverage, price momentum, or 52-week range position. Without validated analyst inputs for the Public-Data FCF Underwriting Base, valuation, and scenarios, stop at Gate 1 or Gate 2.5. Validated scenario implied prices may reach Gate 3 without probabilities. Without a complete valuation horizon, label percentages `Price Change vs Current Price`; formal probability-weighted output remains null.
+In public-data-only mode, do not auto-create scenario probabilities, exit multiples, formal targets, or expected returns from historical growth, trailing multiples, leverage, price momentum, or 52-week range position. Without validated analyst inputs for the Public-Data FCF Underwriting Base, valuation, and scenarios, stop at Gate 1 or Gate 2.5. Validated scenario implied prices may reach Gate 3 without probabilities. Without a complete valuation horizon, forecast period, metric period, explicit dividend, forward share basis, and exit basis, label percentages `Price Change vs Current Price`; Base-Case Return and Probability-Weighted Return remain `NOT_EVALUATED`.
 
 To supply analyst-owned assumptions, use:
 
 `partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker>" --research-input "<validated input json>"`
 
-Start from the generated `analyst_input_template.json`. Scenario implied prices are allowed only when the FCF underwriting base, valuation method, Bear/Base/Bull inputs, sensitivity, falsification triggers, and reviewer ownership pass Gate 3. Formal return language additionally requires a target date, holding period, metric period, dividend assumption, share-count basis, validated probability method, linked evidence, review dates, sensitivity, freshness, and explicit human approval.
+Start from the generated `analyst_input_template.json`. Scenario implied prices are allowed only when the selected positive multiple-based metric has a validated, dated, currency-matched, evidence-linked basis; the valuation method, Bear/Base/Bull inputs, growth bridge, sensitivity, falsification triggers, and reviewer ownership must also pass Gate 3. The Public-Data FCF Underwriting Base is the default shared metric, while another metric requires its own explicit `scenario_model.metric_basis`. Base-Case Return additionally requires the full S09 dated horizon, controlled period/dividend/exit semantics, and forward share basis. Probability-Weighted Return additionally requires a validated probability method, linked evidence, review dates, sensitivity, freshness, and explicit human approval. Keep Partner Internal Return disabled until the repo-external private Gate 4 workflow.
 
 Use `external_evidence` for public facts that are not already extracted from SEC XBRL, such as guidance, investor-presentation details, consensus, covenant terms, and industry evidence. Give each item a unique `external_key`, full source hierarchy metadata, as-of/publication/retrieval dates, source locator, and reviewer. Issuer modules and Key Debates may reference `evidence_keys`; the engine resolves them into stable evidence IDs.
 

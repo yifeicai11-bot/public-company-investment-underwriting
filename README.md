@@ -94,7 +94,8 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 - Prevents quarter/YTD mixing and CFO/FCF or liquidity double counting.
 - Underwrites receivables, bad-debt evidence, working capital, cash conversion, liquidity, debt, leases, covenants, refinancing, capital allocation, and subsequent events.
 - Connects issuer fundamentals to reverse valuation and Bear/Base/Bull price sensitivities.
-- Suppresses target return, probability-weighted return, and position sizing when the required method, horizon, evidence, approval, or portfolio context is missing.
+- Separates Price Sensitivity, Base-Case Return, Probability-Weighted Return, and Partner Internal Return under one dated, reproducible valuation contract.
+- Suppresses each return class independently when its required horizon, forward share basis, exit basis, probability approval, or private portfolio context is missing.
 - Produces a bilingual One-Page, Full Report, Evidence Appendix, and QA Summary from one shared output contract.
 
 ## Architecture / 架构
@@ -104,6 +105,7 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Skill | [`public-firm-credit-liquidity-skill/`](public-firm-credit-liquidity-skill/) | Reusable Codex/Claude-style workflow, source policy, risk framework, sector overlays, and output standards |
 | Data and Evidence | [`build_public_company_decision_pack.py`](partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
 | Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
+| Shared Equity Valuation | [`equity_valuation_contract.py`](partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py) | Dated horizon, price sensitivity, Base-Case Return, Probability-Weighted Return, and public/private return boundaries |
 | Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
 | Gate 4 Local Entry | [`run_gate4_local_entry.py`](partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
 | Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |

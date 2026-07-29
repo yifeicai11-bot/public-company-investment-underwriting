@@ -15,11 +15,17 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, date, datetime
 from typing import Any, Iterable
 
+from equity_valuation_contract import (
+    build_shared_valuation_contract,
+    legacy_return_context,
+    suppress_shared_valuation_outputs,
+    validate_shared_valuation_contract,
+)
 
-SCHEMA_VERSION = "5.0.0"
+SCHEMA_VERSION = "5.1.0"
 SUPPORTED_UNIVERSE_VERSION = "1.0.0"
 GATE4_ELIGIBILITY_CONTRACT_VERSION = "1.0.0"
-SUPPORTED_GATE3_SCHEMA_VERSIONS = {SCHEMA_VERSION}
+SUPPORTED_GATE3_SCHEMA_VERSIONS = {"5.0.0", SCHEMA_VERSION}
 
 EVIDENCE_CLASSES = {"FACT", "CALC", "INFERENCE", "JUDGMENT", "MISSING"}
 CONFIDENCE_LEVELS = {"High", "Medium", "Low"}
@@ -1092,6 +1098,10 @@ def suppress_disallowed_outputs(contract: dict[str, Any]) -> dict[str, Any]:
     gate_level = float(contract.get("data_gate", {}).get("level", 0))
     probability_status = contract.get("probability_validation", {}).get("status", "NOT_PROVIDED")
     return_language_allowed = bool(contract.get("return_context", {}).get("formal_return_language_allowed"))
+    if str(contract.get("schema_version") or "") != "5.0.0":
+        contract["probability_weighted_expected_return"] = None
+        contract["probability_weighted_return"] = None
+        contract["target_price"] = None
     if gate_level < 3:
         contract["probability_weighted_expected_return"] = None
         contract["probability_weighted_return"] = None
@@ -1109,6 +1119,7 @@ def suppress_disallowed_outputs(contract: dict[str, Any]) -> dict[str, Any]:
     if gate_level < 4:
         contract["position_sizing"] = None
         contract["portfolio_action"] = "Not Evaluated"
+    suppress_shared_valuation_outputs(contract)
     return contract
 
 
@@ -1154,6 +1165,13 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
         "warnings",
         "missing_information",
     }
+    schema_version = str(contract.get("schema_version") or "")
+    if schema_version not in SUPPORTED_GATE3_SCHEMA_VERSIONS:
+        errors.append(
+            f"Unsupported output-contract schema version: {schema_version or 'missing'}."
+        )
+    if schema_version != "5.0.0":
+        required.add("valuation_contract")
     missing = sorted(required - set(contract))
     if missing:
         errors.append("Missing required output-contract fields: " + ", ".join(missing))
@@ -1216,6 +1234,17 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
         "dividend_assumption",
         "share_count_basis",
     )
+    if schema_version != "5.0.0":
+        return_fields = (
+            "valuation_as_of_date",
+            "target_date",
+            "holding_period",
+            "forecast_period",
+            "metric_period",
+            "dividend_assumption",
+            "share_count_basis",
+            "exit_basis",
+        )
     return_fields_complete = all(return_context.get(field) not in (None, "", [], {}) for field in return_fields)
     if return_context.get("formal_return_language_allowed") and not (
         return_context.get("status") == "VALIDATED" and return_fields_complete
@@ -1336,6 +1365,30 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
             errors.append("Scenario price-sensitivity evidence must be absent below Gate 3: " + ", ".join(leaked))
     if gate_level < 4 and contract.get("position_sizing") is not None:
         errors.append("Position sizing must be suppressed below Gate 4.")
+    if schema_version != "5.0.0":
+        errors.extend(validate_shared_valuation_contract(contract))
+        expected_return_context = legacy_return_context(contract.get("valuation_contract", {}))
+        if contract.get("return_context") != expected_return_context:
+            errors.append(
+                "return_context must be an unchanged compatibility projection of valuation_contract."
+            )
+        if any(
+            contract.get(field) is not None
+            for field in (
+                "probability_weighted_expected_return",
+                "probability_weighted_return",
+                "target_price",
+            )
+        ):
+            errors.append(
+                "Schema 5.1 legacy return scalars must remain null; use valuation_contract outputs."
+            )
+        for scenario in contract.get("scenarios", []):
+            if "target_price" in scenario or "total_return" in scenario:
+                errors.append(
+                    "Schema 5.1 scenarios must retain implied-price sensitivity fields only."
+                )
+                break
 
     evidence_ids = [row.get("evidence_id") for row in contract.get("evidence_records", [])]
     if len(evidence_ids) != len(set(evidence_ids)):
@@ -1374,6 +1427,10 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
             metric_name == "normalized_fcf_analyst_validated"
             or (metric_name.startswith("scenario_") and metric_name.endswith("_target_price"))
             or (metric_name.startswith("scenario_") and metric_name.endswith("_total_return"))
+            or (
+                schema_version != "5.0.0"
+                and metric_name == "probability_weighted_expected_return"
+            )
         ):
             errors.append(f"Legacy or misleading evidence metric name is prohibited in Friday V1: {metric_name}.")
         if row.get("evidence_class") not in EVIDENCE_CLASSES:
@@ -1397,6 +1454,9 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
 
 def finalize_output_contract(contract: dict[str, Any]) -> dict[str, Any]:
     contract["schema_version"] = SCHEMA_VERSION
+    if not isinstance(contract.get("valuation_contract"), dict):
+        contract["valuation_contract"] = build_shared_valuation_contract(contract, {})
+    contract["return_context"] = legacy_return_context(contract["valuation_contract"])
     contract = suppress_disallowed_outputs(contract)
     contract["contract_hash"] = hashlib.sha256(
         canonical_json({key: value for key, value in contract.items() if key != "contract_hash"}).encode("utf-8")

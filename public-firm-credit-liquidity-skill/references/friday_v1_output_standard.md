@@ -19,11 +19,26 @@ Without all of the following validated fields, scenario percentages are only pri
 - `valuation_as_of_date`
 - `target_date`
 - `holding_period`
+- `forecast_period`
 - `metric_period`
 - `dividend_assumption`
 - `share_count_basis`
+- `exit_basis`
 
 Use `Scenario Price Sensitivity`, `Implied Price`, and `Price Change vs Current Price`. Do not use expected return, total return, annualized return, twelve-month return, or target price as formal output labels.
+
+Under schema `5.1.0`, display four separate output classes from the shared valuation contract:
+
+- `Price Sensitivity`
+- `Base-Case Return`
+- `Probability-Weighted Return`
+- `Partner Internal Return`
+
+Do not combine their values or validation statuses. Base-Case Return may validate without probabilities. Probability-Weighted Return requires the complete probability-governance gate. Partner Internal Return remains disabled in public issuer artifacts.
+
+Formal-return periods must use the controlled horizon relationships in `shared_valuation_contract.md`; free-text labels are insufficient. Dividends must be cumulative through the target date, currency-matched, explicitly non-reinvested, and reviewer-owned. S09 supports the controlled scenario exit-multiple method only.
+
+Do not use public Bear/Bull price sensitivities as portfolio downside/upside returns. Gate 4 may consume a validated public probability-weighted return as one return input, but downside-return tests require separately validated return inputs on the same dated horizon.
 
 Display this disclosure:
 
@@ -125,7 +140,7 @@ Keep it to one page and make the current view understandable in about 30 seconds
 
 ## Probability and Portfolio Boundaries
 
-Scenario prices and price changes may appear without probabilities. A formal probability-weighted outcome requires a validated method, evidence, fresh as-of and review dates, sensitivity, and named human approval, plus a complete return context.
+Scenario prices and price changes may appear without probabilities. A formal Base-Case Return requires the complete S09 horizon, forward share basis, and exit basis. A formal probability-weighted outcome additionally requires a validated method, evidence, fresh as-of and review dates, sensitivity, and named human approval.
 
 Keep `Portfolio Decision: Not Evaluated` and `Portfolio Overlay: Disabled` until validated fund inputs and human approval reach Gate 4. Never place a trade.
 

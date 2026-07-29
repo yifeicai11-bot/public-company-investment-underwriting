@@ -11,6 +11,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from equity_valuation_contract import validate_shared_valuation_contract
 from underwriting_contract import canonical_json, validate_output_contract
 
 
@@ -59,12 +60,30 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
     valuation = contract.get("valuation", {})
     share_basis = contract.get("share_count_basis", {})
     price = valuation.get("price")
-    shares = share_basis.get("share_count_value")
-    expected_market_cap = float(price) * float(shares) if price is not None and shares is not None else None
+    current_shares = valuation.get("shares")
+    current_share_date = valuation.get("shares_as_of_date")
+    reported_basis = (
+        share_basis.get("latest_reported_share_count", {})
+        if isinstance(share_basis.get("latest_reported_share_count"), dict)
+        else {}
+    )
+    if not reported_basis:
+        reported_basis = {
+            "value": share_basis.get("share_count_value"),
+            "date": share_basis.get("share_count_date"),
+        }
+    expected_market_cap = (
+        float(price) * float(current_shares)
+        if price is not None and current_shares is not None
+        else None
+    )
     check(
         "market-cap-reproduction",
         close_enough(valuation.get("market_cap"), expected_market_cap),
-        f"market_cap={valuation.get('market_cap')}; price={price}; shares={shares}",
+        (
+            f"market_cap={valuation.get('market_cap')}; price={price}; "
+            f"current_reported_shares={current_shares}"
+        ),
     )
     check(
         "market-price-date-alignment",
@@ -73,17 +92,39 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
     )
     check(
         "share-date-alignment",
-        share_basis.get("share_count_date") == valuation.get("shares_as_of_date") == dates.get("share_count_date"),
-        f"basis={share_basis.get('share_count_date')}; valuation={valuation.get('shares_as_of_date')}; registry={dates.get('share_count_date')}",
+        reported_basis.get("date") == current_share_date == dates.get("share_count_date"),
+        (
+            f"reported_basis={reported_basis.get('date')}; valuation={current_share_date}; "
+            f"registry={dates.get('share_count_date')}"
+        ),
+    )
+    check(
+        "current-share-basis-reconciliation",
+        close_enough(reported_basis.get("value"), current_shares, absolute=0.0),
+        (
+            f"reported_basis={reported_basis.get('value')}; "
+            f"valuation_current_shares={current_shares}"
+        ),
     )
     proxy_required = (
-        share_basis.get("share_count_date") != dates.get("market_price_date")
-        and share_basis.get("forward_share_count_bridge_status") != "COMPLETED"
+        current_share_date != dates.get("market_price_date")
+    )
+    forward_basis_complete = (
+        share_basis.get("point_in_time_or_forward") == "FORWARD"
+        and share_basis.get("forward_share_count_bridge_status") == "COMPLETED"
     )
     check(
         "share-proxy",
-        not proxy_required or share_basis.get("proxy_status") == "PROXY",
-        f"proxy_required={proxy_required}; proxy_status={share_basis.get('proxy_status')}",
+        (
+            not proxy_required
+            or share_basis.get("proxy_status") == "PROXY"
+            or forward_basis_complete
+        ),
+        (
+            f"current_market_cap_proxy_required={proxy_required}; "
+            f"scenario_forward_basis_complete={forward_basis_complete}; "
+            f"scenario_proxy_status={share_basis.get('proxy_status')}"
+        ),
     )
 
     metric_map = {
@@ -123,8 +164,21 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
     for scenario in contract.get("scenarios", []):
         name = str(scenario.get("name") or "").lower()
         metric_value = metric_map.get(f"scenario_{name}_metric_value", {}).get("value")
-        implied = float(metric_value) * float(scenario.get("exit_multiple")) / float(shares)
-        change = implied / float(price) - 1
+        scenario_shares = (
+            scenario.get("share_count_basis_value")
+            if scenario.get("share_count_basis_value") is not None
+            else share_basis.get("share_count_value")
+        )
+        try:
+            implied = (
+                float(metric_value)
+                * float(scenario.get("exit_multiple"))
+                / float(scenario_shares)
+            )
+            change = implied / float(price) - 1
+        except (TypeError, ValueError, ZeroDivisionError):
+            implied = None
+            change = None
         check(
             f"scenario-{name}-implied-price",
             close_enough(scenario.get("implied_price"), implied),
@@ -145,6 +199,10 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
         name
         for name in metric_map
         if name == "normalized_fcf_analyst_validated"
+        or (
+            str(contract.get("schema_version") or "") != "5.0.0"
+            and name == "probability_weighted_expected_return"
+        )
         or (name.startswith("scenario_") and name.endswith("_target_price"))
         or (name.startswith("scenario_") and name.endswith("_total_return"))
     ]
@@ -155,6 +213,35 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
             "formal-return-suppression",
             contract.get("probability_weighted_expected_return") is None and contract.get("target_price") is None,
             "Formal expected-return and target outputs are null without a validated horizon.",
+        )
+    if str(contract.get("schema_version") or "") != "5.0.0":
+        valuation_errors = validate_shared_valuation_contract(contract)
+        check(
+            "shared-valuation-contract",
+            not valuation_errors,
+            f"errors={valuation_errors}",
+        )
+        outputs = contract.get("valuation_contract", {}).get("outputs", {})
+        check(
+            "shared-valuation-four-output-separation",
+            set(outputs)
+            == {
+                "price_sensitivity",
+                "base_case_return",
+                "probability_weighted_return",
+                "partner_internal_return",
+            },
+            f"outputs={sorted(outputs)}",
+        )
+        partner_return = outputs.get("partner_internal_return", {})
+        check(
+            "partner-return-public-boundary",
+            partner_return.get("status") == "DISABLED_PRIVATE_GATE_4_ONLY"
+            and all(
+                partner_return.get(field) is None
+                for field in ("expected_return", "target_return", "portfolio_hurdle", "position_sizing")
+            ),
+            "Partner internal return remains private and disabled in the public issuer contract.",
         )
     check(
         "portfolio-boundary",

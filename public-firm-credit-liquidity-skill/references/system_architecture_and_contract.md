@@ -61,6 +61,7 @@ but it must not contain ticker branches, company values, or investment views.
 - Public-Data FCF Underwriting Base, source/calculation validation, and FCF Normalization Status.
 - Market-expectation status.
 - Reverse valuation and scenario status.
+- The shared valuation contract: dated horizon, forecast and metric periods, dividend, current and forward share bases, exit basis, and separately governed price-sensitivity/base-return/probability-weighted-return outputs.
 - Upgrade, downgrade, and thesis-invalidation rules.
 - Data Gate determination and output suppression.
 
@@ -140,6 +141,8 @@ Issuer underwriting is complete, but the Public-Data FCF Underwriting Base, mark
 Require a calculation-validated Public-Data FCF Underwriting Base with a separate normalization status, sourced market expectations, an analyst-owned variant perception, reverse valuation, Bear/Base/Bull assumptions, reproducible implied prices, falsification triggers, decision rules, and sensitivity analysis. Allow scenario price sensitivity, valuation range, and a public-data view for human review. Formal probability-weighted output remains null unless probability governance and the return context both pass.
 
 Formal probability validation requires a declared method type, method-specific details, linked evidence, a rationale for each scenario weight, probabilities totaling 100%, an as-of date, an expiration/review date, review triggers, sensitivity cases, freshness review, a named reviewer, and explicit human approval. An illustrative or analyst-judgment allocation may be displayed only as non-formal context and cannot unlock expected return.
+
+Formal return validation must bind every displayed value to authoritative market price, scenario, dividend, period, currency, and share-basis inputs. Internal arithmetic consistency alone is insufficient. Current market capitalization uses reported point-in-time shares; target-date scenario prices may use a separately validated forward share bridge. Price sensitivities and horizon-defined returns are different output classes and must not be mixed in Gate 4 hurdle or downside tests.
 
 ### Gate 4: Portfolio Inputs and Human Review Complete
 
@@ -285,10 +288,11 @@ One-Page and Full Report must consume the same versioned object. Required fields
 - issuer-underwriting modules
 - facts, calculations, inferences, judgments, and missing information
 - liquidity, credit constraint, FCF underwriting base/normalization, valuation scope, share-count basis, probability, and scenario status
+- the versioned shared valuation contract, including valuation as-of date, target date, holding period, forecast period, metric period, dividend assumption, share basis, exit basis, and four separated valuation outputs
 - catalysts, thesis breaks, decision rules
 - evidence records, source registry, Hard Stops, and Warnings
 
-Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless all return-context fields are validated. Formal probability-weighted output remains null unless probability governance and the return context both pass. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated. A stale or ineligible Gate 3 contract must also suppress all Gate 4 calculations.
+Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless the complete S09 dated horizon, forward share basis, and exit basis validate. Base-Case Return is independent of scenario probability. Probability-Weighted Return remains null unless probability governance and the S09 horizon both pass. Partner Internal Return remains disabled in the public issuer contract. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated. A stale or ineligible Gate 3 contract must also suppress all Gate 4 calculations.
 
 ## Required Testing
 

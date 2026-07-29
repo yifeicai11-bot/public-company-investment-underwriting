@@ -536,7 +536,11 @@ class GateAndScenarioTests(unittest.TestCase):
 
     def test_scenario_prices_do_not_require_formal_probabilities(self) -> None:
         research = {
-            "normalized_fcf": {"status": "VALIDATED", "value": 100},
+            "normalized_fcf": {
+                "status": "VALIDATED",
+                "value": 100,
+                "reviewed_by": "Analyst",
+            },
             "scenario_model": {
                 "status": "ANALYST_VALIDATED",
                 "reviewed_by": "Analyst",
@@ -548,14 +552,28 @@ class GateAndScenarioTests(unittest.TestCase):
                 ],
             },
         }
-        scenarios, status = scenario_set({"price": 10, "shares": 100, "p_fcf": 10}, {}, {}, research)
+        scenarios, status = scenario_set(
+            {
+                "price": 10,
+                "price_currency": "USD",
+                "shares": 100,
+                "p_fcf": 10,
+            },
+            {},
+            {},
+            research,
+        )
         self.assertEqual(status, "scenario_assumptions_validated")
         self.assertEqual(len(scenarios), 3)
         self.assertTrue(all(row.probability is None for row in scenarios))
 
     def test_scenario_metric_must_reconcile_to_normalized_fcf_growth(self) -> None:
         research = {
-            "normalized_fcf": {"status": "VALIDATED", "value": 100},
+            "normalized_fcf": {
+                "status": "VALIDATED",
+                "value": 100,
+                "reviewed_by": "Analyst",
+            },
             "scenario_model": {
                 "status": "ANALYST_VALIDATED",
                 "reviewed_by": "Analyst",
@@ -567,7 +585,17 @@ class GateAndScenarioTests(unittest.TestCase):
                 ],
             },
         }
-        scenarios, status = scenario_set({"price": 10, "shares": 100, "p_fcf": 10}, {}, {}, research)
+        scenarios, status = scenario_set(
+            {
+                "price": 10,
+                "price_currency": "USD",
+                "shares": 100,
+                "p_fcf": 10,
+            },
+            {},
+            {},
+            research,
+        )
         self.assertEqual(scenarios, [])
         self.assertEqual(status, "blocked_bear_metric_growth_bridge_does_not_reconcile")
 
@@ -678,7 +706,11 @@ class GateAndScenarioTests(unittest.TestCase):
     @staticmethod
     def _scenarios_with_probabilities():
         research = {
-            "normalized_fcf": {"status": "VALIDATED", "value": 100},
+            "normalized_fcf": {
+                "status": "VALIDATED",
+                "value": 100,
+                "reviewed_by": "Analyst",
+            },
             "scenario_model": {
                 "status": "ANALYST_VALIDATED",
                 "reviewed_by": "Analyst",
@@ -690,7 +722,17 @@ class GateAndScenarioTests(unittest.TestCase):
                 ],
             },
         }
-        scenarios, status = scenario_set({"price": 10, "shares": 100, "p_fcf": 10}, {}, {}, research)
+        scenarios, status = scenario_set(
+            {
+                "price": 10,
+                "price_currency": "USD",
+                "shares": 100,
+                "p_fcf": 10,
+            },
+            {},
+            {},
+            research,
+        )
         if status != "scenario_assumptions_validated":
             raise AssertionError(status)
         return scenarios

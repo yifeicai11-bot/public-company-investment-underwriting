@@ -234,13 +234,39 @@ def return_pack(
     *,
     gate3_eligible: bool,
 ) -> dict[str, Any]:
-    public_expected = (
-        parse_pct(step3.get("probability_weighted_expected_return"))
-        if gate3_eligible
+    weighted_output = (
+        step3.get("valuation_contract", {})
+        .get("outputs", {})
+        .get("probability_weighted_return", {})
+    )
+    base_output = (
+        step3.get("valuation_contract", {})
+        .get("outputs", {})
+        .get("base_case_return", {})
+    )
+    canonical_public_expected = (
+        parse_pct(weighted_output.get("total_return"))
+        if weighted_output.get("status") == "VALIDATED"
         else None
     )
-    public_bear = scenario_price_change(step3, "Bear") if gate3_eligible else None
-    public_bull = scenario_price_change(step3, "Bull") if gate3_eligible else None
+    legacy_public_expected = (
+        parse_pct(step3.get("probability_weighted_expected_return"))
+        if step3.get("schema_version") == "5.0.0"
+        and not isinstance(step3.get("valuation_contract"), dict)
+        else None
+    )
+    public_expected = (
+        canonical_public_expected
+        if canonical_public_expected is not None
+        else legacy_public_expected
+    ) if gate3_eligible else None
+    public_base = (
+        parse_pct(base_output.get("total_return"))
+        if gate3_eligible and base_output.get("status") == "VALIDATED"
+        else None
+    )
+    public_bear_sensitivity = scenario_price_change(step3, "Bear") if gate3_eligible else None
+    public_bull_sensitivity = scenario_price_change(step3, "Bull") if gate3_eligible else None
 
     internal_expected = parse_pct(overlay.get("internal_expected_return")) if gate3_eligible else None
     internal_bear = parse_pct(overlay.get("internal_bear_case")) if gate3_eligible else None
@@ -248,18 +274,32 @@ def return_pack(
     has_internal_return = internal_expected is not None and internal_bear is not None
 
     return {
-        "basis": "PARTNER_INPUT" if has_internal_return else "PUBLIC_DATA",
+        "basis": (
+            "PARTNER_INPUT"
+            if has_internal_return
+            else "PUBLIC_DATA_FORMAL_RETURN"
+            if public_expected is not None
+            else "NOT_EVALUATED"
+        ),
         "expected_return": internal_expected if has_internal_return else public_expected,
-        "bear_case": internal_bear if has_internal_return else public_bear,
-        "bull_case": internal_bull if has_internal_return else public_bull,
+        "bear_case": internal_bear if has_internal_return else None,
+        "bull_case": internal_bull if has_internal_return else None,
         "public_expected_return": public_expected,
-        "public_bear_case": public_bear,
-        "public_bull_case": public_bull,
+        "public_base_case_return": public_base,
+        "public_bear_case": None,
+        "public_bull_case": None,
+        "public_bear_price_sensitivity": public_bear_sensitivity,
+        "public_bull_price_sensitivity": public_bull_sensitivity,
         "internal_expected_return": internal_expected,
         "internal_bear_case": internal_bear,
         "internal_bull_case": internal_bull,
-        "public_values_are_price_sensitivities": not bool(
-            step3.get("return_context", {}).get("formal_return_language_allowed")
+        "public_values_are_price_sensitivities": any(
+            value is not None
+            for value in (public_bear_sensitivity, public_bull_sensitivity)
+        ),
+        "return_and_price_sensitivity_classes_mixed": False,
+        "downside_return_basis": (
+            "PARTNER_INPUT_FORMAL_RETURN" if has_internal_return else "NOT_EVALUATED"
         ),
         "suppressed_for_gate3_ineligibility": not gate3_eligible,
     }
@@ -566,7 +606,7 @@ def build_markdown(
         "",
         f"- Public action view: {step3.get('action_view')} / 中文：{zh_action(step3.get('action_view'))}",
         f"- Public expected return: {fmt_pct(returns.get('public_expected_return'))} / 公开数据预期回报：{fmt_pct(returns.get('public_expected_return'))}",
-        f"- Public bear / bull price change sensitivity: {fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))} / 公开数据熊市/牛市价格变化敏感性：{fmt_pct(returns.get('public_bear_case'))} / {fmt_pct(returns.get('public_bull_case'))}",
+        f"- Public bear / bull price change sensitivity: {fmt_pct(returns.get('public_bear_price_sensitivity'))} / {fmt_pct(returns.get('public_bull_price_sensitivity'))} / 公开数据熊市/牛市价格变化敏感性：{fmt_pct(returns.get('public_bear_price_sensitivity'))} / {fmt_pct(returns.get('public_bull_price_sensitivity'))}",
         f"- Public valuation: P/FCF={fmt_num(valuation.get('p_fcf'))}; P/E={fmt_num(valuation.get('pe'))}; EV/Sales={fmt_num(valuation.get('ev_sales'))} / 公开估值：P/FCF={fmt_num(valuation.get('p_fcf'))}; P/E={fmt_num(valuation.get('pe'))}; EV/Sales={fmt_num(valuation.get('ev_sales'))}",
         f"- Public action rationale: {step3.get('action_rationale')} / 中文：{zh_rationale(step3.get('action_rationale'))}",
         f"- Public provisional/blocked gates: {', '.join(g.get('gate_id', '') for g in public_gates) if public_gates else 'None'} / 公开数据中仍需复核或阻断的检查项：{', '.join(g.get('gate_id', '') for g in public_gates) if public_gates else '无'}",

@@ -44,7 +44,7 @@ Require all of the following before formal weighted return:
 - named reviewer;
 - explicit approval, approver, and approval date.
 
-Set probability status to `STALE` when the expiration date has passed or a newer relevant earnings/guidance event supersedes the evidence. A stale or unapproved probability set cannot unlock a formal probability-weighted outcome. Even an approved set cannot create formal return language without a validated target date, holding period, metric period, dividend assumption, and share-count basis.
+Set probability status to `STALE` when the expiration date has passed or a newer relevant earnings/guidance event supersedes the evidence. A stale or unapproved probability set cannot unlock a formal probability-weighted outcome. Even an approved set cannot create formal return language without the complete S09 valuation horizon, including forecast and metric periods, explicit dividend, forward share basis, and exit basis. Probability approval is not required for a separately validated Base-Case Return.
 
 ## Peer Comparability Gate
 
