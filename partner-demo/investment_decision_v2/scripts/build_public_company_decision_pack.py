@@ -19,6 +19,7 @@ import math
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime, timedelta
@@ -34,6 +35,13 @@ from underwriting_contract import (
     stable_id,
     utc_now,
     validate_cash_flow_ledger,
+)
+from notes_events_controls import (
+    S07_NOTES_EVENTS_CONTROL_VERSION,
+    build_notes_and_events_assessment,
+    index_financial_amendments,
+    index_subsequent_events,
+    link_assessment_evidence,
 )
 
 
@@ -1776,30 +1784,9 @@ def enrich_data_points(company: dict[str, Any], rows: list[DataPoint]) -> None:
 
 
 def subsequent_event_filings(submissions: dict[str, Any], after_date: str) -> list[dict[str, str]]:
-    recent = submissions.get("filings", {}).get("recent", {})
-    forms = recent.get("form", [])
-    events: list[dict[str, str]] = []
-    for i, form in enumerate(forms):
-        filing_date = recent.get("filingDate", [""] * len(forms))[i]
-        if form not in {"8-K", "8-K/A"} or not filing_date or filing_date <= after_date:
-            continue
-        accession = recent.get("accessionNumber", [""] * len(forms))[i]
-        primary_doc = recent.get("primaryDocument", [""] * len(forms))[i]
-        accession_path = accession.replace("-", "")
-        url = f"https://www.sec.gov/Archives/edgar/data/{cik_short(submissions['cik'])}/{accession_path}/{primary_doc}"
-        items = recent.get("items", [""] * len(forms))[i] if recent.get("items") else ""
-        events.append(
-            {
-                "form": form,
-                "filing_date": filing_date,
-                "report_date": recent.get("reportDate", [""] * len(forms))[i],
-                "items": items,
-                "accession": accession,
-                "source_url": url,
-                "review_status": "REVIEW_REQUIRED",
-            }
-        )
-    return sorted(events, key=lambda row: row["filing_date"])
+    """Backward-compatible wrapper over the shared S07 event index."""
+
+    return index_subsequent_events(submissions, after_date)
 
 
 def build_cash_flow_ledger(rows: list[DataPoint]) -> tuple[list[CashFlowLedgerLine], list[dict[str, Any]]]:
@@ -2741,9 +2728,33 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             )
         )
 
-    # Filing-note snippets: useful but not enough for final facility/covenant conclusions.
+    # Filing-note evidence and related filed documents are assessed through the
+    # shared S07 control object. Numeric regex parsing remains provisional.
     raw_text = fetch_text(latest_url)
     filing_text = html_to_text(raw_text)
+    selected_filing = asdict(filing_for_period)
+    related_filings = [
+        *index_financial_amendments(submissions, selected_filing),
+        *index_subsequent_events(submissions, filing_for_period.filed),
+    ]
+    related_document_texts: dict[str, str] = {}
+    related_document_fetch_failures: list[dict[str, str]] = []
+    for related_filing in related_filings:
+        accession = related_filing.get("accession", "")
+        source_url = related_filing.get("source_url", "")
+        if not accession or not source_url or accession in related_document_texts:
+            continue
+        try:
+            related_document_texts[accession] = html_to_text(fetch_text(source_url))
+        except (OSError, urllib.error.URLError) as exc:
+            related_document_fetch_failures.append(
+                {
+                    "accession": accession,
+                    "form": related_filing.get("form", ""),
+                    "source_url": source_url,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
     facility_values = extract_facility_values(
         filing_text,
         as_of_date=latest_end,
@@ -2854,6 +2865,40 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                 notes="Snippet only. Full covenant analysis requires note/legal document review.",
             )
         )
+
+    notes_and_events_assessment = build_notes_and_events_assessment(
+        submissions=submissions,
+        companyfacts=facts,
+        selected_filing=selected_filing,
+        filing_text=filing_text,
+        metric_names=set(metric_map(rows)),
+        document_texts=related_document_texts,
+    )
+    notes_and_events_assessment["document_fetch_failures"] = related_document_fetch_failures
+    for evidence_spec in notes_and_events_assessment.pop("_evidence_rows"):
+        rows.append(
+            manual_dp(
+                evidence_spec["metric_name"],
+                evidence_spec["value"],
+                unit=evidence_spec["unit"],
+                currency=evidence_spec["currency"],
+                period_end=evidence_spec["period_end"],
+                period_type=evidence_spec["period_type"],
+                fiscal_period=evidence_spec["fiscal_period"],
+                filing_type=evidence_spec["filing_type"],
+                filing_date=evidence_spec["filing_date"],
+                source_location=evidence_spec["source_location"],
+                source_tag=evidence_spec["source_tag"],
+                source_url=evidence_spec["source_url"],
+                evidence_type="FACT",
+                reported_or_calculated="reported",
+                confidence=evidence_spec["confidence"],
+                validation_status=evidence_spec["validation_status"],
+                notes="Shared S07 filing-note and event evidence.",
+            )
+        )
+    validations.extend(notes_and_events_assessment["validation_issues"])
+    events = notes_and_events_assessment["subsequent_event_filings"]
 
     # Validation gates.
     m = metric_map(rows)
@@ -3465,55 +3510,11 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         issue_class="WARNING",
     )
 
-    events = subsequent_event_filings(submissions, filing_for_period.filed)
-    if events:
-        add_validation(
-            validations,
-            "P1-subsequent-event-review",
-            "PROVISIONAL",
-            "High",
-            f"{len(events)} Form 8-K/8-K/A filing(s) were filed after the latest financial filing; content review remains required.",
-            "A later event may change debt, liquidity, shares, guidance, or the displayed current state.",
-            "Review each listed subsequent filing and link any effect to a new evidence record before a partner-ready memo.",
-            category="subsequent_events",
-            issue_class="WARNING",
-        )
-    else:
-        add_validation(
-            validations,
-            "P1-subsequent-event-review",
-            "PASS",
-            "High",
-            "No later Form 8-K/8-K/A filing was listed after the latest financial filing as of retrieval.",
-            "No unreviewed subsequent filing was identified by the submissions index.",
-            "Re-run the index review immediately before publication.",
-            category="subsequent_events",
-        )
-
-    for index, event in enumerate(events, start=1):
-        rows.append(
-            manual_dp(
-                f"subsequent_event_filing_{index}",
-                event.get("items") or event.get("form"),
-                unit="filing",
-                currency="",
-                period_end=event.get("filing_date", ""),
-                period_type="filing_event",
-                fiscal_period=event.get("report_date", ""),
-                filing_type=event.get("form", ""),
-                filing_date=event.get("filing_date", ""),
-                source_location=f"SEC submissions index; accession {event.get('accession', '')}",
-                source_tag=f"SEC:{event.get('form', '')}:{event.get('accession', '')}",
-                source_url=event.get("source_url", ""),
-                evidence_type="FACT",
-                reported_or_calculated="reported",
-                confidence="High",
-                validation_status="review-required",
-                notes="Filing existence is validated; filing content and decision impact remain unreviewed.",
-            )
-        )
-
     enrich_data_points(company, rows)
+    link_assessment_evidence(
+        notes_and_events_assessment,
+        {row.metric_name: row.evidence_id for row in rows if row.evidence_id},
+    )
     rows_by_evidence_id = {row.evidence_id: row for row in rows}
     calculation_basis_issues: list[str] = []
     for row in rows:
@@ -3684,6 +3685,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         "schema_version": SCHEMA_VERSION,
         "engine": "shared_data_and_evidence_engine",
         "data_control_version": S06_DATA_CONTROL_VERSION,
+        "notes_and_events_control_version": S07_NOTES_EVENTS_CONTROL_VERSION,
         "report_id": stable_id("RPT", company["cik"], latest_end, utc_now()),
         "company": company,
         "build_date": utc_now(),
@@ -3700,6 +3702,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         "denominator_control_log": denominator_control_log,
         "filings": {k: asdict(v) if v else None for k, v in {"latest_q": latest_q, "prior_q": prior_q, "latest_k": latest_k}.items()},
         "subsequent_event_filings": events,
+        "notes_and_events_assessment": notes_and_events_assessment,
         "source_registry": sorted(sources_by_id.values(), key=lambda row: row["source_id"]),
         "data_points": [asdict(row) for row in rows],
         "evidence_records": [asdict(row) for row in rows],

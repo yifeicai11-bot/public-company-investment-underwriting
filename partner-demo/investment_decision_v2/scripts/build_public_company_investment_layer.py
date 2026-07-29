@@ -5388,6 +5388,14 @@ def build_investment_layer(
             "analysis_generated_at": utc_now(),
         },
         "supported_universe": step2.get("supported_universe", {}),
+        "data_control_version": step2.get("data_control_version"),
+        "notes_and_events_control_version": step2.get(
+            "notes_and_events_control_version"
+        ),
+        "notes_and_events_assessment": step2.get(
+            "notes_and_events_assessment",
+            {},
+        ),
         "investment_question": investment_question,
         "key_debates": key_debates,
         "data_gate": data_gate,

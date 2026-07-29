@@ -36,11 +36,18 @@ Do not force an unsupported issuer through the core rules. Generate diagnostics 
 - Stable evidence and source IDs.
 - Source hierarchy and conflict logging.
 - Subsequent-event index review.
+- The shared notes-and-events control object for debt, leases, covenants,
+  receivables, bad debt, supplier finance, amendments, restatements, and
+  subsequent events.
 - Calculation formulas and input evidence IDs.
 - CFO double-counting ledger.
 - Data-integrity validations and Data Gate foundation.
 
 It must not create unsupported investment opinions.
+
+`notes_events_controls.py` is a shared Data and Evidence Engine component. It
+must remain issuer-agnostic. It may classify evidence and safe failure states,
+but it must not contain ticker branches, company values, or investment views.
 
 ### Investment Analysis Engine
 
