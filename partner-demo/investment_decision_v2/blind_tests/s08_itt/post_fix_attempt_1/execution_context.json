@@ -1,0 +1,35 @@
+{
+  "started_at": "2026-07-29T06:54:10Z",
+  "python_version": "3.12.13",
+  "python_executable": "/tmp/public-underwriting-s06-venv/bin/python",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "timezone": [
+    "HKT",
+    "HKT"
+  ],
+  "current_commit": "dd08916622b04955d5e618e692f8cb1d1eb9a15b",
+  "pre_run_commit": "d4040ff8db74715dc4e89559695785c8e57f9543",
+  "post_fix_prerequisites": {
+    "status": "PASS",
+    "selected_ticker": "ITT",
+    "selection_reproduced": true,
+    "frozen_pre_run_blobs_reproduced": true,
+    "first_run_integrity": {
+      "status": "PASS",
+      "run_directory": "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/first_run",
+      "hash_method": "SHA256",
+      "artifact_count": 22,
+      "file_set_unchanged": true,
+      "artifact_hashes_unchanged": true
+    }
+  },
+  "network_scope": "PUBLIC_DATA_ONLY",
+  "research_input": null,
+  "command": [
+    "/tmp/public-underwriting-s06-venv/bin/python",
+    "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+    "ITT",
+    "--out-root",
+    "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s08_itt/post_fix/builder_output"
+  ]
+}

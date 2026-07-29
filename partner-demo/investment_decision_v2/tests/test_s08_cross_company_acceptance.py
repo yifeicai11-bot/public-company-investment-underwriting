@@ -42,11 +42,35 @@ class S08ManifestAndAssessmentTests(unittest.TestCase):
         self.assertEqual(validate_manifest(self.manifest), [])
         self.assertEqual(
             [row["ticker"] for row in self.manifest["cases"]],
-            ["CROX", "AZO", "ODFL"],
+            ["CROX", "AZO", "ODFL", "ITT"],
         )
         self.assertEqual(
             self.manifest["cases"][2]["role"],
             "preserved_unfamiliar_company",
+        )
+        self.assertEqual(
+            self.manifest["cases"][3]["role"],
+            "new_unfamiliar_company",
+        )
+        self.assertEqual(
+            self.manifest["notes_and_events_control_version"],
+            "1.1.0",
+        )
+        self.assertEqual(
+            self.manifest["required_note_event_modules"],
+            [
+                "debt",
+                "revolver",
+                "leases",
+                "covenants",
+                "receivables",
+                "bad_debt",
+                "supplier_finance",
+                "acquisitions",
+                "amendments",
+                "restatements",
+                "subsequent_events",
+            ],
         )
 
     def test_missing_module_requires_explicit_missing_information(self) -> None:
@@ -62,11 +86,16 @@ class S08ManifestAndAssessmentTests(unittest.TestCase):
         }
         modules["bad_debt"]["status"] = "MISSING"
         assessment = {
-            "control_version": "1.0.0",
+            "control_version": self.manifest[
+                "notes_and_events_control_version"
+            ],
             "modules": modules,
         }
         errors = validate_note_event_assessment(
             assessment,
+            expected_control_version=self.manifest[
+                "notes_and_events_control_version"
+            ],
             required_modules=self.manifest["required_note_event_modules"],
             allowed_statuses=set(self.manifest["allowed_module_statuses"]),
             evidence_ids=set(),
@@ -83,6 +112,9 @@ class S08ManifestAndAssessmentTests(unittest.TestCase):
         modules["subsequent_events"]["evidence_ids"] = ["EV-UNKNOWN"]
         errors = validate_note_event_assessment(
             hard,
+            expected_control_version=self.manifest[
+                "notes_and_events_control_version"
+            ],
             required_modules=self.manifest["required_note_event_modules"],
             allowed_statuses=set(self.manifest["allowed_module_statuses"]),
             evidence_ids=set(),

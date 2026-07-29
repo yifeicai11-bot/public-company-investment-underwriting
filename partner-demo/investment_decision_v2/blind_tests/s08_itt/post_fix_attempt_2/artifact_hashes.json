@@ -1,0 +1,28 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 22,
+  "artifacts": {
+    "builder_output/itt_itt_inc/data/data_evidence_pack.json": "232547aeec251928341eccf23919f6d50eb74898665de59aabbd511f30aba6d2",
+    "builder_output/itt_itt_inc/data/normalized_data.csv": "976cb87120555cf2432d139ce765f350069fd54c469921f21003d9597d01d050",
+    "builder_output/itt_itt_inc/data/normalized_data.json": "232547aeec251928341eccf23919f6d50eb74898665de59aabbd511f30aba6d2",
+    "builder_output/itt_itt_inc/investment_data_pack.md": "431d1ec519431eb0c3c74a4f614e77ffa3862b05360c0d0223e92d5b83710af7",
+    "builder_output/itt_itt_inc/step3/analyst_input_template.json": "f8595ac5bd609acc3ff73a02252a4a4a79aad6459da4898f844a29d1488bbcd6",
+    "builder_output/itt_itt_inc/step3/committee_snapshot.csv": "50b08f25b830357aeb9ca78ca8dcb51f10e0c194b242331c85165b39fc727535",
+    "builder_output/itt_itt_inc/step3/investment_layer.json": "41e36790c5bb19eea30358da27da8c44bf2abf9ea3fe78069303c1d1f8c6433f",
+    "builder_output/itt_itt_inc/step3/investment_layer.md": "e16ee0161d4cf244a5ea7890491bc27e2df3acafbdbd9bddb28083f6a3c8de77",
+    "builder_output/itt_itt_inc/step3/market_expectations.csv": "1d56362e094e879895c1ee26a5e336edc2ea94cfe912b9007852b76d0afaa78c",
+    "builder_output/itt_itt_inc/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/itt_itt_inc/step3/partner_overlay_template.md": "5cf0bb0637d3f9e1e21904422921098b4593697edfa6b61c817f77347643ba45",
+    "builder_output/itt_itt_inc/step3/public_data_drivers.csv": "43153dbc9b192db6582989d83666eadf740380dbf94047a59147963fc4eb4fb9",
+    "builder_output/itt_itt_inc/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/itt_itt_inc/step3/step3_data.json": "41e36790c5bb19eea30358da27da8c44bf2abf9ea3fe78069303c1d1f8c6433f",
+    "builder_output/itt_itt_inc/step3/step3_validation_report.md": "f07b706cdc38e84a86c3be382c5f1580b4140e2f6d758ac9d9d111d817191892",
+    "builder_output/itt_itt_inc/step3/underwriting_output_contract.json": "41e36790c5bb19eea30358da27da8c44bf2abf9ea3fe78069303c1d1f8c6433f",
+    "builder_output/itt_itt_inc/step3/valuation_metrics.csv": "28e59d56c74680b72b912358bc779c01c5e9f3e71d9bcfe3798eb215857385f9",
+    "builder_output/itt_itt_inc/validation/validation_report.md": "c6fd7b8fe437c87341e62e69d1df850c9a110f3681e139dcb158fa9ef1363d6b",
+    "execution_context.json": "5e7b2ae0647658237d79747e32aa1a69afaff32addee2892ab976d16c6e5c626",
+    "post_fix_diagnostic.json": "c5e048aace87f99ec6bb98961da5a7f0daea87104f3aa07580c5f98a01d65189",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "2b557d927058dd4653dce56780ed050214b99c96831ef47daa97ee7fe03a6dac"
+  }
+}

@@ -4,7 +4,8 @@
   "phase": "B",
   "session": "S08",
   "selection_date": "2026-07-29",
-  "s07_implementation_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+  "s07_implementation_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
+  "notes_and_events_control_version": "1.1.0",
   "source_scope": "PUBLIC_DATA_ONLY",
   "cases": [
     {
@@ -21,15 +22,22 @@
       "ticker": "ODFL",
       "role": "preserved_unfamiliar_company",
       "reason": "Retain the S05 blind-company selection without replacement or pre-run ticker tuning."
+    },
+    {
+      "ticker": "ITT",
+      "role": "new_unfamiliar_company",
+      "reason": "Retain the independently selected S08 blind-company result and its complete first-run and post-fix history."
     }
   ],
   "required_note_event_modules": [
     "debt",
+    "revolver",
     "leases",
     "covenants",
     "receivables",
     "bad_debt",
     "supplier_finance",
+    "acquisitions",
     "amendments",
     "restatements",
     "subsequent_events"
@@ -43,8 +51,8 @@
   ],
   "live_case_acceptance": [
     "The shared public-data pipeline completes without a ticker-specific branch.",
-    "The Data and Evidence pack and Gate 3 contract carry notes_and_events_control_version 1.0.0.",
-    "All nine required modules are present and use only allowed safe statuses.",
+    "The Data and Evidence pack and Gate 3 contract carry the frozen notes_and_events_control_version.",
+    "All eleven required modules are present and use only allowed safe statuses.",
     "Every note/event evidence ID resolves to the same shared evidence registry.",
     "No live case has an active unremediated Hard Stop.",
     "Public-only target price, probability-weighted return, position sizing, and portfolio action remain suppressed.",
@@ -60,12 +68,12 @@
   "anti_overfitting_acceptance": [
     "AST scan covers every shared analytical file, including notes_events_controls.py.",
     "No ticker, company name, hard-coded company value, or fixture configuration appears in analytical logic.",
-    "CROX, AZO, and ODFL are read only from this controlled acceptance manifest and regression data."
+    "CROX, AZO, ODFL, and ITT are read only from this controlled acceptance manifest and regression data."
   ],
   "first_run_policy": {
     "do_not_replace_company_after_failure": true,
     "record_all_failures": true,
     "fix_only_shared_logic": true,
-    "rerun_all_three_after_any_fix": true
+    "rerun_all_four_after_any_fix": true
   }
 }

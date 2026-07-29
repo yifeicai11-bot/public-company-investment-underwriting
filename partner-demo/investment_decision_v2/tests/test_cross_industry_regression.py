@@ -78,8 +78,8 @@ class CrossIndustryRegressionGovernanceTests(unittest.TestCase):
     def test_matrix_distinguishes_active_from_planned_coverage(self) -> None:
         report = validate_matrix(self.matrix, self.taxonomy)
         self.assertEqual(report["status"], "PASS")
-        self.assertEqual(report["active_case_count"], 6)
-        self.assertEqual(report["active_industry_count"], 6)
+        self.assertEqual(report["active_case_count"], 7)
+        self.assertEqual(report["active_industry_count"], 7)
         self.assertGreater(len(report["active_coverage_gaps"]), 0)
         for stress_id in report["active_coverage_gaps"]:
             self.assertEqual(

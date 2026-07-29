@@ -145,6 +145,56 @@ class BlindTestProtocolTests(unittest.TestCase):
                 self.assertTrue(result["file_set_unchanged"])
                 self.assertTrue(result["artifact_hashes_unchanged"])
 
+    def test_s08_itt_first_run_attempts_and_final_run_are_immutable(self) -> None:
+        for run_name in (
+            "first_run",
+            "post_fix_attempt_1",
+            "post_fix_attempt_2",
+            "post_fix",
+        ):
+            with self.subTest(run_name=run_name):
+                result = verify_preserved_run(
+                    S08_MANIFEST_PATH.parent / run_name
+                )
+                self.assertEqual(result["status"], "PASS")
+                self.assertEqual(result["artifact_count"], 22)
+                self.assertTrue(result["file_set_unchanged"])
+                self.assertTrue(result["artifact_hashes_unchanged"])
+
+    def test_s08_itt_final_run_uses_shared_s07_contract(self) -> None:
+        diagnostic = json.loads(
+            (
+                S08_MANIFEST_PATH.parent
+                / "post_fix"
+                / "post_fix_diagnostic.json"
+            ).read_text(encoding="utf-8")
+        )
+        data_pack = json.loads(
+            (
+                S08_MANIFEST_PATH.parent
+                / "post_fix"
+                / "builder_output"
+                / "itt_itt_inc"
+                / "data"
+                / "data_evidence_pack.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(diagnostic["status"], "POST_FIX_COMPLETED")
+        self.assertEqual(diagnostic["contract_validation_status"], "PASS")
+        self.assertEqual(diagnostic["hard_stop_count"], 0)
+        self.assertEqual(
+            data_pack["notes_and_events_control_version"],
+            "1.1.0",
+        )
+        modules = data_pack["notes_and_events_assessment"]["modules"]
+        self.assertEqual(modules["acquisitions"]["status"], "VALIDATED")
+        self.assertEqual(
+            modules["revolver"]["required_elements"][
+                "availability_not_equated_to_covenant_headroom"
+            ],
+            "ENFORCED",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

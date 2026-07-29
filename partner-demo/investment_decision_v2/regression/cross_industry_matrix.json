@@ -281,6 +281,38 @@
       "selection_rule": "S05 deterministic blind-company result preserved as a regression fixture after the first run."
     },
     {
+      "case_id": "CI-ITT",
+      "fixture_status": "ACTIVE",
+      "fixture_role": "preserved_forward",
+      "ticker": "ITT",
+      "company_name": "ITT Inc.",
+      "industry": "Engineered Industrial Components",
+      "business_model": "Diversified engineered-components manufacturer with receivables, inventory, capital expenditure, acquisitions, and revolving-credit disclosures",
+      "source_scope": "PUBLIC_DATA_ONLY",
+      "stress_characteristics": [
+        "acquisition_heavy",
+        "high_working_capital",
+        "asset_heavy_capex"
+      ],
+      "required_assertions": [
+        "contract_validation",
+        "evidence_lineage",
+        "period_integrity",
+        "public_only_gating",
+        "share_date_not_after_price",
+        "acquisition_period_and_accession_binding",
+        "revolver_availability_not_covenant_headroom"
+      ],
+      "required_safe_outcomes": [
+        "VALIDATED_RESULT",
+        "MISSING",
+        "SUPPRESSED",
+        "WARNING"
+      ],
+      "analytical_logic_hardcoding_allowed": false,
+      "selection_rule": "S08 deterministic blind-company result preserved as a regression fixture only after its immutable first run."
+    },
+    {
       "case_id": "CI-PLANNED-DISTRESS",
       "fixture_status": "PLANNED",
       "fixture_role": "planned_slot",

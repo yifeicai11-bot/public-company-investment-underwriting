@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_forward_test_fix_record",
+  "phase": "B",
+  "session": "S08",
+  "selected_issuer": "ITT",
+  "selection_manifest": "partner-demo/investment_decision_v2/blind_tests/s08_itt/manifest.json",
+  "first_run_commit": "d4e078453d90bf5c6d2e5d5d31e1cca3ff58dd43",
+  "first_run_result": {
+    "status": "FIRST_RUN_COMPLETED",
+    "data_gate": 1,
+    "hard_stop_count": 0,
+    "warning_count": 22,
+    "preserved_artifact_count": 22
+  },
+  "system_level_findings": [
+    {
+      "finding_id": "S07-REVOLVER-FIRST-CLASS",
+      "root_cause": "Revolver evidence was embedded in broader debt and covenant analysis instead of being evaluated as a separate note module.",
+      "shared_fix": "Added a generic revolver module covering facility disclosure, commitment or capacity, borrowing or availability, maturity, restrictions, and the rule that availability is not covenant headroom.",
+      "implementation_commit": "dd08916622b04955d5e618e692f8cb1d1eb9a15b"
+    },
+    {
+      "finding_id": "S07-ACQUISITION-FIRST-CLASS",
+      "root_cause": "Acquisition cash-flow facts and transaction disclosures were not joined into a dedicated period-aware note module.",
+      "shared_fix": "Added a generic acquisition module that requires a selected-filing scan, period-matched amount evidence, transaction terms, accounting disclosure, and a separate bridge for post-period events.",
+      "implementation_commit": "dd08916622b04955d5e618e692f8cb1d1eb9a15b"
+    },
+    {
+      "finding_id": "S07-ACQUISITION-LINEAGE",
+      "root_cause": "A secondary structured acquisition fact could be surfaced without preserving a complete period lineage, creating a risk of duplicate or non-comparable amounts.",
+      "shared_fix": "Bound acquisition amount evidence to the selected filing accession and selected period; unselected structured facts may be retained only as non-numeric disclosure signals.",
+      "implementation_commit": "e936b47401deaebc355dc7c3c73cd73bf6e79456"
+    },
+    {
+      "finding_id": "S07-STRUCTURED-SIGNAL-TYPING",
+      "root_cause": "A non-numeric acquisition tag signal inherited an XBRL-like source tag and was therefore interpreted by the unit/currency validator as a monetary fact.",
+      "shared_fix": "Classified unselected structured-fact signals as text evidence with a distinct source-tag namespace; the monetary validator now continues to protect actual numeric facts without misclassifying text signals.",
+      "implementation_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034"
+    }
+  ],
+  "preserved_runs": [
+    {
+      "run": "first_run",
+      "commit": "d4040ff8db74715dc4e89559695785c8e57f9543",
+      "status": "FIRST_RUN_COMPLETED",
+      "data_gate": 1,
+      "hard_stop_count": 0,
+      "artifact_hash_status": "PASS"
+    },
+    {
+      "run": "post_fix_attempt_1",
+      "commit": "dd08916622b04955d5e618e692f8cb1d1eb9a15b",
+      "status": "POST_FIX_COMPLETED",
+      "data_gate": 1,
+      "hard_stop_count": 0,
+      "review_finding": "Acquisition secondary-fact period lineage remained incomplete.",
+      "artifact_hash_status": "PASS"
+    },
+    {
+      "run": "post_fix_attempt_2",
+      "commit": "e936b47401deaebc355dc7c3c73cd73bf6e79456",
+      "status": "POST_FIX_COMPLETED",
+      "data_gate": 0,
+      "hard_stop_count": 2,
+      "review_finding": "P0 unit/currency control correctly blocked a mis-typed non-numeric structured-fact signal.",
+      "artifact_hash_status": "PASS"
+    },
+    {
+      "run": "post_fix",
+      "commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
+      "status": "POST_FIX_COMPLETED",
+      "data_gate": 1,
+      "hard_stop_count": 0,
+      "warning_count": 23,
+      "notes_and_events_control_version": "1.1.0",
+      "artifact_hash_status": "PASS"
+    }
+  ],
+  "anti_overfitting_attestation": {
+    "ticker_specific_patch_added": false,
+    "company_name_condition_added": false,
+    "hard_coded_company_value_added": false,
+    "shared_components_only": true,
+    "selected_company_replaced": false
+  }
+}

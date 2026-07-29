@@ -120,11 +120,37 @@ def validate_manifest(manifest: dict[str, Any]) -> list[str]:
         for row in manifest.get("cases", [])
         if isinstance(row, dict)
     ]
-    if tickers != ["CROX", "AZO", "ODFL"]:
-        errors.append("Frozen S08 case order must be CROX, AZO, ODFL.")
+    if tickers != ["CROX", "AZO", "ODFL", "ITT"]:
+        errors.append("Frozen S08 case order must be CROX, AZO, ODFL, ITT.")
+    roles = [
+        str(row.get("role"))
+        for row in manifest.get("cases", [])
+        if isinstance(row, dict)
+    ]
+    if roles != [
+        "existing_regression",
+        "existing_regression",
+        "preserved_unfamiliar_company",
+        "new_unfamiliar_company",
+    ]:
+        errors.append("Frozen S08 case roles do not match the approved four-company scope.")
+    if manifest.get("notes_and_events_control_version") != "1.1.0":
+        errors.append("S08 requires notes/events control version 1.1.0.")
     modules = manifest.get("required_note_event_modules", [])
-    if len(modules) != 9 or len(modules) != len(set(modules)):
-        errors.append("Manifest must contain nine unique note/event modules.")
+    if modules != [
+        "debt",
+        "revolver",
+        "leases",
+        "covenants",
+        "receivables",
+        "bad_debt",
+        "supplier_finance",
+        "acquisitions",
+        "amendments",
+        "restatements",
+        "subsequent_events",
+    ]:
+        errors.append("Manifest must contain the eleven S07 note/event modules in order.")
     allowed = set(manifest.get("allowed_module_statuses", []))
     if allowed != {
         "VALIDATED",
@@ -143,14 +169,18 @@ def validate_manifest(manifest: dict[str, Any]) -> list[str]:
 def validate_note_event_assessment(
     assessment: dict[str, Any],
     *,
+    expected_control_version: str,
     required_modules: list[str],
     allowed_statuses: set[str],
     evidence_ids: set[str],
     allow_hard_stop: bool,
 ) -> list[str]:
     errors: list[str] = []
-    if assessment.get("control_version") != "1.0.0":
-        errors.append("notes/events control version is not 1.0.0")
+    if assessment.get("control_version") != expected_control_version:
+        errors.append(
+            "notes/events control version is not "
+            f"{expected_control_version}"
+        )
     modules = assessment.get("modules", {})
     if list(modules) != required_modules:
         errors.append(
@@ -173,10 +203,17 @@ def validate_note_event_assessment(
                 errors.append(f"{module_id}: unknown evidence ID {evidence_id}")
 
     expected_controls = {
+        (
+            "revolver",
+            "availability_not_equated_to_covenant_headroom",
+        ): "ENFORCED",
         ("leases", "carrying_value_separated_from_contractual_payments"): "ENFORCED",
         ("covenants", "compliance_not_equated_to_headroom"): "ENFORCED",
         ("bad_debt", "missing_allowance_not_zero"): "ENFORCED",
         ("supplier_finance", "absence_not_assumed_not_applicable"): "ENFORCED",
+        ("acquisitions", "absence_requires_completed_scan"): "ENFORCED",
+        ("acquisitions", "unselected_fact_not_promoted_to_amount"): "ENFORCED",
+        ("acquisitions", "post_period_events_separately_bridged"): "ENFORCED",
         (
             "subsequent_events",
             "events_not_mixed_into_historical_balances",
@@ -389,6 +426,7 @@ def case_acceptance(
     matrix_case: dict[str, Any],
     out_root: Path,
     render_root: Path,
+    expected_control_version: str,
     required_modules: list[str],
     allowed_statuses: set[str],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
@@ -401,9 +439,9 @@ def case_acceptance(
     step2 = load_json(step2_path)
 
     errors.extend(assert_contract_safety(contract, matrix_case))
-    if step2.get("notes_and_events_control_version") != "1.0.0":
+    if step2.get("notes_and_events_control_version") != expected_control_version:
         errors.append(f"{ticker}: Data pack lacks S07 control version")
-    if contract.get("notes_and_events_control_version") != "1.0.0":
+    if contract.get("notes_and_events_control_version") != expected_control_version:
         errors.append(f"{ticker}: output contract lacks S07 control version")
     assessment = step2.get("notes_and_events_assessment", {})
     evidence_ids = {
@@ -415,6 +453,7 @@ def case_acceptance(
         f"{ticker}: {error}"
         for error in validate_note_event_assessment(
             assessment,
+            expected_control_version=expected_control_version,
             required_modules=required_modules,
             allowed_statuses=allowed_statuses,
             evidence_ids=evidence_ids,
@@ -517,6 +556,9 @@ def run_acceptance(
         if isinstance(row, dict) and row.get("fixture_status") == "ACTIVE"
     }
     required_modules = list(manifest.get("required_note_event_modules", []))
+    expected_control_version = str(
+        manifest.get("notes_and_events_control_version", "")
+    )
     allowed_statuses = set(manifest.get("allowed_module_statuses", []))
 
     results: list[dict[str, Any]] = []
@@ -541,6 +583,7 @@ def run_acceptance(
                 matrix_case=matrix_by_ticker[ticker],
                 out_root=out_root,
                 render_root=render_root,
+                expected_control_version=expected_control_version,
                 required_modules=required_modules,
                 allowed_statuses=allowed_statuses,
             )
