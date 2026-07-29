@@ -54,6 +54,195 @@ class Gate4PrivateContractTests(unittest.TestCase):
         ):
             self.assertNotIn(private_value, serialized)
 
+    def test_all_three_private_input_modes_validate_independently(self) -> None:
+        expected = {
+            "synthetic_exposure_only_manifest.json": (
+                "EXPOSURE_ONLY",
+                5,
+                0,
+                "NOT_EVALUATED",
+            ),
+            "synthetic_aggregated_portfolio_manifest.json": (
+                "AGGREGATED_PORTFOLIO",
+                5,
+                3,
+                "NOT_EVALUATED",
+            ),
+            "synthetic_gate4_manifest.json": (
+                "FULL_HOLDINGS",
+                0,
+                3,
+                "AVAILABLE",
+            ),
+        }
+        for filename, (
+            input_mode,
+            exposure_count,
+            holding_count,
+            liquidity_status,
+        ) in expected.items():
+            with self.subTest(filename=filename):
+                bundle, diagnostic = load_and_validate_private_inputs(
+                    SYNTHETIC_DIR / filename
+                )
+                self.assertIsNotNone(bundle)
+                assert bundle is not None
+                self.assertEqual(diagnostic["status"], INPUT_STATUS_VALIDATED)
+                self.assertEqual(diagnostic["input_mode"], input_mode)
+                self.assertEqual(len(bundle.exposures), exposure_count)
+                self.assertEqual(len(bundle.holdings), holding_count)
+                self.assertEqual(
+                    diagnostic["mode_capabilities"]["security_level_liquidity"],
+                    liquidity_status,
+                )
+
+    def test_exposure_only_mode_rejects_a_holdings_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = self.copy_synthetic_workspace(Path(tmp))
+            exposure_only_path = (
+                manifest_path.parent / "synthetic_exposure_only_manifest.json"
+            )
+            manifest = json.loads(exposure_only_path.read_text(encoding="utf-8"))
+            manifest["files"]["current_holdings"] = "synthetic_current_holdings.csv"
+            exposure_only_path.write_text(
+                json.dumps(manifest, indent=2),
+                encoding="utf-8",
+            )
+
+            bundle, diagnostic = load_and_validate_private_inputs(exposure_only_path)
+
+        self.assertIsNone(bundle)
+        self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+        self.assertTrue(
+            any(
+                check["document"] == "manifest"
+                and "current_holdings" in check["field"]
+                for check in diagnostic["checks"]
+                if check["status"] == "FAIL"
+            )
+        )
+
+    def test_aggregated_mode_requires_reviewer_exception_for_missing_identifier(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = self.copy_synthetic_workspace(Path(tmp))
+            aggregated_path = (
+                manifest_path.parent / "synthetic_aggregated_portfolio_manifest.json"
+            )
+            manifest = json.loads(aggregated_path.read_text(encoding="utf-8"))
+            manifest["field_governance"][
+                "reviewer_confirmed_not_applicable"
+            ].pop()
+            aggregated_path.write_text(
+                json.dumps(manifest, indent=2),
+                encoding="utf-8",
+            )
+
+            _, diagnostic = load_and_validate_private_inputs(aggregated_path)
+
+        self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+        self.assertTrue(
+            any(
+                check["document"] == "holdings"
+                and check["field"] == "security_identifier"
+                and check["check_id"].startswith("G4I-field-not-applicable")
+                for check in diagnostic["checks"]
+            )
+        )
+
+    def test_reviewer_exception_cannot_replace_a_full_holdings_core_field(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = self.copy_synthetic_workspace(Path(tmp))
+            holdings_path = manifest_path.parent / "synthetic_current_holdings.csv"
+            with holdings_path.open(newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+                fieldnames = list(rows[0])
+            rows[0]["security_identifier"] = ""
+            with holdings_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["field_governance"][
+                "reviewer_confirmed_not_applicable"
+            ].append(
+                {
+                    "document": "holdings",
+                    "field_path": "security_identifier",
+                    "row_id": "SYNTH-POS-001",
+                    "rationale": "Synthetic invalid waiver of a core field.",
+                    "reviewed_by": "Synthetic Governance Reviewer",
+                    "reviewed_at": "2026-07-17T12:00:00Z",
+                }
+            )
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2),
+                encoding="utf-8",
+            )
+
+            _, diagnostic = load_and_validate_private_inputs(manifest_path)
+
+        self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+        self.assertTrue(
+            any(
+                check["field"] == "security_identifier"
+                and check["status"] == "FAIL"
+                for check in diagnostic["checks"]
+            )
+        )
+
+    def test_reviewer_exception_conflicts_with_a_supplied_value(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = self.copy_synthetic_workspace(Path(tmp))
+            aggregated_path = (
+                manifest_path.parent / "synthetic_aggregated_portfolio_manifest.json"
+            )
+            holdings_path = manifest_path.parent / "synthetic_aggregated_holdings.csv"
+            with holdings_path.open(newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+                fieldnames = list(rows[0])
+            rows[0]["security_identifier"] = "SYNTH-AGGREGATE-ID"
+            with holdings_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+
+            _, diagnostic = load_and_validate_private_inputs(aggregated_path)
+
+        self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+        self.assertTrue(
+            any(
+                check["field"] == "security_identifier"
+                and check["check_id"].startswith("G4I-field-not-applicable")
+                for check in diagnostic["checks"]
+            )
+        )
+
+    def test_exposure_date_conflict_is_blocked_without_echoing_values(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = self.copy_synthetic_workspace(Path(tmp))
+            aggregated_path = (
+                manifest_path.parent / "synthetic_aggregated_portfolio_manifest.json"
+            )
+            exposure_path = (
+                manifest_path.parent / "synthetic_aggregated_exposure_summary.csv"
+            )
+            with exposure_path.open(newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+                fieldnames = list(rows[0])
+            rows[0]["as_of_date"] = "2026-07-16"
+            with exposure_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+
+            _, diagnostic = load_and_validate_private_inputs(aggregated_path)
+            serialized = json.dumps(diagnostic)
+
+        self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+        self.assertIn("G4I-as-of-date-consistency", diagnostic["blocking_check_ids"])
+        self.assertNotIn("SYNTH-EXP-GROSS", serialized)
+        self.assertNotIn("Synthetic Exposure Owner", serialized)
+
     def test_missing_policy_field_returns_private_inputs_required(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manifest_path = self.copy_synthetic_workspace(Path(tmp))

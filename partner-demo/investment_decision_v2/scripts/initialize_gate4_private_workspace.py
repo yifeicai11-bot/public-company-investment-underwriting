@@ -23,9 +23,21 @@ def main() -> int:
         default=DEFAULT_PRIVATE_ROOT,
         help="Local directory outside every Git worktree (default: ~/investment_private).",
     )
+    parser.add_argument(
+        "--input-mode",
+        choices=[
+            "EXPOSURE_ONLY",
+            "AGGREGATED_PORTFOLIO",
+            "FULL_HOLDINGS",
+        ],
+        help="Optional explicit input mode; omitted means the manifest remains incomplete.",
+    )
     args = parser.parse_args()
     try:
-        result = initialize_private_workspace(args.root)
+        result = initialize_private_workspace(
+            args.root,
+            input_mode=args.input_mode,
+        )
     except PrivacyBoundaryError:
         print("status=GATE_4_PRIVATE_WORKSPACE_BLOCKED")
         print("detail=Use an empty local directory outside every Git worktree.")
@@ -33,6 +45,7 @@ def main() -> int:
 
     print(f"status={result['status']}")
     print(f"workspace={args.root.expanduser()}")
+    print(f"input_mode={result['selected_input_mode']}")
     print("private_values_written=false")
     return 0
 

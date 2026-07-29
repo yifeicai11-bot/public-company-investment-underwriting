@@ -112,10 +112,12 @@ def build_local_entry_result(
             status = INPUT_STATUS_REQUIRED
 
     return {
-        "gate4_local_entry_version": "1.0.0",
+        "gate4_local_entry_version": "2.0.0",
         "generated_at": utc_now(),
         "status": status,
         "private_input_status": private_status,
+        "input_mode": private_diagnostic.get("input_mode", "NOT_EVALUATED"),
+        "mode_capabilities": private_diagnostic.get("mode_capabilities", {}),
         "gate3_eligibility": safe_eligibility,
         "system_portfolio_assessment": {
             "status": "NOT_EVALUATED",

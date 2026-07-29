@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_correction_record",
+  "record_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "base_commit": "23f27fe48779c5bb81d6a41a86b123f50c3e2324",
+  "supersedes_status_in": "s01_s06_scope_audit_2026-07-28.json",
+  "scope_rule": "This record corrects S03 and S04 only. No S06 Data and Evidence Layer change is claimed.",
+  "sessions": [
+    {
+      "session": "S03",
+      "name": "Private Portfolio Schemas",
+      "status": "ACCEPTED",
+      "requirements_completed": [
+        "Added an independent exposure-row schema and exposure templates.",
+        "Added explicit EXPOSURE_ONLY, AGGREGATED_PORTFOLIO, and FULL_HOLDINGS manifest modes.",
+        "Added mode-specific required, optional, and prohibited document rules.",
+        "Added a shared machine-readable field-governance contract.",
+        "Classified fields as CORE_REQUIRED, CONDITIONAL, OPTIONAL, or REVIEWER_CONFIRMED_NOT_APPLICABLE.",
+        "Blocked reviewer exceptions from replacing core fields or coexisting with supplied values.",
+        "Added synthetic positive and negative cases for all three input modes.",
+        "Kept the system portfolio assessment NOT_EVALUATED and Partner decision PENDING."
+      ],
+      "shared_components": [
+        "gate4/schemas/exposure_row.schema.json",
+        "gate4/schemas/holding_row.schema.json",
+        "gate4/schemas/private_workspace_manifest.schema.json",
+        "gate4/schemas/field_governance.schema.json",
+        "gate4/field_governance.json",
+        "scripts/gate4_private_contract.py",
+        "scripts/run_gate4_local_entry.py"
+      ],
+      "company_specific_patches": false,
+      "private_defaults_invented": false
+    },
+    {
+      "session": "S04",
+      "name": "Privacy Controls and Input Diagnostics",
+      "status": "ACCEPTED",
+      "requirements_completed": [
+        "Preserved repository-external private workspaces and separate private output directories.",
+        "Added exposure filenames to Git ignore and repository privacy scanning rules.",
+        "Preserved local-only modules with no network, telemetry, remote logging, or external-model clients.",
+        "Preserved privacy-safe diagnostics for missing, stale, contradictory, nonfinite, formula, and reconciliation failures.",
+        "Kept direct private PDF writes blocked.",
+        "Added a local-only PDF sanitizer that rebuilds pages, applies fixed non-identifying document metadata, recursively removes metadata streams and related page/resource metadata, rejects attachments and document-level active actions, verifies page count and metadata after writing, and enforces file mode 0600.",
+        "Added a CLI whose terminal output omits private paths and values."
+      ],
+      "shared_components": [
+        "scripts/gate4_privacy.py",
+        "scripts/sanitize_gate4_private_pdf.py",
+        "scripts/check_private_data_boundaries.py",
+        ".gitignore",
+        "requirements-gate4.txt"
+      ],
+      "external_transmission_authorized": false,
+      "automatic_trade_execution": false
+    }
+  ],
+  "acceptance_results": {
+    "unit_and_regression_tests": {
+      "status": "PASS",
+      "passed": 122,
+      "failed": 0
+    },
+    "input_mode_fixtures": [
+      {
+        "mode": "FULL_HOLDINGS",
+        "status": "GATE_4_INPUTS_VALIDATED",
+        "checks": 39,
+        "failed": 0
+      },
+      {
+        "mode": "AGGREGATED_PORTFOLIO",
+        "status": "GATE_4_INPUTS_VALIDATED",
+        "checks": 63,
+        "failed": 0
+      },
+      {
+        "mode": "EXPOSURE_ONLY",
+        "status": "GATE_4_INPUTS_VALIDATED",
+        "checks": 43,
+        "failed": 0
+      }
+    ],
+    "json_schema_meta_validation": {
+      "status": "PASS",
+      "schemas_checked": 8
+    },
+    "skill_validation": {
+      "status": "PASS"
+    },
+    "repository_privacy_scan": {
+      "status": "PASS",
+      "files_checked": 30,
+      "violations": 0
+    },
+    "friday_v1_frozen_baseline": {
+      "status": "PASS",
+      "checks": 58,
+      "failures": 0
+    },
+    "cross_industry_regression_governance": {
+      "status": "PASS",
+      "active_cases": 6,
+      "planned_cases": 3
+    },
+    "real_pdf_sanitizer_regression": {
+      "fixture": "CROX_Full_Report_Bilingual.pdf",
+      "status": "PASS",
+      "pages_before": 11,
+      "pages_after": 11,
+      "extracted_text_hash_equal": true,
+      "first_page_render_nonblank": true,
+      "sanitized_file_mode": "0600"
+    }
+  },
+  "remaining_boundary": "S03 and S04 are complete. The future Gate 4 portfolio constraint engine and Partner-approved position decision are separate later sessions; S06 remains uncompleted and must be implemented only in the shared Data and Evidence Layer."
+}

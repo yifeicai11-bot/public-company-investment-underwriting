@@ -1,0 +1,73 @@
+{
+  "schema_version": "2.0.0",
+  "document_type": "gate4_private_workspace_manifest",
+  "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
+  "workspace_id": "SYNTHETIC-GATE4-EXPOSURE-ONLY",
+  "as_of_date": "2026-07-17",
+  "input_mode": "EXPOSURE_ONLY",
+  "portfolio_nav": null,
+  "base_currency": "USD",
+  "weight_reconciliation_tolerance": 0.0001,
+  "field_governance": {
+    "contract_version": "1.0.0",
+    "reviewer_confirmed_not_applicable": [
+      {
+        "document": "manifest",
+        "field_path": "portfolio_nav",
+        "row_id": null,
+        "rationale": "The synthetic exposure-only fixture intentionally provides normalized weights without fund NAV.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-GROSS",
+        "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-NET",
+        "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-SECTOR",
+        "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-COUNTRY",
+        "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-CORR",
+        "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
+      }
+    ]
+  },
+  "files": {
+    "portfolio_policy": "synthetic_portfolio_policy.yaml",
+    "exposure_summary": "synthetic_exposure_only_summary.csv",
+    "current_holdings": null,
+    "opportunity_set": "synthetic_opportunity_set.csv",
+    "approval_config": "synthetic_approval_config.yaml",
+    "gate3_freshness_attestation": "synthetic_gate3_freshness_attestation.yaml",
+    "private_output_dir": "synthetic_private_outputs"
+  }
+}

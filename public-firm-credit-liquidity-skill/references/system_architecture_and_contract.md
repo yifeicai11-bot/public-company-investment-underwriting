@@ -174,12 +174,25 @@ templates under `partner-demo/investment_decision_v2/gate4/`, initialize
 entry check with `run_gate4_local_entry.py`. Do not paste real portfolio data
 into chat or send it to an external model/API.
 
+The private manifest must select `EXPOSURE_ONLY`, `AGGREGATED_PORTFOLIO`, or
+`FULL_HOLDINGS`. The first mode prohibits holdings; the second requires both
+aggregate exposure and issuer-level position files; the third requires complete
+security-level holdings and permits an optional independent exposure
+reconciliation. Never infer security-level liquidity from a lower-granularity
+mode. Apply the shared four-class field-governance contract and require a dated,
+row-specific reviewer record for every permitted not-applicable field.
+
 Private-input validation may return `GATE_4_INPUTS_VALIDATED`, but this means
 only that the dated local bundle is complete and reconciled. Until the shared
 constraint engine is implemented and run, keep System Portfolio Assessment
 `NOT_EVALUATED`, Partner Decision `PENDING`, and every sizing/action field null.
 The legacy `build_partner_portfolio_overlay.py` path is restricted to
 `SYNTHETIC_PUBLIC_EXAMPLE` demos and must reject real inputs.
+
+Direct private PDF writes are prohibited. A private PDF may be written only by
+the local sanitizer after fixed metadata, XMP removal, attachment/action checks,
+page-count preservation, secure output permissions, and post-write reopening
+all pass.
 
 ## Decision Confidence
 

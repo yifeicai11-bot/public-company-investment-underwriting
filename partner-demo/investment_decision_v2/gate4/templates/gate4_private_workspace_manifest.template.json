@@ -1,15 +1,20 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "document_type": "gate4_private_workspace_manifest",
   "data_classification": "TEMPLATE_NO_DATA",
   "workspace_id": null,
   "as_of_date": null,
+  "input_mode": null,
   "portfolio_nav": null,
   "base_currency": null,
   "weight_reconciliation_tolerance": null,
-  "holdings_scope": "FULL_PORTFOLIO",
+  "field_governance": {
+    "contract_version": "1.0.0",
+    "reviewer_confirmed_not_applicable": []
+  },
   "files": {
     "portfolio_policy": "portfolio_policy.yaml",
+    "exposure_summary": "exposure_summary.csv",
     "current_holdings": "current_holdings.csv",
     "opportunity_set": "opportunity_set.csv",
     "approval_config": "approval_config.yaml",

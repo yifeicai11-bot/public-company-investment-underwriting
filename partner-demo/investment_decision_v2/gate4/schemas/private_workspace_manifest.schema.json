@@ -10,14 +10,15 @@
     "data_classification",
     "workspace_id",
     "as_of_date",
+    "input_mode",
     "portfolio_nav",
     "base_currency",
     "weight_reconciliation_tolerance",
-    "holdings_scope",
+    "field_governance",
     "files"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "2.0.0"},
     "document_type": {"const": "gate4_private_workspace_manifest"},
     "data_classification": {
       "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
@@ -31,8 +32,11 @@
       "type": "string",
       "format": "date"
     },
+    "input_mode": {
+      "enum": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"]
+    },
     "portfolio_nav": {
-      "type": "number",
+      "type": ["number", "null"],
       "exclusiveMinimum": 0
     },
     "base_currency": {
@@ -44,14 +48,60 @@
       "minimum": 0,
       "maximum": 0.05
     },
-    "holdings_scope": {
-      "const": "FULL_PORTFOLIO"
+    "field_governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "reviewer_confirmed_not_applicable"
+      ],
+      "properties": {
+        "contract_version": {"const": "1.0.0"},
+        "reviewer_confirmed_not_applicable": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "document",
+              "field_path",
+              "row_id",
+              "rationale",
+              "reviewed_by",
+              "reviewed_at"
+            ],
+            "properties": {
+              "document": {
+                "enum": [
+                  "manifest",
+                  "policy",
+                  "exposures",
+                  "holdings",
+                  "opportunities",
+                  "approval",
+                  "freshness"
+                ]
+              },
+              "field_path": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.]+$",
+                "maxLength": 256
+              },
+              "row_id": {"type": ["string", "null"], "maxLength": 128},
+              "rationale": {"type": "string", "minLength": 1, "maxLength": 2000},
+              "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+              "reviewed_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      }
     },
     "files": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "portfolio_policy",
+        "exposure_summary",
         "current_holdings",
         "opportunity_set",
         "approval_config",
@@ -60,12 +110,64 @@
       ],
       "properties": {
         "portfolio_policy": {"type": "string", "minLength": 1},
-        "current_holdings": {"type": "string", "minLength": 1},
+        "exposure_summary": {"type": ["string", "null"], "minLength": 1},
+        "current_holdings": {"type": ["string", "null"], "minLength": 1},
         "opportunity_set": {"type": "string", "minLength": 1},
         "approval_config": {"type": "string", "minLength": 1},
         "gate3_freshness_attestation": {"type": "string", "minLength": 1},
         "private_output_dir": {"type": "string", "minLength": 1}
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"input_mode": {"const": "EXPOSURE_ONLY"}},
+        "required": ["input_mode"]
+      },
+      "then": {
+        "properties": {
+          "files": {
+            "properties": {
+              "exposure_summary": {"type": "string"},
+              "current_holdings": {"type": "null"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"input_mode": {"const": "AGGREGATED_PORTFOLIO"}},
+        "required": ["input_mode"]
+      },
+      "then": {
+        "properties": {
+          "portfolio_nav": {"type": "number"},
+          "files": {
+            "properties": {
+              "exposure_summary": {"type": "string"},
+              "current_holdings": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"input_mode": {"const": "FULL_HOLDINGS"}},
+        "required": ["input_mode"]
+      },
+      "then": {
+        "properties": {
+          "portfolio_nav": {"type": "number"},
+          "files": {
+            "properties": {
+              "current_holdings": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  ]
 }

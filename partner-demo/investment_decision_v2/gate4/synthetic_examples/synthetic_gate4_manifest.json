@@ -1,15 +1,20 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "document_type": "gate4_private_workspace_manifest",
   "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
-  "workspace_id": "SYNTHETIC-GATE4-DEMO",
+  "workspace_id": "SYNTHETIC-GATE4-FULL",
   "as_of_date": "2026-07-17",
+  "input_mode": "FULL_HOLDINGS",
   "portfolio_nav": 10000000,
   "base_currency": "USD",
   "weight_reconciliation_tolerance": 0.0001,
-  "holdings_scope": "FULL_PORTFOLIO",
+  "field_governance": {
+    "contract_version": "1.0.0",
+    "reviewer_confirmed_not_applicable": []
+  },
   "files": {
     "portfolio_policy": "synthetic_portfolio_policy.yaml",
+    "exposure_summary": null,
     "current_holdings": "synthetic_current_holdings.csv",
     "opportunity_set": "synthetic_opportunity_set.csv",
     "approval_config": "synthetic_approval_config.yaml",

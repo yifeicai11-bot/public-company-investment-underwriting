@@ -6,8 +6,17 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Iterable, Optional
+
+try:
+    from pypdf import PdfReader, PdfWriter
+    from pypdf.generic import NameObject
+except ImportError:  # pragma: no cover - exercised through dependency diagnostics
+    PdfReader = None
+    PdfWriter = None
+    NameObject = None
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -28,6 +37,7 @@ SUPPORTED_CLASSIFICATIONS = {
 PRIVATE_TEMPLATE_TARGETS = {
     "gate4_private_workspace_manifest.template.json": "gate4_private_workspace_manifest.json",
     "portfolio_policy.template.yaml": "portfolio_policy.yaml",
+    "exposure_summary.template.csv": "exposure_summary.csv",
     "current_holdings.template.csv": "current_holdings.csv",
     "opportunity_set.template.csv": "opportunity_set.csv",
     "approval_config.template.yaml": "approval_config.yaml",
@@ -55,6 +65,9 @@ SENSITIVE_EXACT_FILENAMES = {
     "current_holdings.csv",
     "current_holdings.xlsx",
     "current_holdings.xls",
+    "exposure_summary.csv",
+    "exposure_summary.xlsx",
+    "exposure_summary.xls",
     "opportunity_set.csv",
     "opportunity_set.xlsx",
     "opportunity_set.xls",
@@ -75,6 +88,9 @@ SENSITIVE_NAME_TOKENS = {
     "fund_holdings",
     "live_holdings",
     "portfolio_holdings",
+    "portfolio_exposures",
+    "current_exposures",
+    "aggregate_exposures",
     "partner_holdings",
     "portfolio_constraints",
     "position_sizing",
@@ -83,6 +99,13 @@ SENSITIVE_NAME_TOKENS = {
 
 PRIVATE_CONTENT_FIELDS = {
     "portfolio_nav",
+    "target_return",
+    "downside_tolerance",
+    "position_weight",
+    "exposure_id",
+    "exposure_type",
+    "exposure_weight",
+    "source_basis",
     "current_thesis_status",
     "market_value_base_currency",
     "approved_position_min",
@@ -114,6 +137,18 @@ FORBIDDEN_PUBLIC_SUFFIXES = {
 APPROVED_PUBLIC_PDF_ROOTS = {
     REPO_ROOT / "examples",
     REPO_ROOT / "release-baselines",
+}
+
+SAFE_PRIVATE_PDF_METADATA = {
+    "/Title": "Private Gate 4 Report",
+    "/Author": "Local Gate 4",
+    "/Creator": "Gate 4 PDF Sanitizer",
+    "/Producer": "Gate 4 PDF Sanitizer",
+}
+PRIVATE_PDF_METADATA_KEYS = {
+    "/LastModified",
+    "/Metadata",
+    "/PieceInfo",
 }
 
 
@@ -175,7 +210,12 @@ def assert_local_workspace(
     return resolved
 
 
-def assert_private_output_path(destination: Path, *, workspace_root: Path) -> Path:
+def _assert_private_output_path(
+    destination: Path,
+    *,
+    workspace_root: Path,
+    allow_sanitized_pdf: bool,
+) -> Path:
     root = assert_local_workspace(
         workspace_root,
         data_classification=PRIVATE_CLASSIFICATION,
@@ -185,11 +225,19 @@ def assert_private_output_path(destination: Path, *, workspace_root: Path) -> Pa
     resolved = resolved_path(destination)
     if not is_within(resolved, root):
         raise PrivacyBoundaryError("Private outputs must remain inside the local workspace.")
-    if resolved.suffix.lower() == ".pdf":
+    if resolved.suffix.lower() == ".pdf" and not allow_sanitized_pdf:
         raise PrivacyBoundaryError(
-            "Private PDF generation is disabled until metadata sanitization is implemented."
+            "Private PDFs must be written through the tested metadata sanitizer."
         )
     return resolved
+
+
+def assert_private_output_path(destination: Path, *, workspace_root: Path) -> Path:
+    return _assert_private_output_path(
+        destination,
+        workspace_root=workspace_root,
+        allow_sanitized_pdf=False,
+    )
 
 
 def secure_directory(path: Path) -> Path:
@@ -198,16 +246,18 @@ def secure_directory(path: Path) -> Path:
     return path
 
 
-def secure_atomic_write_bytes(
+def _secure_atomic_write_bytes(
     destination: Path,
     payload: bytes,
     *,
     workspace_root: Path,
     overwrite: bool = True,
+    allow_sanitized_pdf: bool = False,
 ) -> Path:
-    destination = assert_private_output_path(
+    destination = _assert_private_output_path(
         destination,
         workspace_root=workspace_root,
+        allow_sanitized_pdf=allow_sanitized_pdf,
     )
     if destination.exists() and not overwrite:
         raise PrivacyBoundaryError("A local private file already exists; no overwrite was performed.")
@@ -233,6 +283,22 @@ def secure_atomic_write_bytes(
     return destination
 
 
+def secure_atomic_write_bytes(
+    destination: Path,
+    payload: bytes,
+    *,
+    workspace_root: Path,
+    overwrite: bool = True,
+) -> Path:
+    return _secure_atomic_write_bytes(
+        destination,
+        payload,
+        workspace_root=workspace_root,
+        overwrite=overwrite,
+        allow_sanitized_pdf=False,
+    )
+
+
 def secure_atomic_write_json(
     destination: Path,
     payload: dict[str, Any],
@@ -249,16 +315,223 @@ def secure_atomic_write_json(
     )
 
 
-def _private_template_payload(template_path: Path) -> bytes:
+def _private_pdf_source(source: Path, *, workspace_root: Path) -> tuple[Path, Path]:
+    root = assert_local_workspace(
+        workspace_root,
+        data_classification=PRIVATE_CLASSIFICATION,
+    )
+    if source.exists() and source.is_symlink():
+        raise PrivacyBoundaryError("Private PDF sources cannot be symbolic links.")
+    resolved = resolved_path(source)
+    if not is_within(resolved, root):
+        raise PrivacyBoundaryError(
+            "Private PDF sources must remain inside the local workspace."
+        )
+    if resolved.suffix.lower() != ".pdf" or not resolved.is_file():
+        raise PrivacyBoundaryError("The sanitizer requires an existing local PDF.")
+    return resolved, root
+
+
+def _pdf_contains_disallowed_document_payload(reader: Any) -> bool:
+    root = reader.trailer.get("/Root")
+    if hasattr(root, "get_object"):
+        root = root.get_object()
+    if not isinstance(root, dict):
+        return True
+    if root.get("/OpenAction") is not None or root.get("/AA") is not None:
+        return True
+    try:
+        if list(reader.attachments.keys()):
+            return True
+    except Exception:
+        return True
+    return False
+
+
+def _strip_pdf_metadata_entries(
+    value: Any,
+    *,
+    seen: set[int],
+) -> None:
+    try:
+        resolved = value.get_object() if hasattr(value, "get_object") else value
+    except Exception as exc:
+        raise PrivacyBoundaryError(
+            "The private PDF metadata tree could not be inspected."
+        ) from exc
+    object_id = id(resolved)
+    if object_id in seen:
+        return
+    seen.add(object_id)
+    if isinstance(resolved, dict):
+        for key in PRIVATE_PDF_METADATA_KEYS:
+            resolved.pop(NameObject(key), None)
+        for child in list(resolved.values()):
+            _strip_pdf_metadata_entries(child, seen=seen)
+    elif isinstance(resolved, (list, tuple)):
+        for child in resolved:
+            _strip_pdf_metadata_entries(child, seen=seen)
+
+
+def _pdf_metadata_entries_present(value: Any, *, seen: set[int]) -> bool:
+    try:
+        resolved = value.get_object() if hasattr(value, "get_object") else value
+    except Exception:
+        return True
+    object_id = id(resolved)
+    if object_id in seen:
+        return False
+    seen.add(object_id)
+    if isinstance(resolved, dict):
+        if any(key in resolved for key in PRIVATE_PDF_METADATA_KEYS):
+            return True
+        return any(
+            _pdf_metadata_entries_present(child, seen=seen)
+            for child in resolved.values()
+        )
+    if isinstance(resolved, (list, tuple)):
+        return any(
+            _pdf_metadata_entries_present(child, seen=seen)
+            for child in resolved
+        )
+    return False
+
+
+def _sanitized_pdf_bytes(source: Path) -> tuple[bytes, int]:
+    if PdfReader is None or PdfWriter is None or NameObject is None:
+        raise PrivacyBoundaryError(
+            "PDF sanitization is unavailable; install requirements-gate4.txt."
+        )
+    try:
+        reader = PdfReader(str(source), strict=True)
+    except Exception as exc:
+        raise PrivacyBoundaryError("The private PDF could not be parsed.") from exc
+    if reader.is_encrypted:
+        raise PrivacyBoundaryError("Encrypted private PDFs cannot be sanitized.")
+    if _pdf_contains_disallowed_document_payload(reader):
+        raise PrivacyBoundaryError(
+            "The private PDF contains attachments or document-level active actions."
+        )
+
+    writer = PdfWriter()
+    try:
+        for page in reader.pages:
+            _strip_pdf_metadata_entries(page, seen=set())
+            sanitized_page = writer.add_page(page)
+            _strip_pdf_metadata_entries(sanitized_page, seen=set())
+        writer.add_metadata(SAFE_PRIVATE_PDF_METADATA)
+        _strip_pdf_metadata_entries(writer.root_object, seen=set())
+        output = BytesIO()
+        writer.write(output)
+        payload = output.getvalue()
+    except Exception as exc:
+        raise PrivacyBoundaryError("The private PDF could not be sanitized.") from exc
+    return payload, len(reader.pages)
+
+
+def _verify_sanitized_pdf(payload: bytes, *, expected_pages: int) -> None:
+    if PdfReader is None:
+        raise PrivacyBoundaryError(
+            "PDF verification is unavailable; install requirements-gate4.txt."
+        )
+    try:
+        reader = PdfReader(BytesIO(payload), strict=True)
+        metadata = dict(reader.metadata or {})
+        root = reader.trailer.get("/Root")
+        if hasattr(root, "get_object"):
+            root = root.get_object()
+        metadata_stream_present = (
+            not isinstance(root, dict)
+            or _pdf_metadata_entries_present(root, seen=set())
+        )
+        valid = (
+            not reader.is_encrypted
+            and len(reader.pages) == expected_pages
+            and metadata == SAFE_PRIVATE_PDF_METADATA
+            and not metadata_stream_present
+            and not _pdf_contains_disallowed_document_payload(reader)
+        )
+    except Exception as exc:
+        raise PrivacyBoundaryError(
+            "The sanitized private PDF failed verification."
+        ) from exc
+    if not valid:
+        raise PrivacyBoundaryError(
+            "The sanitized private PDF failed metadata or page verification."
+        )
+
+
+def sanitize_private_pdf(
+    source: Path,
+    destination: Path,
+    *,
+    workspace_root: Path,
+    overwrite: bool = True,
+) -> dict[str, Any]:
+    source, root = _private_pdf_source(source, workspace_root=workspace_root)
+    destination = _assert_private_output_path(
+        destination,
+        workspace_root=root,
+        allow_sanitized_pdf=True,
+    )
+    payload, page_count = _sanitized_pdf_bytes(source)
+    _verify_sanitized_pdf(payload, expected_pages=page_count)
+    _secure_atomic_write_bytes(
+        destination,
+        payload,
+        workspace_root=root,
+        overwrite=overwrite,
+        allow_sanitized_pdf=True,
+    )
+    try:
+        written_payload = destination.read_bytes()
+    except OSError as exc:
+        raise PrivacyBoundaryError(
+            "The sanitized private PDF could not be reopened."
+        ) from exc
+    _verify_sanitized_pdf(written_payload, expected_pages=page_count)
+    return {
+        "status": "GATE_4_PRIVATE_PDF_SANITIZED",
+        "page_count": page_count,
+        "metadata_sanitized": True,
+        "xmp_removed": True,
+        "attachments_absent": True,
+        "output_mode": "0600",
+        "source_path_included": False,
+        "private_values_included_in_diagnostic": False,
+    }
+
+
+def _private_template_payload(
+    template_path: Path,
+    *,
+    input_mode: str | None,
+) -> bytes:
     if template_path.suffix.lower() == ".json":
         payload = json.loads(template_path.read_text(encoding="utf-8"))
         payload["data_classification"] = PRIVATE_CLASSIFICATION
+        if template_path.name == "gate4_private_workspace_manifest.template.json":
+            payload["input_mode"] = input_mode
+            if input_mode == "EXPOSURE_ONLY":
+                payload["files"]["current_holdings"] = None
+            elif input_mode == "FULL_HOLDINGS":
+                payload["files"]["exposure_summary"] = None
         return (json.dumps(payload, indent=2) + "\n").encode("utf-8")
     text = template_path.read_text(encoding="utf-8")
     return text.replace("TEMPLATE_NO_DATA", PRIVATE_CLASSIFICATION).encode("utf-8")
 
 
-def initialize_private_workspace(root: Path = DEFAULT_PRIVATE_ROOT) -> dict[str, Any]:
+def initialize_private_workspace(
+    root: Path = DEFAULT_PRIVATE_ROOT,
+    *,
+    input_mode: str | None = None,
+) -> dict[str, Any]:
+    if input_mode is not None and input_mode not in {
+        "EXPOSURE_ONLY",
+        "AGGREGATED_PORTFOLIO",
+        "FULL_HOLDINGS",
+    }:
+        raise PrivacyBoundaryError("The selected Gate 4 input mode is unsupported.")
     root = assert_local_workspace(
         root,
         data_classification=PRIVATE_CLASSIFICATION,
@@ -280,7 +553,10 @@ def initialize_private_workspace(root: Path = DEFAULT_PRIVATE_ROOT) -> dict[str,
         for template_path, target_path in targets.items():
             secure_atomic_write_bytes(
                 target_path,
-                _private_template_payload(template_path),
+                _private_template_payload(
+                    template_path,
+                    input_mode=input_mode,
+                ),
                 workspace_root=root,
                 overwrite=False,
             )
@@ -300,13 +576,14 @@ def initialize_private_workspace(root: Path = DEFAULT_PRIVATE_ROOT) -> dict[str,
         "file_mode": "0600",
         "created_files": sorted(created),
         "private_output_directory": "private_outputs",
+        "selected_input_mode": input_mode or "NOT_SELECTED",
         "raw_portfolio_values_in_output": False,
     }
 
 
 def _is_public_gate4_fixture(path: Path) -> bool:
     resolved = resolved_path(path)
-    return any(
+    return resolved == resolved_path(GATE4_DIR / "field_governance.json") or any(
         is_within(resolved, resolved_path(allowed_root))
         for allowed_root in (TEMPLATE_DIR, GATE4_DIR / "schemas")
     )

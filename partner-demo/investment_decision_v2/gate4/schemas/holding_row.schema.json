@@ -7,6 +7,7 @@
   "required": [
     "data_classification",
     "as_of_date",
+    "position_granularity",
     "position_id",
     "security_identifier",
     "issuer_identifier",
@@ -31,8 +32,15 @@
       "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
     },
     "as_of_date": {"type": "string", "format": "date"},
+    "position_granularity": {
+      "enum": ["AGGREGATED_ISSUER", "SECURITY_LEVEL"]
+    },
     "position_id": {"type": "string", "minLength": 1, "maxLength": 128},
-    "security_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
+    "security_identifier": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 128
+    },
     "issuer_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
     "issuer_name": {"type": "string", "minLength": 1, "maxLength": 256},
     "security_type": {
@@ -44,8 +52,12 @@
     "base_currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
     "sector": {"type": "string", "minLength": 1, "maxLength": 128},
     "country": {"type": "string", "minLength": 2, "maxLength": 128},
-    "average_daily_value_traded": {"type": "number", "minimum": 0},
-    "estimated_days_to_exit": {"type": "number", "minimum": 0, "maximum": 3650},
+    "average_daily_value_traded": {"type": ["number", "null"], "minimum": 0},
+    "estimated_days_to_exit": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 3650
+    },
     "current_thesis_status": {
       "enum": [
         "ACTIVE",
@@ -58,7 +70,7 @@
     },
     "correlation_bucket": {"type": "string", "minLength": 1, "maxLength": 128},
     "existing_hedge_identifier": {"type": ["string", "null"], "maxLength": 128},
-    "hedge_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+    "hedge_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
     "data_owner": {"type": "string", "minLength": 2, "maxLength": 256}
   }
 }

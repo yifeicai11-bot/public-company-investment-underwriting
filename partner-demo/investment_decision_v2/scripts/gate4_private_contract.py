@@ -36,11 +36,48 @@ except ImportError:  # pragma: no cover - exercised through dependency diagnosti
 SCRIPT_DIR = Path(__file__).resolve().parent
 GATE4_DIR = SCRIPT_DIR.parent / "gate4"
 SCHEMA_DIR = GATE4_DIR / "schemas"
-PRIVATE_INPUT_CONTRACT_VERSION = "1.0.0"
+FIELD_GOVERNANCE_PATH = GATE4_DIR / "field_governance.json"
+PRIVATE_INPUT_CONTRACT_VERSION = "2.0.0"
 FRAMEWORK_STATUS = "GATE_4_FRAMEWORK_READY"
 INPUT_STATUS_REQUIRED = "GATE_4_PRIVATE_INPUTS_REQUIRED"
 INPUT_STATUS_VALIDATED = "GATE_4_INPUTS_VALIDATED"
 SUPPORTED_CLASSIFICATIONS = {"PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"}
+SUPPORTED_INPUT_MODES = {
+    "EXPOSURE_ONLY",
+    "AGGREGATED_PORTFOLIO",
+    "FULL_HOLDINGS",
+}
+REQUIREMENT_CLASSES = {
+    "CORE_REQUIRED",
+    "CONDITIONAL",
+    "OPTIONAL",
+    "REVIEWER_CONFIRMED_NOT_APPLICABLE",
+}
+DOCUMENT_MANIFEST_FIELDS = {
+    "policy": "portfolio_policy",
+    "exposures": "exposure_summary",
+    "holdings": "current_holdings",
+    "opportunities": "opportunity_set",
+    "approval": "approval_config",
+    "freshness": "gate3_freshness_attestation",
+}
+MODE_CAPABILITIES = {
+    "EXPOSURE_ONLY": {
+        "aggregate_exposure_validation": "AVAILABLE",
+        "holdings_reconciliation": "NOT_EVALUATED",
+        "security_level_liquidity": "NOT_EVALUATED",
+    },
+    "AGGREGATED_PORTFOLIO": {
+        "aggregate_exposure_validation": "AVAILABLE",
+        "holdings_reconciliation": "AVAILABLE",
+        "security_level_liquidity": "NOT_EVALUATED",
+    },
+    "FULL_HOLDINGS": {
+        "aggregate_exposure_validation": "DERIVABLE_FROM_HOLDINGS",
+        "holdings_reconciliation": "AVAILABLE",
+        "security_level_liquidity": "AVAILABLE",
+    },
+}
 ALLOWED_DECISIONS = {
     "PENDING",
     "APPROVED",
@@ -69,10 +106,12 @@ class PrivateInputCheck:
 class PrivateInputBundle:
     manifest: dict[str, Any]
     policy: dict[str, Any]
+    exposures: list[dict[str, Any]]
     holdings: list[dict[str, Any]]
     opportunities: list[dict[str, Any]]
     approval: dict[str, Any]
     freshness_attestation: dict[str, Any]
+    field_governance_contract: dict[str, Any]
     manifest_path: Path
     output_dir: Path
 
@@ -304,6 +343,17 @@ def normalize_holding_row(row: dict[str, Any]) -> dict[str, Any]:
         parser = parse_ratio if field in {"position_weight", "hedge_ratio"} else parse_number
         normalized[field] = parser(row.get(field))
     normalized["existing_hedge_identifier"] = clean_text(row.get("existing_hedge_identifier"))
+    normalized["security_identifier"] = clean_text(row.get("security_identifier"))
+    return normalized
+
+
+def normalize_exposure_row(row: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(row)
+    normalized["exposure_weight"] = parse_ratio(row.get("exposure_weight"))
+    normalized["market_value_base_currency"] = parse_number(
+        row.get("market_value_base_currency")
+    )
+    normalized["source_locator"] = clean_text(row.get("source_locator"))
     return normalized
 
 
@@ -320,6 +370,20 @@ def normalize_opportunity_row(row: dict[str, Any]) -> dict[str, Any]:
 def load_schema(name: str) -> dict[str, Any]:
     path = SCHEMA_DIR / name
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_field_governance_contract() -> dict[str, Any]:
+    try:
+        payload = json.loads(FIELD_GOVERNANCE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PrivateInputLoadError(
+            "The public field-governance contract could not be loaded."
+        ) from exc
+    if not isinstance(payload, dict):
+        raise PrivateInputLoadError(
+            "The public field-governance contract must contain one object."
+        )
+    return payload
 
 
 def _field_path(error: Any) -> str:
@@ -448,24 +512,65 @@ def resolve_manifest_path(base: Path, relative_value: Any, *, output: bool = Fal
 def _load_bundle_documents(
     manifest_path: Path,
     manifest: dict[str, Any],
+    field_governance_contract: dict[str, Any],
     checks: list[PrivateInputCheck],
 ) -> PrivateInputBundle | None:
     base = manifest_path.resolve().parent
     files = manifest.get("files")
     if not isinstance(files, dict):
         return None
-    loaders: dict[str, tuple[str, Callable[[Path], Any]]] = {
-        "portfolio_policy": ("policy", read_mapping),
-        "current_holdings": ("holdings", read_table),
-        "opportunity_set": ("opportunities", read_table),
-        "approval_config": ("approval", read_mapping),
-        "gate3_freshness_attestation": ("freshness_attestation", read_mapping),
+    mode = manifest.get("input_mode")
+    mode_requirements = field_governance_contract.get(
+        "mode_document_requirements", {}
+    ).get(mode, {})
+    required_documents = set(mode_requirements.get("required_documents", []))
+    optional_documents = set(mode_requirements.get("optional_documents", []))
+    prohibited_documents = set(mode_requirements.get("prohibited_documents", []))
+    loaders: dict[str, Callable[[Path], Any]] = {
+        "policy": read_mapping,
+        "exposures": read_table,
+        "holdings": read_table,
+        "opportunities": read_table,
+        "approval": read_mapping,
+        "freshness": read_mapping,
     }
     loaded: dict[str, Any] = {}
-    for manifest_field, (document, loader) in loaders.items():
+    for document, manifest_field in DOCUMENT_MANIFEST_FIELDS.items():
+        supplied_path = files.get(manifest_field)
+        if document in prohibited_documents:
+            if clean_text(supplied_path) is not None:
+                checks.append(
+                    PrivateInputCheck(
+                        check_id=f"G4I-{document}-prohibited-for-mode",
+                        document="manifest",
+                        status="FAIL",
+                        issue_class="HARD_STOP",
+                        field=f"files.{manifest_field}",
+                        row_number=None,
+                        message="The document is prohibited for the selected input mode.",
+                        remediation="Remove the prohibited file reference or select the correct input mode.",
+                    )
+                )
+            continue
+        if document not in required_documents and document not in optional_documents:
+            checks.append(
+                PrivateInputCheck(
+                    check_id=f"G4I-{document}-undefined-for-mode",
+                    document="manifest",
+                    status="FAIL",
+                    issue_class="HARD_STOP",
+                    field=f"files.{manifest_field}",
+                    row_number=None,
+                    message="The document has no governance rule for the selected input mode.",
+                    remediation="Use a supported input mode and the published field-governance contract.",
+                )
+            )
+            continue
+        if document in optional_documents and clean_text(supplied_path) is None:
+            continue
         try:
-            path = resolve_manifest_path(base, files.get(manifest_field))
-            loaded[document] = loader(path)
+            path = resolve_manifest_path(base, supplied_path)
+            loaded[document] = loaders[document](path)
         except PrivateInputLoadError as exc:
             checks.append(
                 PrivateInputCheck(
@@ -495,31 +600,266 @@ def _load_bundle_documents(
             )
         )
         return None
-    required_loaded = {
-        "policy",
-        "holdings",
-        "opportunities",
-        "approval",
-        "freshness_attestation",
-    }
-    if not required_loaded.issubset(loaded):
+    if not required_documents.issubset(loaded):
         return None
     return PrivateInputBundle(
         manifest=manifest,
         policy=loaded["policy"],
-        holdings=[normalize_holding_row(row) for row in loaded["holdings"]],
+        exposures=[
+            normalize_exposure_row(row)
+            for row in loaded.get("exposures", [])
+        ],
+        holdings=[
+            normalize_holding_row(row)
+            for row in loaded.get("holdings", [])
+        ],
         opportunities=[normalize_opportunity_row(row) for row in loaded["opportunities"]],
         approval=loaded["approval"],
-        freshness_attestation=loaded["freshness_attestation"],
+        freshness_attestation=loaded["freshness"],
+        field_governance_contract=field_governance_contract,
         manifest_path=manifest_path.resolve(),
         output_dir=output_dir,
     )
+
+
+def _governance_definition_checks(
+    governance: dict[str, Any],
+    checks: list[PrivateInputCheck],
+) -> None:
+    checks.extend(
+        schema_checks(
+            "field-governance-contract",
+            governance,
+            "field_governance.schema.json",
+        )
+    )
+    declared_classes = set(governance.get("requirement_classes", []))
+    rules = governance.get("field_rules", [])
+    seen_rules: set[tuple[str, str, str]] = set()
+    duplicate_rule = False
+    if isinstance(rules, list):
+        for rule in rules:
+            if not isinstance(rule, dict):
+                continue
+            for mode in rule.get("modes", []):
+                key = (
+                    str(rule.get("document")),
+                    str(rule.get("field_path")),
+                    str(mode),
+                )
+                if key in seen_rules:
+                    duplicate_rule = True
+                seen_rules.add(key)
+    mode_requirements = governance.get("mode_document_requirements", {})
+    document_partition_valid = True
+    expected_documents = set(DOCUMENT_MANIFEST_FIELDS)
+    for mode in SUPPORTED_INPUT_MODES:
+        requirement = (
+            mode_requirements.get(mode, {})
+            if isinstance(mode_requirements, dict)
+            else {}
+        )
+        required = set(requirement.get("required_documents", []))
+        optional = set(requirement.get("optional_documents", []))
+        prohibited = set(requirement.get("prohibited_documents", []))
+        if (
+            required.intersection(optional)
+            or required.intersection(prohibited)
+            or optional.intersection(prohibited)
+            or required.union(optional, prohibited) != expected_documents
+        ):
+            document_partition_valid = False
+    add_check(
+        checks,
+        check_id="G4I-field-governance-definition",
+        document="field-governance-contract",
+        passed=(
+            declared_classes == REQUIREMENT_CLASSES
+            and governance.get("schema_required_default_class")
+            == "CORE_REQUIRED"
+            and not duplicate_rule
+            and document_partition_valid
+        ),
+        field="<contract>",
+        message_pass="The shared field-governance contract is complete and internally consistent.",
+        message_fail="The shared field-governance contract is incomplete or internally inconsistent.",
+        remediation="Correct the shared contract; do not patch a company or private workspace.",
+    )
+
+
+def _nested_value(payload: dict[str, Any], field_path: str) -> Any:
+    value: Any = payload
+    for part in field_path.split("."):
+        if not isinstance(value, dict) or part not in value:
+            return None
+        value = value[part]
+    return value
+
+
+def _value_is_present(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
+
+
+def _governed_payloads(
+    bundle: PrivateInputBundle,
+    document: str,
+) -> list[tuple[str | None, int | None, dict[str, Any]]]:
+    if document == "manifest":
+        return [(None, None, bundle.manifest)]
+    if document == "policy":
+        return [(None, None, bundle.policy)]
+    if document == "approval":
+        return [(None, None, bundle.approval)]
+    if document == "freshness":
+        return [(None, None, bundle.freshness_attestation)]
+    row_config = {
+        "exposures": (bundle.exposures, "exposure_id"),
+        "holdings": (bundle.holdings, "position_id"),
+        "opportunities": (bundle.opportunities, "opportunity_id"),
+    }
+    rows, identifier_field = row_config.get(document, ([], ""))
+    return [
+        (clean_text(row.get(identifier_field)), index, row)
+        for index, row in enumerate(rows, start=2)
+    ]
+
+
+def _field_governance_checks(
+    bundle: PrivateInputBundle,
+    checks: list[PrivateInputCheck],
+) -> None:
+    mode = bundle.manifest.get("input_mode")
+    rules = [
+        rule
+        for rule in bundle.field_governance_contract.get("field_rules", [])
+        if isinstance(rule, dict) and mode in rule.get("modes", [])
+    ]
+    governance = bundle.manifest.get("field_governance", {})
+    exceptions = (
+        governance.get("reviewer_confirmed_not_applicable", [])
+        if isinstance(governance, dict)
+        else []
+    )
+    exception_map: dict[tuple[str, str, str | None], dict[str, Any]] = {}
+    governance_failed = False
+    manifest_date = parse_date(bundle.manifest.get("as_of_date"))
+
+    for exception in exceptions:
+        if not isinstance(exception, dict):
+            continue
+        key = (
+            str(exception.get("document")),
+            str(exception.get("field_path")),
+            clean_text(exception.get("row_id")),
+        )
+        reviewed_at = parse_datetime(exception.get("reviewed_at"))
+        matching_rules = [
+            rule
+            for rule in rules
+            if rule.get("document") == key[0]
+            and rule.get("field_path") == key[1]
+            and rule.get("requirement_class")
+            == "REVIEWER_CONFIRMED_NOT_APPLICABLE"
+        ]
+        payloads = _governed_payloads(bundle, key[0])
+        matching_payloads = [
+            payload
+            for row_id, _, payload in payloads
+            if row_id == key[2]
+        ]
+        valid = (
+            key not in exception_map
+            and bool(matching_rules)
+            and bool(matching_payloads)
+            and reviewed_at is not None
+            and manifest_date is not None
+            and reviewed_at.date() <= manifest_date
+        )
+        if not valid:
+            governance_failed = True
+            checks.append(
+                PrivateInputCheck(
+                    check_id=f"G4I-field-governance-exception-{len(checks) + 1}",
+                    document=key[0],
+                    status="FAIL",
+                    issue_class="HARD_STOP",
+                    field=key[1],
+                    row_number=None,
+                    message="A reviewer-confirmed not-applicable exception is invalid, duplicated, or not permitted.",
+                    remediation="Use an allowed field, an existing row, a dated reviewer, and a non-empty rationale.",
+                )
+            )
+        else:
+            exception_map[key] = exception
+
+    for rule in rules:
+        document = str(rule.get("document"))
+        field_path = str(rule.get("field_path"))
+        requirement_class = rule.get("requirement_class")
+        for row_id, row_number, payload in _governed_payloads(bundle, document):
+            value_present = _value_is_present(_nested_value(payload, field_path))
+            key = (document, field_path, row_id)
+            exception_present = key in exception_map
+            if requirement_class == "CORE_REQUIRED" and not value_present:
+                governance_failed = True
+                checks.append(
+                    PrivateInputCheck(
+                        check_id=f"G4I-field-core-required-{len(checks) + 1}",
+                        document=document,
+                        status="FAIL",
+                        issue_class="HARD_STOP",
+                        field=field_path,
+                        row_number=row_number,
+                        message="A CORE_REQUIRED field is missing.",
+                        remediation="Provide the field locally; reviewer exceptions cannot replace core data.",
+                    )
+                )
+            elif requirement_class == "REVIEWER_CONFIRMED_NOT_APPLICABLE":
+                valid = (value_present and not exception_present) or (
+                    not value_present and exception_present
+                )
+                if not valid:
+                    governance_failed = True
+                    checks.append(
+                        PrivateInputCheck(
+                            check_id=f"G4I-field-not-applicable-{len(checks) + 1}",
+                            document=document,
+                            status="FAIL",
+                            issue_class="HARD_STOP",
+                            field=field_path,
+                            row_number=row_number,
+                            message="The field is missing without a valid reviewer-confirmed not-applicable record, or a record conflicts with a supplied value.",
+                            remediation="Supply the field or add one dated, row-specific reviewer exception, but not both.",
+                        )
+                    )
+    if not governance_failed:
+        checks.append(
+            PrivateInputCheck(
+                check_id="G4I-field-governance",
+                document="bundle",
+                status="PASS",
+                issue_class="INFO",
+                field="<governance>",
+                row_number=None,
+                message="Mode-specific field governance passed.",
+                remediation="None.",
+            )
+        )
 
 
 def _validate_document_schemas(
     bundle: PrivateInputBundle,
     checks: list[PrivateInputCheck],
 ) -> None:
+    mode = bundle.manifest.get("input_mode")
+    mode_requirements = bundle.field_governance_contract.get(
+        "mode_document_requirements", {}
+    ).get(mode, {})
+    required_documents = set(mode_requirements.get("required_documents", []))
     checks.extend(schema_checks("policy", bundle.policy, "portfolio_policy.schema.json"))
     checks.extend(schema_checks("approval", bundle.approval, "approval_config.schema.json"))
     checks.extend(
@@ -529,7 +869,29 @@ def _validate_document_schemas(
             "gate3_freshness_attestation.schema.json",
         )
     )
-    if not bundle.holdings:
+    if "exposures" in required_documents and not bundle.exposures:
+        checks.append(
+            PrivateInputCheck(
+                "G4I-exposures-empty",
+                "exposures",
+                "FAIL",
+                "HARD_STOP",
+                "<rows>",
+                None,
+                "The exposure table contains no exposure rows.",
+                "Provide dated aggregate exposures using the public exposure template.",
+            )
+        )
+    for index, row in enumerate(bundle.exposures, start=2):
+        checks.extend(
+            schema_checks(
+                "exposures",
+                row,
+                "exposure_row.schema.json",
+                row_number=index,
+            )
+        )
+    if "holdings" in required_documents and not bundle.holdings:
         checks.append(
             PrivateInputCheck(
                 "G4I-holdings-empty",
@@ -539,7 +901,7 @@ def _validate_document_schemas(
                 "<rows>",
                 None,
                 "The holdings table contains no positions.",
-                "Provide the complete dated portfolio, including cash and hedges where applicable.",
+                "Provide the dated holdings table required by the selected input mode.",
             )
         )
     for index, row in enumerate(bundle.holdings, start=2):
@@ -585,6 +947,7 @@ def _classification_and_date_checks(
         ("approval", bundle.approval),
         ("freshness", bundle.freshness_attestation),
     ]
+    documents.extend(("exposures", row) for row in bundle.exposures)
     documents.extend(("holdings", row) for row in bundle.holdings)
     documents.extend(("opportunities", row) for row in bundle.opportunities)
     mismatches = [
@@ -617,7 +980,7 @@ def _classification_and_date_checks(
         field="as_of_date",
         message_pass="All portfolio inputs use the manifest as-of date.",
         message_fail="One or more private inputs use a different or invalid as-of date.",
-        remediation="Align policy, holdings, opportunity set, freshness attestation, and manifest dates.",
+        remediation="Align policy, exposure, holdings, opportunity set, freshness attestation, and manifest dates.",
     )
 
 
@@ -673,13 +1036,221 @@ def _policy_checks(bundle: PrivateInputBundle, checks: list[PrivateInputCheck]) 
     )
 
 
+def _exposure_checks(
+    bundle: PrivateInputBundle,
+    checks: list[PrivateInputCheck],
+) -> None:
+    if not bundle.exposures:
+        if bundle.manifest.get("input_mode") == "FULL_HOLDINGS":
+            checks.append(
+                PrivateInputCheck(
+                    check_id="G4I-exposures-optional-not-supplied",
+                    document="exposures",
+                    status="PASS",
+                    issue_class="INFO",
+                    field="<rows>",
+                    row_number=None,
+                    message="No independent exposure table was supplied; full holdings remain the authoritative source.",
+                    remediation="None.",
+                )
+            )
+        return
+
+    mode = bundle.manifest.get("input_mode")
+    base_currency = bundle.manifest.get("base_currency")
+    nav = parse_number(bundle.manifest.get("portfolio_nav"))
+    tolerance = parse_number(bundle.manifest.get("weight_reconciliation_tolerance"))
+    exposure_ids = [clean_text(row.get("exposure_id")) for row in bundle.exposures]
+    exposure_pairs = [
+        (clean_text(row.get("exposure_type")), clean_text(row.get("exposure_key")))
+        for row in bundle.exposures
+    ]
+    add_check(
+        checks,
+        check_id="G4I-exposure-id-uniqueness",
+        document="exposures",
+        passed=(
+            bool(exposure_ids)
+            and None not in exposure_ids
+            and len(exposure_ids) == len(set(exposure_ids))
+        ),
+        field="exposure_id",
+        message_pass="Exposure row IDs are present and unique.",
+        message_fail="Exposure row IDs are missing or duplicated.",
+        remediation="Assign one stable unique exposure_id to each row.",
+    )
+    add_check(
+        checks,
+        check_id="G4I-exposure-bucket-uniqueness",
+        document="exposures",
+        passed=(
+            None not in {part for pair in exposure_pairs for part in pair}
+            and len(exposure_pairs) == len(set(exposure_pairs))
+        ),
+        field="exposure_type,exposure_key",
+        message_pass="Exposure type and key pairs are unique.",
+        message_fail="One or more exposure buckets are duplicated.",
+        remediation="Consolidate duplicate rows before validation.",
+    )
+    add_check(
+        checks,
+        check_id="G4I-exposure-base-currency",
+        document="exposures",
+        passed=all(
+            row.get("base_currency") == base_currency for row in bundle.exposures
+        ),
+        field="base_currency",
+        message_pass="Every exposure uses the manifest base currency.",
+        message_fail="One or more exposures use a different base currency.",
+        remediation="Convert market values to the manifest base currency.",
+    )
+    required_aggregate_types = {"GROSS", "NET"}
+    supplied_types = {row.get("exposure_type") for row in bundle.exposures}
+    add_check(
+        checks,
+        check_id="G4I-exposure-gross-net-coverage",
+        document="exposures",
+        passed=(
+            mode == "FULL_HOLDINGS"
+            or required_aggregate_types.issubset(supplied_types)
+        ),
+        field="exposure_type",
+        message_pass="Required gross and net aggregate exposure rows are present.",
+        message_fail="Exposure-only and aggregated modes require GROSS and NET rows.",
+        remediation="Add reviewed GROSS and NET exposure rows.",
+    )
+
+    gross_rows = [
+        row for row in bundle.exposures if row.get("exposure_type") == "GROSS"
+    ]
+    net_rows = [
+        row for row in bundle.exposures if row.get("exposure_type") == "NET"
+    ]
+    gross = (
+        parse_ratio(gross_rows[0].get("exposure_weight"))
+        if len(gross_rows) == 1
+        else None
+    )
+    net = (
+        parse_ratio(net_rows[0].get("exposure_weight"))
+        if len(net_rows) == 1
+        else None
+    )
+    aggregate_relationship_valid = (
+        mode == "FULL_HOLDINGS" and not gross_rows and not net_rows
+    ) or (
+        gross is not None
+        and net is not None
+        and gross >= 0
+        and abs(net) <= gross
+    )
+    add_check(
+        checks,
+        check_id="G4I-exposure-gross-net-relationship",
+        document="exposures",
+        passed=aggregate_relationship_valid,
+        field="exposure_weight",
+        message_pass="Gross and net exposure relationships are internally consistent.",
+        message_fail="Gross exposure is negative, duplicated, missing, or below absolute net exposure.",
+        remediation="Correct the reviewed GROSS and NET rows without summing overlapping exposure dimensions.",
+    )
+
+    as_of_date = parse_date(bundle.manifest.get("as_of_date"))
+    for index, row in enumerate(bundle.exposures, start=2):
+        reviewed_at = parse_datetime(row.get("reviewed_at"))
+        add_check(
+            checks,
+            check_id=f"G4I-exposure-review-chronology-{index}",
+            document="exposures",
+            passed=(
+                reviewed_at is not None
+                and as_of_date is not None
+                and reviewed_at.date() <= as_of_date
+            ),
+            field="reviewed_at",
+            row_number=index,
+            message_pass="Exposure review timestamp is valid for the as-of date.",
+            message_fail="Exposure review timestamp is missing or later than the as-of date.",
+            remediation="Use a completed local review timestamp no later than the as-of date.",
+        )
+        if mode == "AGGREGATED_PORTFOLIO":
+            weight = parse_ratio(row.get("exposure_weight"))
+            market_value = parse_number(row.get("market_value_base_currency"))
+            add_check(
+                checks,
+                check_id=f"G4I-exposure-nav-reconciliation-{index}",
+                document="exposures",
+                passed=(
+                    nav is not None
+                    and nav > 0
+                    and tolerance is not None
+                    and weight is not None
+                    and market_value is not None
+                    and abs(market_value / nav - weight) <= tolerance
+                ),
+                field="exposure_weight,market_value_base_currency",
+                row_number=index,
+                message_pass="Exposure weight reconciles to market value and NAV.",
+                message_fail="Exposure weight does not reconcile to market value and NAV.",
+                remediation="Correct the aggregate exposure weight or base-currency market value.",
+            )
+        source_basis = row.get("source_basis")
+        add_check(
+            checks,
+            check_id=f"G4I-exposure-source-basis-{index}",
+            document="exposures",
+            passed=not (
+                mode == "EXPOSURE_ONLY"
+                and source_basis == "FULL_HOLDINGS_DERIVED"
+            ),
+            field="source_basis",
+            row_number=index,
+            message_pass="Exposure source basis is compatible with the selected input mode.",
+            message_fail="Exposure-only mode cannot claim derivation from holdings that were not supplied.",
+            remediation="Use the actual reviewed source basis or select the correct input mode.",
+        )
+
+
 def _holding_checks(bundle: PrivateInputBundle, checks: list[PrivateInputCheck]) -> None:
     manifest = bundle.manifest
+    mode = manifest.get("input_mode")
+    if mode == "EXPOSURE_ONLY":
+        checks.append(
+            PrivateInputCheck(
+                check_id="G4I-holdings-prohibited-not-supplied",
+                document="holdings",
+                status="PASS",
+                issue_class="INFO",
+                field="<rows>",
+                row_number=None,
+                message="No holdings table was loaded in exposure-only mode.",
+                remediation="None.",
+            )
+        )
+        return
     tolerance = parse_number(manifest.get("weight_reconciliation_tolerance"))
     nav = parse_number(manifest.get("portfolio_nav"))
     base_currency = manifest.get("base_currency")
     position_ids = [clean_text(row.get("position_id")) for row in bundle.holdings]
     duplicate_ids = len(position_ids) != len(set(position_ids))
+    add_check(
+        checks,
+        check_id="G4I-holdings-granularity",
+        document="holdings",
+        passed=all(
+            row.get("position_granularity")
+            == (
+                "AGGREGATED_ISSUER"
+                if mode == "AGGREGATED_PORTFOLIO"
+                else "SECURITY_LEVEL"
+            )
+            for row in bundle.holdings
+        ),
+        field="position_granularity",
+        message_pass="Every holding row matches the selected portfolio granularity.",
+        message_fail="One or more holding rows use a granularity incompatible with the input mode.",
+        remediation="Use AGGREGATED_ISSUER rows only in aggregated mode and SECURITY_LEVEL rows only in full-holdings mode.",
+    )
     add_check(
         checks,
         check_id="G4I-holdings-position-id-uniqueness",
@@ -714,9 +1285,9 @@ def _holding_checks(bundle: PrivateInputBundle, checks: list[PrivateInputCheck])
         document="holdings",
         passed=weight_total_valid,
         field="position_weight",
-        message_pass="Full-portfolio weights reconcile to 100% within the explicit tolerance.",
-        message_fail="Full-portfolio weights do not reconcile within the explicit tolerance.",
-        remediation="Include all positions and cash, then reconcile signed weights to portfolio NAV.",
+        message_pass="Portfolio weights reconcile to 100% within the explicit tolerance.",
+        message_fail="Portfolio weights do not reconcile within the explicit tolerance.",
+        remediation="Include all aggregate or security-level positions and cash, then reconcile signed weights to portfolio NAV.",
     )
 
     for index, row in enumerate(bundle.holdings, start=2):
@@ -763,11 +1334,14 @@ def _holding_checks(bundle: PrivateInputBundle, checks: list[PrivateInputCheck])
         )
         hedge_ratio = parse_ratio(row.get("hedge_ratio"))
         hedge_reference_valid = (
-            hedge_ratio is not None
-            and (
-                hedge_ratio == 0
-                or clean_text(row.get("existing_hedge_identifier")) is not None
-                or side == "HEDGE"
+            (mode == "AGGREGATED_PORTFOLIO" and hedge_ratio is None)
+            or (
+                hedge_ratio is not None
+                and (
+                    hedge_ratio == 0
+                    or clean_text(row.get("existing_hedge_identifier")) is not None
+                    or side == "HEDGE"
+                )
             )
         )
         add_check(
@@ -940,8 +1514,10 @@ def validate_private_input_bundle(
 ) -> dict[str, Any]:
     checks = list(existing_checks or [])
     _validate_document_schemas(bundle, checks)
+    _field_governance_checks(bundle, checks)
     _classification_and_date_checks(bundle, checks)
     _policy_checks(bundle, checks)
+    _exposure_checks(bundle, checks)
     _holding_checks(bundle, checks)
     _opportunity_checks(bundle, checks)
     _approval_checks(
@@ -952,12 +1528,22 @@ def validate_private_input_bundle(
     failed = [check for check in checks if check.status in {"FAIL", "MISSING", "BLOCKED"}]
     status = INPUT_STATUS_VALIDATED if not failed else INPUT_STATUS_REQUIRED
     classification = bundle.manifest.get("data_classification")
+    input_mode = bundle.manifest.get("input_mode")
     return {
         "private_input_contract_version": PRIVATE_INPUT_CONTRACT_VERSION,
         "framework_status": FRAMEWORK_STATUS,
         "status": status,
         "validated_at": utc_now(),
         "data_classification": classification,
+        "input_mode": input_mode,
+        "mode_capabilities": MODE_CAPABILITIES.get(
+            str(input_mode),
+            {
+                "aggregate_exposure_validation": "NOT_EVALUATED",
+                "holdings_reconciliation": "NOT_EVALUATED",
+                "security_level_liquidity": "NOT_EVALUATED",
+            },
+        ),
         "privacy_safe_diagnostic": True,
         "raw_values_included": False,
         "system_portfolio_assessment": "NOT_EVALUATED",
@@ -1007,7 +1593,31 @@ def load_and_validate_private_inputs(
     )
     if any(check.status == "FAIL" for check in checks):
         return None, _diagnostic_without_bundle(checks)
-    bundle = _load_bundle_documents(manifest_path, manifest, checks)
+    try:
+        governance = load_field_governance_contract()
+    except PrivateInputLoadError as exc:
+        checks.append(
+            PrivateInputCheck(
+                "G4I-field-governance-load",
+                "field-governance-contract",
+                "FAIL",
+                "HARD_STOP",
+                "<contract>",
+                None,
+                str(exc),
+                "Restore the shared public field-governance contract.",
+            )
+        )
+        return None, _diagnostic_without_bundle(checks)
+    _governance_definition_checks(governance, checks)
+    if any(check.status == "FAIL" for check in checks):
+        return None, _diagnostic_without_bundle(checks)
+    bundle = _load_bundle_documents(
+        manifest_path,
+        manifest,
+        governance,
+        checks,
+    )
     if bundle is None:
         return None, _diagnostic_without_bundle(checks)
     return bundle, validate_private_input_bundle(bundle, existing_checks=checks)
@@ -1021,6 +1631,12 @@ def _diagnostic_without_bundle(checks: list[PrivateInputCheck]) -> dict[str, Any
         "status": INPUT_STATUS_REQUIRED,
         "validated_at": utc_now(),
         "data_classification": "NOT_EVALUATED",
+        "input_mode": "NOT_EVALUATED",
+        "mode_capabilities": {
+            "aggregate_exposure_validation": "NOT_EVALUATED",
+            "holdings_reconciliation": "NOT_EVALUATED",
+            "security_level_liquidity": "NOT_EVALUATED",
+        },
         "privacy_safe_diagnostic": True,
         "raw_values_included": False,
         "system_portfolio_assessment": "NOT_EVALUATED",

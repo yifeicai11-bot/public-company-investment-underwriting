@@ -1,6 +1,6 @@
 # Gate 4 Local Private-Data Workflow
 
-Use this reference whenever fund policy, holdings, opportunity-set, approval,
+Use this reference whenever fund policy, exposure, holdings, opportunity-set, approval,
 or portfolio-sizing context is requested.
 
 ## Non-Negotiable Boundary
@@ -33,23 +33,39 @@ python3 -m pip install -r requirements-gate4.txt
 Create the default local workspace:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py
+python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
+  --input-mode EXPOSURE_ONLY
 ```
 
 The default is `~/investment_private`. It must remain outside every Git
-worktree. Directories use mode `0700`; files use mode `0600`.
+worktree. Replace the example mode only when more granular local data is
+approved. Omitting `--input-mode` leaves the manifest intentionally incomplete.
+Directories use mode `0700`; files use mode `0600`.
 
 Complete these files locally:
 
 - `gate4_private_workspace_manifest.json`
 - `portfolio_policy.yaml`
-- `current_holdings.csv` or an XLSX equivalent named in the manifest
+- `exposure_summary.csv` when required by the selected mode
+- `current_holdings.csv` when required by the selected mode
 - `opportunity_set.csv` or an XLSX equivalent named in the manifest
 - `approval_config.yaml`
 - `gate3_freshness_attestation.yaml`
 
 No policy or holdings default is valid. Missing inputs return
 `GATE_4_PRIVATE_INPUTS_REQUIRED`.
+
+Select exactly one manifest mode:
+
+- `EXPOSURE_ONLY`: exposure summary required; holdings prohibited.
+- `AGGREGATED_PORTFOLIO`: exposure summary and issuer-level aggregate holdings required.
+- `FULL_HOLDINGS`: complete security-level holdings required; independent exposure summary optional.
+
+Every schema-required field is `CORE_REQUIRED` unless the shared governance
+contract explicitly marks it `CONDITIONAL`, `OPTIONAL`, or
+`REVIEWER_CONFIRMED_NOT_APPLICABLE`. A core field cannot be waived. A blank
+not-applicable field requires one matching row-specific rationale, reviewer,
+and review timestamp.
 
 ## Entry Validation
 
@@ -89,10 +105,20 @@ real portfolio data. If it blocks a file, unstage it and move it to
 
 ## Output Controls
 
-Private outputs and public outputs must remain in separate directories. Private
-PDF generation is disabled until metadata scrubbing and verification are
-implemented. Do not convert a private JSON diagnostic to PDF using an
-uncontrolled external tool.
+Private outputs and public outputs must remain in separate directories. Direct
+private PDF writes are blocked. Sanitize and verify a local PDF with:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/sanitize_gate4_private_pdf.py \
+  ~/investment_private/private_outputs/raw_report.pdf \
+  --output ~/investment_private/private_outputs/sanitized_report.pdf \
+  --root ~/investment_private
+```
+
+The sanitizer rebuilds the pages, uses fixed non-identifying metadata, removes
+XMP, rejects attachments and document-level active actions, verifies page
+count, reopens the file, and writes mode `0600`. Its terminal diagnostic does
+not print private paths. Sanitization does not authorize transmission.
 
 The system never automatically places a trade. A later system assessment may
 calculate a constraint-based maximum, but the Partner remains responsible for

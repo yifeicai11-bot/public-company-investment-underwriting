@@ -112,9 +112,12 @@ Start from the generated `analyst_input_template.json`. Scenario implied prices 
 
 Use `external_evidence` for public facts that are not already extracted from SEC XBRL, such as guidance, investor-presentation details, consensus, covenant terms, and industry evidence. Give each item a unique `external_key`, full source hierarchy metadata, as-of/publication/retrieval dates, source locator, and reviewer. Issuer modules and Key Debates may reference `evidence_keys`; the engine resolves them into stable evidence IDs.
 
-When partner/fund-specific context is available, initialize the local Gate 4 workspace:
+When partner/fund-specific context is available, choose one explicit local
+input mode: `EXPOSURE_ONLY`, `AGGREGATED_PORTFOLIO`, or `FULL_HOLDINGS`.
+Initialize the local Gate 4 workspace with the least-granular mode that supports
+the intended decision:
 
-`partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py`
+`partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py --input-mode "<mode>"`
 
 Complete the files under `~/investment_private` locally, then run:
 
@@ -122,7 +125,16 @@ Complete the files under `~/investment_private` locally, then run:
 
 Gate 4 accepts only the immutable shared `underwriting_output_contract.json`; ticker-only input and legacy `step3_data.json` are prohibited because Gate 4 must not rebuild or overwrite issuer analysis. Before any portfolio calculation, validate the contract version and hash, Data Gate, report/financial/market dates, latest filing, subsequent-event review, probability freshness, valuation eligibility, Hard Stops, and unresolved issuer warnings. Age limits, eligible valuation statuses, probability requirements, and warning-escalation rules must be supplied explicitly; do not invent defaults.
 
-If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; complete validated inputs return `GATE_4_INPUTS_VALIDATED`, with system assessment still `NOT_EVALUATED` and Partner decision still `PENDING`. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. Portfolio action and position range may appear only after the future constraint engine and explicit human approval, and must never trigger a trade.
+Apply the shared field-governance contract. JSON-Schema-required fields are
+`CORE_REQUIRED` unless explicitly classified as `CONDITIONAL`, `OPTIONAL`, or
+`REVIEWER_CONFIRMED_NOT_APPLICABLE`. Never waive a core field. Accept a blank
+not-applicable field only with one dated, row-specific reviewer record.
+
+If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; complete validated inputs return `GATE_4_INPUTS_VALIDATED`, with system assessment still `NOT_EVALUATED` and Partner decision still `PENDING`. Exposure-only or aggregated inputs must never be described as security-level liquidity evidence. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. Portfolio action and position range may appear only after the future constraint engine and explicit human approval, and must never trigger a trade.
+
+Direct private PDF writes are prohibited. To create a private PDF, use
+`sanitize_gate4_private_pdf.py` inside the local workspace and require its
+metadata, XMP, attachment, page-count, and permission verification to pass.
 
 Do not tune the Step 3 builder to a single regression company. PFGC may be used to catch regressions, but the rules must remain company-agnostic and usable for any SEC-reporting public company resolved from a ticker or company name.
 

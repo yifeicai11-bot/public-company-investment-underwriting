@@ -31,6 +31,9 @@ investment_private/
 **/current_holdings.csv
 **/current_holdings.xlsx
 **/current_holdings.xls
+**/exposure_summary.csv
+**/exposure_summary.xlsx
+**/exposure_summary.xls
 **/opportunity_set.csv
 **/opportunity_set.xlsx
 **/opportunity_set.xls

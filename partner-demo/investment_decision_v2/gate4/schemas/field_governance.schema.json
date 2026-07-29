@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/field_governance.schema.json",
+  "title": "Gate 4 Field Governance Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "requirement_classes",
+    "schema_required_default_class",
+    "mode_document_requirements",
+    "field_rules"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0.0"},
+    "requirement_classes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "CORE_REQUIRED",
+          "CONDITIONAL",
+          "OPTIONAL",
+          "REVIEWER_CONFIRMED_NOT_APPLICABLE"
+        ]
+      }
+    },
+    "schema_required_default_class": {"const": "CORE_REQUIRED"},
+    "mode_document_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "EXPOSURE_ONLY",
+        "AGGREGATED_PORTFOLIO",
+        "FULL_HOLDINGS"
+      ],
+      "properties": {
+        "EXPOSURE_ONLY": {"$ref": "#/$defs/documentRequirements"},
+        "AGGREGATED_PORTFOLIO": {"$ref": "#/$defs/documentRequirements"},
+        "FULL_HOLDINGS": {"$ref": "#/$defs/documentRequirements"}
+      }
+    },
+    "field_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "document",
+          "field_path",
+          "modes",
+          "requirement_class",
+          "validation_method"
+        ],
+        "properties": {
+          "document": {
+            "enum": [
+              "manifest",
+              "policy",
+              "exposures",
+              "holdings",
+              "opportunities",
+              "approval",
+              "freshness"
+            ]
+          },
+          "field_path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.]+$",
+            "maxLength": 256
+          },
+          "modes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "EXPOSURE_ONLY",
+                "AGGREGATED_PORTFOLIO",
+                "FULL_HOLDINGS"
+              ]
+            }
+          },
+          "requirement_class": {
+            "enum": [
+              "CORE_REQUIRED",
+              "CONDITIONAL",
+              "OPTIONAL",
+              "REVIEWER_CONFIRMED_NOT_APPLICABLE"
+            ]
+          },
+          "validation_method": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "documentRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_documents",
+        "optional_documents",
+        "prohibited_documents"
+      ],
+      "properties": {
+        "required_documents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "policy",
+              "exposures",
+              "holdings",
+              "opportunities",
+              "approval",
+              "freshness"
+            ]
+          }
+        },
+        "optional_documents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "policy",
+              "exposures",
+              "holdings",
+              "opportunities",
+              "approval",
+              "freshness"
+            ]
+          }
+        },
+        "prohibited_documents": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "policy",
+              "exposures",
+              "holdings",
+              "opportunities",
+              "approval",
+              "freshness"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

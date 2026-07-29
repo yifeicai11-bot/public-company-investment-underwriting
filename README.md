@@ -129,7 +129,8 @@ parsers and create an empty private workspace outside Git:
 
 ```bash
 python3 -m pip install -r requirements-gate4.txt
-python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py
+python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
+  --input-mode EXPOSURE_ONLY
 ```
 
 Complete the files under `~/investment_private` locally. Do not paste real
@@ -143,10 +144,18 @@ python3 partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
 
-The workspace supports YAML/JSON policy and approval documents plus CSV/XLSX
-holdings and opportunity sets. No age limit, target return, downside tolerance,
-position limit, or other fund value is assumed. The entry check validates
-private schemas and reconciliations, exact Gate 3 identity/hash, Data Gate,
+The workspace supports three explicit modes: `EXPOSURE_ONLY`,
+`AGGREGATED_PORTFOLIO`, and `FULL_HOLDINGS`. Exposure-only requires aggregate
+exposures and prohibits holdings; aggregated mode requires exposure rows and
+issuer-level holdings; full mode requires security-level holdings and may
+optionally reconcile an independent exposure summary. Fields are governed as
+`CORE_REQUIRED`, `CONDITIONAL`, `OPTIONAL`, or
+`REVIEWER_CONFIRMED_NOT_APPLICABLE`. A core field cannot be waived, and a
+not-applicable field requires a dated, row-specific reviewer record.
+
+No age limit, target return, downside tolerance, position limit, NAV, or other
+fund value is assumed. The entry check validates private schemas and
+reconciliations, exact Gate 3 identity/hash, Data Gate,
 report/financial/market dates, latest filing, subsequent events, probability
 freshness, valuation status, Hard Stops, and issuer Warnings.
 
@@ -165,8 +174,10 @@ git config core.hooksPath .githooks
 Private directories and exact local filenames are ignored by Git; the hook also
 blocks likely sensitive files without printing their contents. Local Gate 4
 modules do not use network, telemetry, remote logging, or external-model calls.
-Private diagnostics omit raw values and use secure atomic writes. Private PDF
-generation remains disabled until metadata sanitization is implemented.
+Private diagnostics omit raw values and use secure atomic writes. Direct PDF
+writes remain blocked; `sanitize_gate4_private_pdf.py` is the only approved
+private PDF path and verifies fixed metadata, no XMP, no attachment payload,
+page preservation, and mode `0600`.
 
 ## Run Locally / 本地运行
 
@@ -237,7 +248,7 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 111 shared accounting, evidence, market-data, gate, scenario, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- 122 shared accounting, evidence, market-data, gate, scenario, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
 - The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.

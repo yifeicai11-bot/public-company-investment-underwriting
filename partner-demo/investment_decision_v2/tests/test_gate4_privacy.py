@@ -4,12 +4,15 @@ from __future__ import annotations
 import ast
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import yaml
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import DecodedStreamObject, NameObject, TextStringObject
 
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -36,6 +39,7 @@ from gate4_privacy import (  # noqa: E402
     assert_local_workspace,
     assert_private_output_path,
     initialize_private_workspace,
+    sanitize_private_pdf,
     scan_repository_paths,
     secure_atomic_write_json,
 )
@@ -116,7 +120,44 @@ class Gate4PrivacyTests(unittest.TestCase):
             )
             self.assertIsNone(policy["target_return"])
 
-    def test_secure_output_is_atomic_private_and_pdf_is_disabled(self) -> None:
+    def test_workspace_initializer_applies_only_an_explicit_input_mode(self) -> None:
+        expected_paths = {
+            "EXPOSURE_ONLY": (None, "exposure_summary.csv"),
+            "AGGREGATED_PORTFOLIO": (
+                "current_holdings.csv",
+                "exposure_summary.csv",
+            ),
+            "FULL_HOLDINGS": ("current_holdings.csv", None),
+        }
+        for input_mode, (
+            expected_holdings,
+            expected_exposures,
+        ) in expected_paths.items():
+            with self.subTest(input_mode=input_mode), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / "investment_private"
+                result = initialize_private_workspace(
+                    root,
+                    input_mode=input_mode,
+                )
+                manifest = json.loads(
+                    (root / "gate4_private_workspace_manifest.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+
+                self.assertEqual(result["selected_input_mode"], input_mode)
+                self.assertEqual(manifest["input_mode"], input_mode)
+                self.assertEqual(
+                    manifest["files"]["current_holdings"],
+                    expected_holdings,
+                )
+                self.assertEqual(
+                    manifest["files"]["exposure_summary"],
+                    expected_exposures,
+                )
+                self.assertIsNone(manifest["portfolio_nav"])
+
+    def test_secure_output_is_atomic_and_direct_pdf_write_is_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "investment_private"
             root.mkdir()
@@ -129,11 +170,153 @@ class Gate4PrivacyTests(unittest.TestCase):
 
             self.assertEqual(destination.stat().st_mode & 0o777, 0o600)
             self.assertFalse(list(destination.parent.glob(".gate4-write-*.tmp")))
-            with self.assertRaisesRegex(PrivacyBoundaryError, "PDF generation"):
+            with self.assertRaisesRegex(PrivacyBoundaryError, "metadata sanitizer"):
                 assert_private_output_path(
                     root / "private_outputs" / "private_report.pdf",
                     workspace_root=root,
                 )
+
+    def test_private_pdf_sanitizer_removes_document_info_and_xmp(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "investment_private"
+            output_dir = root / "private_outputs"
+            output_dir.mkdir(parents=True)
+            source = output_dir / "raw_private_report.pdf"
+            destination = output_dir / "sanitized_private_report.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=100, height=100)
+            writer.add_blank_page(width=100, height=100)
+            writer.add_metadata(
+                {
+                    "/Title": "Sensitive Portfolio Name",
+                    "/Author": "Private Analyst",
+                    "/Creator": "/Users/private-user/internal-renderer",
+                }
+            )
+            xmp = DecodedStreamObject()
+            xmp.set_data(b"<x:xmpmeta>private-user secret-path</x:xmpmeta>")
+            xmp.update(
+                {
+                    NameObject("/Type"): NameObject("/Metadata"),
+                    NameObject("/Subtype"): NameObject("/XML"),
+                }
+            )
+            writer.root_object[NameObject("/Metadata")] = writer._add_object(xmp)
+            writer.pages[0][NameObject("/Metadata")] = writer._add_object(xmp)
+            writer.pages[0][NameObject("/LastModified")] = TextStringObject(
+                "D:20260717120000Z"
+            )
+            with source.open("wb") as handle:
+                writer.write(handle)
+
+            result = sanitize_private_pdf(
+                source,
+                destination,
+                workspace_root=root,
+            )
+            reader = PdfReader(destination)
+            root_object = reader.trailer["/Root"].get_object()
+            serialized_result = json.dumps(result)
+            output_bytes = destination.read_bytes()
+            output_mode = destination.stat().st_mode & 0o777
+            sanitized_metadata = dict(reader.metadata or {})
+            metadata_stream_present = "/Metadata" in root_object
+            page_metadata_present = any(
+                any(
+                    key in page
+                    for key in ("/Metadata", "/LastModified", "/PieceInfo")
+                )
+                for page in reader.pages
+            )
+
+        self.assertEqual(result["status"], "GATE_4_PRIVATE_PDF_SANITIZED")
+        self.assertEqual(result["page_count"], 2)
+        self.assertEqual(output_mode, 0o600)
+        self.assertEqual(
+            sanitized_metadata,
+            {
+                "/Producer": "Gate 4 PDF Sanitizer",
+                "/Title": "Private Gate 4 Report",
+                "/Author": "Local Gate 4",
+                "/Creator": "Gate 4 PDF Sanitizer",
+            },
+        )
+        self.assertFalse(metadata_stream_present)
+        self.assertFalse(page_metadata_present)
+        self.assertNotIn(b"Sensitive Portfolio Name", output_bytes)
+        self.assertNotIn(b"private-user", output_bytes)
+        self.assertNotIn("raw_private_report", serialized_result)
+        self.assertNotIn(str(root), serialized_result)
+
+    def test_private_pdf_sanitizer_blocks_attachments_and_external_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "investment_private"
+            output_dir = root / "private_outputs"
+            output_dir.mkdir(parents=True)
+            attached_source = output_dir / "attached.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=100, height=100)
+            writer.add_attachment("private.txt", b"private attachment")
+            with attached_source.open("wb") as handle:
+                writer.write(handle)
+
+            with self.assertRaisesRegex(PrivacyBoundaryError, "attachments"):
+                sanitize_private_pdf(
+                    attached_source,
+                    output_dir / "sanitized.pdf",
+                    workspace_root=root,
+                )
+            outside_source = Path(tmp) / "outside.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=100, height=100)
+            with outside_source.open("wb") as handle:
+                writer.write(handle)
+            with self.assertRaisesRegex(PrivacyBoundaryError, "sources"):
+                sanitize_private_pdf(
+                    outside_source,
+                    output_dir / "sanitized.pdf",
+                    workspace_root=root,
+                )
+            with self.assertRaisesRegex(PrivacyBoundaryError, "outputs"):
+                sanitize_private_pdf(
+                    attached_source,
+                    Path(tmp) / "outside-output.pdf",
+                    workspace_root=root,
+                )
+
+    def test_private_pdf_cli_omits_local_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "investment_private"
+            output_dir = root / "private_outputs"
+            output_dir.mkdir(parents=True)
+            source = output_dir / "sensitive_portfolio_name.pdf"
+            destination = output_dir / "sanitized_output.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=100, height=100)
+            with source.open("wb") as handle:
+                writer.write(handle)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_DIR / "sanitize_gate4_private_pdf.py"),
+                    str(source),
+                    "--output",
+                    str(destination),
+                    "--root",
+                    str(root),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("status=GATE_4_PRIVATE_PDF_SANITIZED", result.stdout)
+        self.assertIn("private_paths_printed=false", result.stdout)
+        self.assertNotIn(str(root), result.stdout)
+        self.assertNotIn("sensitive_portfolio_name", result.stdout)
+        self.assertEqual(result.stderr, "")
 
     def test_repository_scanner_blocks_names_and_private_content_without_echo(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -141,20 +324,30 @@ class Gate4PrivacyTests(unittest.TestCase):
             repo.mkdir()
             named = repo / "current_holdings.csv"
             disguised = repo / "notes.yaml"
+            disguised_exposure = repo / "exposure_notes.yaml"
             named.write_text("header\n", encoding="utf-8")
             disguised.write_text(
                 "data_classification: PRIVATE_PORTFOLIO\nportfolio_nav: 123456\n",
                 encoding="utf-8",
             )
+            disguised_exposure.write_text(
+                "data_classification: PRIVATE_PORTFOLIO\nexposure_weight: 0.314159\n",
+                encoding="utf-8",
+            )
 
             violations = scan_repository_paths(
-                [Path("current_holdings.csv"), Path("notes.yaml")],
+                [
+                    Path("current_holdings.csv"),
+                    Path("notes.yaml"),
+                    Path("exposure_notes.yaml"),
+                ],
                 repo_root=repo,
             )
             serialized = json.dumps(violations)
 
-        self.assertEqual(len(violations), 2)
+        self.assertEqual(len(violations), 3)
         self.assertNotIn("123456", serialized)
+        self.assertNotIn("0.314159", serialized)
         self.assertIn("PRIVATE_INPUT_OR_OUTPUT_FILENAME", serialized)
         self.assertIn("PRIVATE_PORTFOLIO_CONTENT_MARKER", serialized)
 
@@ -206,9 +399,10 @@ class Gate4PrivacyTests(unittest.TestCase):
         paths = [
             path.relative_to(REPO_ROOT)
             for root in (GATE4_DIR / "templates", GATE4_DIR / "schemas", SYNTHETIC_DIR)
-            for path in root.iterdir()
+            for path in root.rglob("*")
             if path.is_file()
         ]
+        paths.append((GATE4_DIR / "field_governance.json").relative_to(REPO_ROOT))
         self.assertEqual(scan_repository_paths(paths, repo_root=REPO_ROOT), [])
 
     def test_local_entry_validates_external_synthetic_bundle_without_raw_values(self) -> None:
@@ -240,6 +434,31 @@ class Gate4PrivacyTests(unittest.TestCase):
                 "target_return",
             ):
                 self.assertNotIn(private_value, serialized)
+
+    def test_local_entry_accepts_each_validated_input_mode(self) -> None:
+        for manifest_name, expected_mode in (
+            ("synthetic_exposure_only_manifest.json", "EXPOSURE_ONLY"),
+            (
+                "synthetic_aggregated_portfolio_manifest.json",
+                "AGGREGATED_PORTFOLIO",
+            ),
+            ("synthetic_gate4_manifest.json", "FULL_HOLDINGS"),
+        ):
+            with self.subTest(manifest=manifest_name), tempfile.TemporaryDirectory() as tmp:
+                workspace = Path(tmp) / "synthetic_workspace"
+                shutil.copytree(SYNTHETIC_DIR, workspace)
+                result, output_path = run_gate4_local_entry(
+                    CROX_CONTRACT,
+                    workspace / manifest_name,
+                )
+
+                self.assertEqual(result["status"], "GATE_4_INPUTS_VALIDATED")
+                self.assertEqual(result["input_mode"], expected_mode)
+                self.assertIsNotNone(output_path)
+                self.assertEqual(
+                    result["system_portfolio_assessment"]["status"],
+                    "NOT_EVALUATED",
+                )
 
     def test_local_entry_propagates_stale_gate3_and_suppresses_calculations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -295,6 +514,7 @@ class Gate4PrivacyTests(unittest.TestCase):
             "gate4_privacy.py",
             "initialize_gate4_private_workspace.py",
             "run_gate4_local_entry.py",
+            "sanitize_gate4_private_pdf.py",
         ):
             tree = ast.parse((SCRIPT_DIR / filename).read_text(encoding="utf-8"))
             imported: set[str] = set()
