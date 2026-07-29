@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "document_type": "development_session_completion_record",
   "phase": "B",
   "session": "S08",
@@ -7,32 +7,23 @@
   "status": "ACCEPTED",
   "completion_date": "2026-07-29",
   "branch": "codex/phase-b-cross-company",
-  "implementation_commit": "7e2b0bdd44d2efca58a6c43a8171da9977152841",
-  "s07_frozen_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+  "acceptance_implementation_commit": "ae097ace87173caa17b6e3e386367a8dffbf1cb0",
+  "acceptance_evidence_commit": "d486f630cdeabfe0d49d42895f62391d92392a9b",
+  "s07_frozen_shared_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
   "required_scope": [
-    "Rerun CROX, AZO, and the preserved unfamiliar company.",
-    "Confirm safe handling of MISSING, NOT_APPLICABLE, WARNING, and HARD_STOP.",
-    "Confirm that no ticker-specific patch or hard-coded analytical value was introduced."
+    "Rerun CROX, AZO, the preserved S05 blind company ODFL, and the newly selected unfamiliar company ITT.",
+    "Confirm safe handling of VALIDATED, MISSING, NOT_APPLICABLE, WARNING, and HARD_STOP outcomes.",
+    "Confirm that no ticker-specific analytical branch, company-name condition, or hard-coded company value was introduced."
   ],
-  "files_or_modules_changed": [
-    "partner-demo/investment_decision_v2/regression/s08_cross_company_acceptance_manifest.json",
-    "partner-demo/investment_decision_v2/scripts/run_s08_cross_company_acceptance.py",
-    "partner-demo/investment_decision_v2/tests/test_s08_cross_company_acceptance.py",
-    "partner-demo/investment_decision_v2/regression/s08_cross_company_acceptance_first_run_2026-07-29.json"
-  ],
-  "contract_changes": [
-    "No S07 analytical contract or shared rule changed during the S08 first run.",
-    "S08 adds an acceptance harness and immutable first-run evidence, not a new company-analysis rule.",
-    "The harness verifies that formal reports are blocked at Gate 0 and only a diagnostic artifact is rendered when a live Hard Stop is present."
-  ],
-  "first_run": {
+  "acceptance_report": "partner-demo/investment_decision_v2/regression/s08_cross_company_acceptance_final_2026-07-29.json",
+  "acceptance_run": {
     "status": "PASS",
-    "started_at": "2026-07-29T06:16:02.281337+00:00",
-    "completed_at": "2026-07-29T06:16:41.911335+00:00",
-    "elapsed_seconds": 39.63,
+    "started_at": "2026-07-29T07:20:53.500057+00:00",
+    "completed_at": "2026-07-29T07:21:46.900970+00:00",
+    "elapsed_seconds": 53.401,
+    "notes_and_events_control_version": "1.1.0",
     "s07_shared_files_unchanged": true,
-    "errors": [],
-    "record": "partner-demo/investment_decision_v2/regression/s08_cross_company_acceptance_first_run_2026-07-29.json"
+    "errors": []
   },
   "live_case_results": [
     {
@@ -44,8 +35,8 @@
       "market_price_date": "2026-07-28",
       "data_gate": 1,
       "hard_stops": 0,
-      "warnings": 24,
-      "evidence_records": 78
+      "warnings": 26,
+      "evidence_records": 80
     },
     {
       "ticker": "AZO",
@@ -53,11 +44,11 @@
       "status": "PASS",
       "financial_statement_date": "2026-05-09",
       "latest_financial_filing_date": "2026-06-12",
-      "market_price_date": "2026-07-27",
+      "market_price_date": "2026-07-28",
       "data_gate": 1,
       "hard_stops": 0,
-      "warnings": 24,
-      "evidence_records": 100
+      "warnings": 26,
+      "evidence_records": 102
     },
     {
       "ticker": "ODFL",
@@ -65,23 +56,40 @@
       "status": "PASS",
       "financial_statement_date": "2026-03-31",
       "latest_financial_filing_date": "2026-05-06",
-      "market_price_date": "2026-07-27",
+      "market_price_date": "2026-07-28",
       "data_gate": 1,
       "hard_stops": 0,
-      "warnings": 27,
-      "evidence_records": 70
+      "warnings": 28,
+      "evidence_records": 72
+    },
+    {
+      "ticker": "ITT",
+      "role": "new_unfamiliar_company",
+      "status": "PASS",
+      "financial_statement_date": "2026-04-04",
+      "latest_financial_filing_date": "2026-05-06",
+      "market_price_date": "2026-07-28",
+      "data_gate": 1,
+      "hard_stops": 0,
+      "warnings": 23,
+      "evidence_records": 85
     }
   ],
   "safe_outcome_acceptance": [
     {
+      "outcome": "VALIDATED",
+      "status": "PASS",
+      "behavior": "Validated modules retain stable evidence IDs and source lineage."
+    },
+    {
       "outcome": "MISSING",
       "status": "PASS",
-      "behavior": "Missing disclosure remains explicit, carries remediation, and is never converted to zero."
+      "behavior": "Missing disclosure remains explicit and is never converted to zero."
     },
     {
       "outcome": "NOT_APPLICABLE",
       "status": "PASS",
-      "behavior": "The status requires explicit evidence or a completed event-index review."
+      "behavior": "The status requires an explicit basis or completed scan."
     },
     {
       "outcome": "WARNING",
@@ -91,71 +99,40 @@
     {
       "outcome": "HARD_STOP",
       "status": "PASS",
-      "behavior": "A synthetic non-reliance event drives Gate 0, suppresses formal reports, and produces diagnostic-only rendering."
+      "behavior": "A synthetic non-reliance event drives Gate 0, suppresses formal reports, and permits diagnostic-only rendering."
     }
   ],
   "anti_overfitting_acceptance": {
     "status": "PASS",
     "analytical_files_scanned": 5,
+    "fixture_values_checked": 14,
     "findings": 0,
-    "s07_file_hashes_match_frozen_commit": true,
-    "company_replaced_after_failure": false
+    "selected_company_replaced": false,
+    "s07_shared_file_hashes_match_frozen_commit": true
   },
-  "tests_executed": [
-    {
-      "suite": "S08 dedicated acceptance tests",
-      "command": "/tmp/public-underwriting-s06-venv/bin/python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_s08_cross_company_acceptance.py' -v",
-      "status": "PASS",
-      "passed": 6,
+  "verification": {
+    "dedicated_s08_tests": {
+      "passed": 7,
       "failed": 0
     },
-    {
-      "suite": "complete unit and regression suite",
-      "command": "/tmp/public-underwriting-s06-venv/bin/python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_*.py' -v",
-      "status": "PASS",
-      "passed": 164,
+    "complete_test_suite": {
+      "passed": 176,
       "failed": 0
     },
-    {
-      "suite": "Friday V1 frozen render, PDF, and pixel baseline",
-      "command": "/tmp/public-underwriting-s06-venv/bin/python release-baselines/friday-v1/verify_baseline.py --render --pdf --pixel-compare",
-      "status": "PASS",
+    "friday_v1_baseline": {
       "passed": 82,
       "failed": 0
     },
-    {
-      "suite": "skill structure validation",
-      "status": "PASS"
+    "tracked_file_privacy_scan": {
+      "files_checked": 327,
+      "violations": 0
     },
-    {
-      "suite": "supplemental regression governance and AST anti-hardcoding",
-      "status": "PASS",
-      "findings": 0
-    }
-  ],
-  "tests_passed": {
-    "dedicated_suite": 6,
-    "complete_suite_including_dedicated_tests": 164,
-    "frozen_baseline_checks": 82,
-    "live_company_runs": 3
+    "skill_validation": "PASS"
   },
-  "tests_failed": {
-    "dedicated_suite": 0,
-    "complete_suite": 0,
-    "frozen_baseline_checks": 0,
-    "live_company_runs": 0
-  },
-  "warnings": [
-    "Live SEC filings and market observations are dated and may change after this acceptance run.",
-    "MISSING and WARNING pass acceptance only because the relevant conclusions and outputs remain constrained.",
-    "The three live cases do not claim to cover every future issuer or capital-structure pattern."
+  "scope_boundary": [
+    "Live public-company results are dated and must be regenerated after new filings or material events.",
+    "A MISSING or WARNING acceptance means the system constrained the output correctly; it does not convert missing evidence into validated evidence.",
+    "Additional live fixtures for distressed, restated, material-event, and complex-capital-structure issuers remain future coverage expansion."
   ],
-  "unresolved_issues": [
-    "Active live fixtures are still needed for amended or restated filings, material subsequent events, negative FCF, negative EBITDA, high leverage, complex debt, and convertible or preferred securities.",
-    "These are future coverage extensions and do not negate the completed CROX, AZO, ODFL, safe-outcome, and anti-hardcoding acceptance defined for S08."
-  ],
-  "exact_next_starting_point": {
-    "action": "Before changing code, read the approved S09 definition from the development plan and freeze its exact scope. Do not infer S09 from adjacent Gate 4 or portfolio work.",
-    "starting_commit": "7e2b0bdd44d2efca58a6c43a8171da9977152841"
-  }
+  "exact_next_starting_point": "Read and freeze the approved S09 definition before implementing Phase C."
 }

@@ -1,135 +1,110 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "document_type": "development_session_completion_record",
   "phase": "B",
   "session": "S07",
-  "name": "Notes and Events Hardening",
+  "name": "Notes, Sources and Subsequent Events",
   "status": "ACCEPTED",
   "completion_date": "2026-07-29",
   "branch": "codex/phase-b-cross-company",
-  "implementation_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+  "shared_implementation_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
+  "notes_and_events_control_version": "1.1.0",
   "required_scope": [
-    "Strengthen debt, lease, covenant, receivable, bad-debt, supplier-finance, amendment, restatement, and subsequent-event handling.",
-    "Implement the controls in shared components rather than ticker-specific code or renderers."
+    "Strengthen debt maturity, revolver, covenant, lease, receivable, bad-debt, supplier-finance, acquisition, amendment, restatement, and subsequent-event evidence.",
+    "Do not silently resolve material source conflicts or stale post-period information.",
+    "Implement analytical controls in shared components without ticker-specific patches."
   ],
-  "files_or_modules_changed": [
-    "partner-demo/investment_decision_v2/scripts/notes_events_controls.py",
-    "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py",
-    "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
-    "partner-demo/investment_decision_v2/tests/test_s07_notes_events_controls.py",
-    "partner-demo/investment_decision_v2/regression/cross_industry_matrix.json",
-    "public-firm-credit-liquidity-skill/SKILL.md",
-    "public-firm-credit-liquidity-skill/references/notes_and_events_controls.md",
-    "public-firm-credit-liquidity-skill/references/filing_note_extraction.md",
-    "public-firm-credit-liquidity-skill/references/system_architecture_and_contract.md"
-  ],
-  "contract_changes": [
-    "Added notes_and_events_control_version to the shared Data and Evidence object and Gate 3 contract.",
-    "Added notes_and_events_assessment with all nine mandatory modules and statuses VALIDATED, MISSING, NOT_APPLICABLE, WARNING, or HARD_STOP.",
-    "Required note and event conclusions to resolve to stable evidence IDs and source URLs.",
-    "Kept the renderer as a consumer of validated output; it does not recalculate or repair note analysis."
+  "mandatory_modules": [
+    "debt",
+    "revolver",
+    "leases",
+    "covenants",
+    "receivables",
+    "bad_debt",
+    "supplier_finance",
+    "acquisitions",
+    "amendments",
+    "restatements",
+    "subsequent_events"
   ],
   "requirement_acceptance": [
     {
-      "module": "debt",
+      "requirement": "Debt maturity",
       "status": "PASS",
-      "control": "Separates carrying amounts, current/non-current classification, contractual maturities, facilities, and amendment or waiver signals."
+      "evidence": "Debt carrying values, current/non-current classification, contractual maturity evidence, and amendment or waiver signals are separately evaluated."
     },
     {
-      "module": "leases",
+      "requirement": "Revolver",
       "status": "PASS",
-      "control": "Separates lease carrying values from undiscounted contractual payments and blocks false equivalence."
+      "evidence": "Facility disclosure, commitment or capacity, usage or availability, maturity, and restrictions are evaluated in a first-class module; availability is not treated as covenant headroom."
     },
     {
-      "module": "covenants",
+      "requirement": "Covenant",
       "status": "PASS",
-      "control": "Distinguishes disclosed compliance, numerical headroom, revolver availability, waivers, and missing calculations."
+      "evidence": "Disclosed compliance, numerical headroom, availability, and missing calculations remain distinct."
     },
     {
-      "module": "receivables",
+      "requirement": "Lease",
       "status": "PASS",
-      "control": "Tracks gross or net receivables, allowance basis, period, and comparability without treating missing fields as zero."
+      "evidence": "Lease carrying values remain separate from undiscounted contractual payment schedules."
     },
     {
-      "module": "bad_debt",
+      "requirement": "Receivable and bad debt",
       "status": "PASS",
-      "control": "Separates allowance methodology, provision, write-offs, and recoveries."
+      "evidence": "Receivable balances, allowance basis, provision, write-offs, and recoveries retain period and source lineage; missing values are not converted to zero."
     },
     {
-      "module": "supplier_finance",
+      "requirement": "Supplier finance",
       "status": "PASS",
-      "control": "Requires an explicit basis for NOT_APPLICABLE; disclosure silence remains MISSING."
+      "evidence": "NOT_APPLICABLE requires an explicit disclosure basis; silence remains MISSING."
     },
     {
-      "module": "amendments",
+      "requirement": "Acquisition",
       "status": "PASS",
-      "control": "Searches filing indexes and disclosures for amendments, waivers, and relevant credit-agreement changes."
+      "evidence": "Acquisition amounts are bound to the selected filing accession and period; transaction terms and accounting disclosures are required; unselected facts cannot become unvalidated duplicate amounts."
     },
     {
-      "module": "restatements",
+      "requirement": "Amendment and restatement",
       "status": "PASS",
-      "control": "Classifies amended filings, restatement scope, and non-reliance events; material unresolved integrity issues can trigger HARD_STOP."
+      "evidence": "Administrative amendments remain qualified, while financial restatements and non-reliance events can trigger a Hard Stop."
     },
     {
-      "module": "subsequent_events",
+      "requirement": "Subsequent events and stale information",
       "status": "PASS",
-      "control": "Classifies later filings and material 8-K events, preserves event dates, and prohibits silently mixing post-period events into historical balances."
+      "evidence": "Later filings and material events retain event dates and cannot be silently mixed into historical balances."
+    },
+    {
+      "requirement": "Source conflict",
+      "status": "PASS",
+      "evidence": "A material same-grain source conflict creates a Hard Stop; the acquisition conflict path has a dedicated regression test."
     }
   ],
-  "tests_executed": [
-    {
-      "suite": "S07 dedicated positive and negative controls",
-      "command": "/tmp/public-underwriting-s06-venv/bin/python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_s07_notes_events_controls.py' -v",
-      "status": "PASS",
-      "passed": 17,
+  "forward_test": {
+    "issuer": "ITT",
+    "selection_manifest": "partner-demo/investment_decision_v2/blind_tests/s08_itt/manifest.json",
+    "fix_record": "partner-demo/investment_decision_v2/blind_tests/s08_itt/fix_record.json",
+    "first_run_preserved": true,
+    "failed_attempts_preserved": true,
+    "final_status": "PASS",
+    "final_data_gate": 1,
+    "final_hard_stop_count": 0,
+    "artifact_hash_status": "PASS"
+  },
+  "verification": {
+    "dedicated_s07_tests": {
+      "passed": 25,
       "failed": 0
     },
-    {
-      "suite": "complete unit and regression suite after S07",
-      "command": "/tmp/public-underwriting-s06-venv/bin/python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_*.py' -v",
-      "status": "PASS",
-      "passed": 158,
+    "complete_test_suite": {
+      "passed": 176,
       "failed": 0
     },
-    {
-      "suite": "preserved unfamiliar-company live run",
-      "issuer": "ODFL",
-      "status": "PASS",
-      "hard_stops": 0,
-      "result": "All nine modules returned explicit safe statuses and retained missing evidence instead of inventing values."
-    },
-    {
-      "suite": "supplemental governance and AST anti-hardcoding",
-      "status": "PASS",
-      "findings": 0
-    },
-    {
-      "suite": "skill structure validation",
-      "status": "PASS"
-    }
-  ],
-  "tests_passed": {
-    "dedicated_suite": 17,
-    "complete_suite_including_dedicated_tests": 158,
-    "live_company_runs": 1
+    "skill_validation": "PASS",
+    "anti_hardcoding_findings": 0
   },
-  "tests_failed": {
-    "dedicated_suite": 0,
-    "complete_suite": 0,
-    "live_company_runs": 0
-  },
-  "warnings": [
-    "Keyword and filing-index detection identifies disclosure candidates but does not replace analyst review of legal agreements or footnotes.",
-    "MISSING and WARNING are intentional safe outcomes and must constrain downstream conclusions.",
-    "Live public filings are dated observations and may change after the run date."
-  ],
-  "unresolved_issues": [
-    "A live amended or restated filing fixture and a live material subsequent-event fixture remain future coverage additions; the generic and synthetic control paths exist.",
-    "Convertible, preferred, distressed, and unusually complex capital structures remain outside the current shared non-financial issuer core."
-  ],
-  "exact_next_starting_point": {
-    "session": "S08",
-    "starting_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
-    "first_action": "Freeze CROX, AZO, and preserved unfamiliar company ODFL in one acceptance manifest, then run shared pipeline, safe-failure, Hard Stop rendering, and anti-hardcoding checks without changing S07 analytical files."
-  }
+  "scope_boundary": [
+    "Keyword and filing-index detection identifies evidence candidates but does not replace analyst review of legal agreements or footnotes.",
+    "MISSING and WARNING are intentional constrained outcomes and do not imply that undisclosed evidence exists.",
+    "Financial institutions and specialized capital structures remain outside the current shared non-financial issuer core."
+  ]
 }
