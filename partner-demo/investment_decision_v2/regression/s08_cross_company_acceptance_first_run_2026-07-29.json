@@ -1,0 +1,476 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s08_cross_company_acceptance_report",
+  "phase": "B",
+  "session": "S08",
+  "status": "PASS",
+  "started_at": "2026-07-29T06:16:02.281337+00:00",
+  "completed_at": "2026-07-29T06:16:41.911335+00:00",
+  "elapsed_seconds": 39.63,
+  "manifest_path": "partner-demo/investment_decision_v2/regression/s08_cross_company_acceptance_manifest.json",
+  "manifest_sha256": "3134d9cc7e0cf1bc34140062051ddaee5c7fcb1cee7991c26545599b22ce59cd",
+  "git": {
+    "head": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+    "branch": "codex/phase-b-cross-company",
+    "s07_shared_logic": {
+      "status": "PASS",
+      "s07_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+      "files": [
+        {
+          "path": "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py",
+          "matches_s07_commit": true,
+          "current_sha256": "bc75d9f0d53b0b1b457b39cbf7d5b545d8725d7898145ad2e1a7178df253fb7f",
+          "s07_sha256": "bc75d9f0d53b0b1b457b39cbf7d5b545d8725d7898145ad2e1a7178df253fb7f"
+        },
+        {
+          "path": "partner-demo/investment_decision_v2/scripts/notes_events_controls.py",
+          "matches_s07_commit": true,
+          "current_sha256": "89c81f15492c1b0f23a5c7fa57e63f32f4017402751ca34d1afb653ebace0ac5",
+          "s07_sha256": "89c81f15492c1b0f23a5c7fa57e63f32f4017402751ca34d1afb653ebace0ac5"
+        },
+        {
+          "path": "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+          "matches_s07_commit": true,
+          "current_sha256": "159b9bd179ef355a4db6dfb21d43886066438c7da46c5aa364ccfeac162218cd",
+          "s07_sha256": "159b9bd179ef355a4db6dfb21d43886066438c7da46c5aa364ccfeac162218cd"
+        },
+        {
+          "path": "partner-demo/investment_decision_v2/scripts/underwriting_contract.py",
+          "matches_s07_commit": true,
+          "current_sha256": "f902b1b09387013dda212eca949b600ad70fd0365fa5ab2470cea2b6b66cf026",
+          "s07_sha256": "f902b1b09387013dda212eca949b600ad70fd0365fa5ab2470cea2b6b66cf026"
+        },
+        {
+          "path": "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py",
+          "matches_s07_commit": true,
+          "current_sha256": "58d2bbd41a596f3357f651ed1508a60c737ff99af9d83f6511ad622109142baa",
+          "s07_sha256": "58d2bbd41a596f3357f651ed1508a60c737ff99af9d83f6511ad622109142baa"
+        }
+      ],
+      "errors": []
+    }
+  },
+  "runtime": {
+    "python": "3.12.13 (main, Mar  3 2026, 15:35:03) [Clang 21.1.4 ]",
+    "platform": "macOS-15.7.3-arm64-arm-64bit",
+    "locale": "C/C.UTF-8/C/C/C/C",
+    "timezone": "HKT"
+  },
+  "governance": {
+    "status": "PASS",
+    "taxonomy": {
+      "status": "PASS",
+      "outcome_ids": [
+        "HARD_STOP",
+        "MISSING",
+        "NOT_APPLICABLE",
+        "SUPPRESSED",
+        "VALIDATED_RESULT",
+        "WARNING"
+      ],
+      "errors": []
+    },
+    "matrix": {
+      "status": "PASS",
+      "active_case_count": 6,
+      "planned_case_count": 3,
+      "active_industry_count": 6,
+      "stress_characteristic_count": 19,
+      "active_coverage_count": 12,
+      "active_coverage_gaps": [
+        "amended_or_restated_filing",
+        "complex_debt_structure",
+        "convertible_or_preferred",
+        "high_leverage",
+        "material_subsequent_event",
+        "negative_ebitda",
+        "negative_fcf"
+      ],
+      "coverage": {
+        "large_cash_and_capital_allocation": {
+          "active_cases": [
+            "CI-AAPL"
+          ],
+          "planned_cases": []
+        },
+        "high_leverage": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-DISTRESS"
+          ]
+        },
+        "negative_fcf": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-DISTRESS"
+          ]
+        },
+        "negative_ebitda": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-DISTRESS"
+          ]
+        },
+        "low_margin": {
+          "active_cases": [
+            "CI-PFGC"
+          ],
+          "planned_cases": []
+        },
+        "high_working_capital": {
+          "active_cases": [
+            "CI-CROX",
+            "CI-PFGC"
+          ],
+          "planned_cases": []
+        },
+        "supplier_financed_negative_working_capital": {
+          "active_cases": [
+            "CI-AZO"
+          ],
+          "planned_cases": []
+        },
+        "high_sbc_software": {
+          "active_cases": [
+            "CI-ADBE"
+          ],
+          "planned_cases": []
+        },
+        "acquisition_heavy": {
+          "active_cases": [
+            "CI-CROX"
+          ],
+          "planned_cases": []
+        },
+        "complex_debt_structure": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-CAPITAL-STRUCTURE"
+          ]
+        },
+        "convertible_or_preferred": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-CAPITAL-STRUCTURE"
+          ]
+        },
+        "negative_shareholder_equity": {
+          "active_cases": [
+            "CI-AZO"
+          ],
+          "planned_cases": []
+        },
+        "large_repurchase": {
+          "active_cases": [
+            "CI-AAPL",
+            "CI-AZO"
+          ],
+          "planned_cases": []
+        },
+        "non_calendar_fiscal_year": {
+          "active_cases": [
+            "CI-AAPL",
+            "CI-PFGC",
+            "CI-ADBE",
+            "CI-AZO"
+          ],
+          "planned_cases": []
+        },
+        "fifty_three_week_year": {
+          "active_cases": [
+            "CI-AZO"
+          ],
+          "planned_cases": []
+        },
+        "amended_or_restated_filing": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-FILING-INTEGRITY"
+          ]
+        },
+        "material_subsequent_event": {
+          "active_cases": [],
+          "planned_cases": [
+            "CI-PLANNED-FILING-INTEGRITY"
+          ]
+        },
+        "missing_or_noncomparable_xbrl": {
+          "active_cases": [
+            "CI-ODFL"
+          ],
+          "planned_cases": []
+        },
+        "asset_heavy_capex": {
+          "active_cases": [
+            "CI-ODFL"
+          ],
+          "planned_cases": []
+        }
+      },
+      "errors": []
+    },
+    "anti_hardcoding": {
+      "status": "PASS",
+      "files_scanned": 5,
+      "fixture_value_count": 12,
+      "findings": []
+    },
+    "errors": []
+  },
+  "live_case_results": [
+    {
+      "ticker": "CROX",
+      "role": "existing_regression",
+      "status": "PASS",
+      "errors": [],
+      "report_id": "RPT-BC4021735D4390",
+      "contract_hash": "bbb450741e88a4b64f15a2d3ad0ed7bd23fdf096720cd49752be8e97d37e0025",
+      "contract_validation": "PASS",
+      "data_gate": {
+        "level": 1,
+        "label": "Gate 1 - Core data validated",
+        "allowed_outputs": [
+          "preliminary_company_screen",
+          "basic_financial_description",
+          "major_missing_information"
+        ],
+        "prohibited_outputs": [
+          "automatic_trade",
+          "credit_constraint_conclusion",
+          "expected_return",
+          "final_investment_action",
+          "issuer_risk_judgment",
+          "portfolio_action",
+          "position_sizing",
+          "target_price"
+        ],
+        "hard_stop_ids": [],
+        "probabilities_validated": false
+      },
+      "financial_statement_date": "2026-03-31",
+      "latest_financial_filing_date": "2026-04-30",
+      "market_price_date": "2026-07-28",
+      "notes_and_events_status": "WARNING",
+      "module_statuses": {
+        "debt": "WARNING",
+        "leases": "VALIDATED",
+        "covenants": "WARNING",
+        "receivables": "WARNING",
+        "bad_debt": "WARNING",
+        "supplier_finance": "MISSING",
+        "amendments": "NOT_APPLICABLE",
+        "restatements": "NOT_APPLICABLE",
+        "subsequent_events": "WARNING"
+      },
+      "safe_outcomes": [
+        "MISSING",
+        "NOT_APPLICABLE",
+        "SUPPRESSED",
+        "VALIDATED_RESULT",
+        "WARNING"
+      ],
+      "hard_stop_count": 0,
+      "warning_count": 24,
+      "evidence_count": 78,
+      "contract_sha256": "5251bf6d158d25da016678ea1845f09d9bd86922345b3aeb10f72806c75deea0",
+      "data_pack_sha256": "99393a2543af3115769e4eb4dad8c4d874ba415230d7de1d3c55f7f8a53995a2",
+      "render_output_sha256": {
+        "one_page_html": "dc1a266a0dacb1526cfa48322ec56565f67f074aabeb0a9fcba5afbf3254af2b",
+        "full_report_html": "b3e2c990d8df92eb1175f43706f80bc2a8bcf4d103c98c26837f4b30dd9baa43",
+        "evidence_appendix_html": "b639acb64ea6cff0f9d2c10c6a8e2f403e2dea9c2ba3b9a7e792bcc32477da4b",
+        "qa_summary_html": "3ffc5a22c95e5fc2a6d3b5b26ea66d602aeaab2de23cc538a3d9873b8869b687"
+      }
+    },
+    {
+      "ticker": "AZO",
+      "role": "existing_regression",
+      "status": "PASS",
+      "errors": [],
+      "report_id": "RPT-FA4E076E13E5AD",
+      "contract_hash": "c6939a16a2931c2bb4e75dda23e7e9352ac4091b13055a2ef8fe961caa70660c",
+      "contract_validation": "PASS",
+      "data_gate": {
+        "level": 1,
+        "label": "Gate 1 - Core data validated",
+        "allowed_outputs": [
+          "preliminary_company_screen",
+          "basic_financial_description",
+          "major_missing_information"
+        ],
+        "prohibited_outputs": [
+          "automatic_trade",
+          "credit_constraint_conclusion",
+          "expected_return",
+          "final_investment_action",
+          "issuer_risk_judgment",
+          "portfolio_action",
+          "position_sizing",
+          "target_price"
+        ],
+        "hard_stop_ids": [],
+        "probabilities_validated": false
+      },
+      "financial_statement_date": "2026-05-09",
+      "latest_financial_filing_date": "2026-06-12",
+      "market_price_date": "2026-07-27",
+      "notes_and_events_status": "WARNING",
+      "module_statuses": {
+        "debt": "VALIDATED",
+        "leases": "WARNING",
+        "covenants": "WARNING",
+        "receivables": "VALIDATED",
+        "bad_debt": "WARNING",
+        "supplier_finance": "WARNING",
+        "amendments": "NOT_APPLICABLE",
+        "restatements": "NOT_APPLICABLE",
+        "subsequent_events": "WARNING"
+      },
+      "safe_outcomes": [
+        "MISSING",
+        "NOT_APPLICABLE",
+        "SUPPRESSED",
+        "VALIDATED_RESULT",
+        "WARNING"
+      ],
+      "hard_stop_count": 0,
+      "warning_count": 24,
+      "evidence_count": 100,
+      "contract_sha256": "0b61bdc4cb10d89fc87b382070ed117d4eef54d72cb2de23895b0389b042d50a",
+      "data_pack_sha256": "0ef6bfcdf29e9c864e35b378e8359bd8bf09e018fc8d262afd8dccec0ddfeb2d",
+      "render_output_sha256": {
+        "one_page_html": "5fd042ce37029cacf6d0625e1231a1b7b9df1e0db7fa5f7b17d8e0fba554a705",
+        "full_report_html": "764fe9ad993ae87f93eac97b93e5f0346641624306b7eb935e3ae6b7fe0ba4b4",
+        "evidence_appendix_html": "202c66ef26d7937679d5c49c12e6419a551c17b7fbbd3dff3c457931cde211c8",
+        "qa_summary_html": "96cbba8c90cf44655ac7d7e844cb572dc7e436cd1c811ec0c678f534fbb7980d"
+      }
+    },
+    {
+      "ticker": "ODFL",
+      "role": "preserved_unfamiliar_company",
+      "status": "PASS",
+      "errors": [],
+      "report_id": "RPT-4989D83CC11FBC",
+      "contract_hash": "2b0d93ebdd4d9645aeed1ddc23fbf5a8f621a85882a6f9acb43ff9bafa9ab75b",
+      "contract_validation": "PASS",
+      "data_gate": {
+        "level": 1,
+        "label": "Gate 1 - Core data validated",
+        "allowed_outputs": [
+          "preliminary_company_screen",
+          "basic_financial_description",
+          "major_missing_information"
+        ],
+        "prohibited_outputs": [
+          "automatic_trade",
+          "credit_constraint_conclusion",
+          "expected_return",
+          "final_investment_action",
+          "issuer_risk_judgment",
+          "portfolio_action",
+          "position_sizing",
+          "target_price"
+        ],
+        "hard_stop_ids": [],
+        "probabilities_validated": false
+      },
+      "financial_statement_date": "2026-03-31",
+      "latest_financial_filing_date": "2026-05-06",
+      "market_price_date": "2026-07-27",
+      "notes_and_events_status": "WARNING",
+      "module_statuses": {
+        "debt": "WARNING",
+        "leases": "MISSING",
+        "covenants": "WARNING",
+        "receivables": "WARNING",
+        "bad_debt": "WARNING",
+        "supplier_finance": "MISSING",
+        "amendments": "NOT_APPLICABLE",
+        "restatements": "NOT_APPLICABLE",
+        "subsequent_events": "WARNING"
+      },
+      "safe_outcomes": [
+        "MISSING",
+        "NOT_APPLICABLE",
+        "SUPPRESSED",
+        "VALIDATED_RESULT",
+        "WARNING"
+      ],
+      "hard_stop_count": 0,
+      "warning_count": 27,
+      "evidence_count": 70,
+      "contract_sha256": "f0e3f841d323df126a6011d3f5b69faa601babe5f4b20b4c2ffa27f6bcd6dc35",
+      "data_pack_sha256": "7e81b227b39b08e97f7d4b8402ce53370dba94bdb1bab69447e0927e1271c9de",
+      "render_output_sha256": {
+        "one_page_html": "89d4c2920d8b4cc0795811cca41c7fb9146b7621724aa5953e0e3d2e95ed9ecb",
+        "full_report_html": "d4a4773ed2f115ca4e4f584511401e607706fb90b7d9390b43709812b002bca7",
+        "evidence_appendix_html": "5c5cefc8428fc5a97bac0c773b08e7e45f265695de10e0d173a34ec375a6737a",
+        "qa_summary_html": "31fdc240521d63eb3b507c2d4500f4ed4843a8ba481763d47f14c922add5ca95"
+      }
+    }
+  ],
+  "synthetic_safe_failure_results": {
+    "status": "PASS",
+    "observed_statuses": [
+      "HARD_STOP",
+      "MISSING",
+      "NOT_APPLICABLE",
+      "VALIDATED",
+      "WARNING"
+    ],
+    "required_statuses": [
+      "HARD_STOP",
+      "MISSING",
+      "NOT_APPLICABLE",
+      "WARNING"
+    ],
+    "hard_stop_modules": [
+      "restatements",
+      "subsequent_events"
+    ],
+    "errors": []
+  },
+  "hard_stop_rendering": {
+    "status": "PASS",
+    "errors": [],
+    "formal_report_blocked": true,
+    "outputs": [
+      "diagnostic_html"
+    ],
+    "contract_validation": "PASS",
+    "data_gate": {
+      "level": 0,
+      "label": "Gate 0 - Data not validated",
+      "allowed_outputs": [
+        "diagnostic_validation_report",
+        "missing_information",
+        "source_status"
+      ],
+      "prohibited_outputs": [
+        "automatic_trade",
+        "credit_constraint_conclusion",
+        "expected_return",
+        "final_investment_action",
+        "issuer_risk_judgment",
+        "portfolio_action",
+        "position_sizing",
+        "target_price"
+      ],
+      "hard_stop_ids": [
+        "P0-restatement-review",
+        "P1-subsequent-event-review"
+      ],
+      "probabilities_validated": false
+    },
+    "hard_stop_ids": [
+      "P0-restatement-review",
+      "P1-subsequent-event-review"
+    ],
+    "contract_sha256": "6b8644659c570777521f48ed3238aa403c0f11d4aa5017002010154e9c8aaee3",
+    "diagnostic_sha256": "9e22d9c659d079815015df7d33a318016be6411e1ac12846670d797e14b17c49"
+  },
+  "errors": [],
+  "warnings": [
+    "Live SEC filings and market observations are dated and may change after this acceptance run.",
+    "MISSING and WARNING outcomes are acceptable only when the affected conclusion remains qualified and the remediation is explicit."
+  ]
+}

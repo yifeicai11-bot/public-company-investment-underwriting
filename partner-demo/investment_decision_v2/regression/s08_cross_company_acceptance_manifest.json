@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s08_cross_company_acceptance_manifest",
+  "phase": "B",
+  "session": "S08",
+  "selection_date": "2026-07-29",
+  "s07_implementation_commit": "d6110648237f8cd8cf64c7130bf701dbda276d42",
+  "source_scope": "PUBLIC_DATA_ONLY",
+  "cases": [
+    {
+      "ticker": "CROX",
+      "role": "existing_regression",
+      "reason": "Preserve the existing consumer-brand and acquisition-heavy regression."
+    },
+    {
+      "ticker": "AZO",
+      "role": "existing_regression",
+      "reason": "Preserve the supplier-financed retailer, negative-equity, repurchase, and retail-calendar regression."
+    },
+    {
+      "ticker": "ODFL",
+      "role": "preserved_unfamiliar_company",
+      "reason": "Retain the S05 blind-company selection without replacement or pre-run ticker tuning."
+    }
+  ],
+  "required_note_event_modules": [
+    "debt",
+    "leases",
+    "covenants",
+    "receivables",
+    "bad_debt",
+    "supplier_finance",
+    "amendments",
+    "restatements",
+    "subsequent_events"
+  ],
+  "allowed_module_statuses": [
+    "VALIDATED",
+    "MISSING",
+    "NOT_APPLICABLE",
+    "WARNING",
+    "HARD_STOP"
+  ],
+  "live_case_acceptance": [
+    "The shared public-data pipeline completes without a ticker-specific branch.",
+    "The Data and Evidence pack and Gate 3 contract carry notes_and_events_control_version 1.0.0.",
+    "All nine required modules are present and use only allowed safe statuses.",
+    "Every note/event evidence ID resolves to the same shared evidence registry.",
+    "No live case has an active unremediated Hard Stop.",
+    "Public-only target price, probability-weighted return, position sizing, and portfolio action remain suppressed.",
+    "One-Page, Full Report, Evidence Appendix, and QA Summary render from one validated contract."
+  ],
+  "safe_failure_acceptance": [
+    "MISSING retains explicit missing information and never substitutes zero.",
+    "NOT_APPLICABLE requires an explicit basis or a completed event-index review.",
+    "WARNING allows research to continue while preserving the limitation.",
+    "HARD_STOP forces Gate 0 behavior and diagnostic-only rendering.",
+    "The rendered diagnostic contains the Hard Stop and no formal One-Page or Full Report is produced."
+  ],
+  "anti_overfitting_acceptance": [
+    "AST scan covers every shared analytical file, including notes_events_controls.py.",
+    "No ticker, company name, hard-coded company value, or fixture configuration appears in analytical logic.",
+    "CROX, AZO, and ODFL are read only from this controlled acceptance manifest and regression data."
+  ],
+  "first_run_policy": {
+    "do_not_replace_company_after_failure": true,
+    "record_all_failures": true,
+    "fix_only_shared_logic": true,
+    "rerun_all_three_after_any_fix": true
+  }
+}
