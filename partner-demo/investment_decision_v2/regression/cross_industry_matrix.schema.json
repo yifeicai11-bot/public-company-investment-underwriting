@@ -28,7 +28,7 @@
       "const": "B"
     },
     "session": {
-      "const": "S06"
+      "const": "SUP-B01"
     },
     "as_of_date": {
       "type": "string",

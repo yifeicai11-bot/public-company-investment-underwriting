@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "document_type": "cross_industry_regression_matrix",
   "phase": "B",
-  "session": "S06",
+  "session": "SUP-B01",
   "as_of_date": "2026-07-28",
   "supported_core": "SEC-reporting, US GAAP, non-financial issuers using 10-K and 10-Q filings",
   "coverage_policy": {
@@ -304,7 +304,7 @@
         "HARD_STOP"
       ],
       "analytical_logic_hardcoding_allowed": false,
-      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in supplemental regression governance."
     },
     {
       "case_id": "CI-PLANNED-CAPITAL-STRUCTURE",
@@ -330,7 +330,7 @@
         "HARD_STOP"
       ],
       "analytical_logic_hardcoding_allowed": false,
-      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in supplemental regression governance."
     },
     {
       "case_id": "CI-PLANNED-FILING-INTEGRITY",
@@ -355,7 +355,7 @@
         "HARD_STOP"
       ],
       "analytical_logic_hardcoding_allowed": false,
-      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in S06."
+      "selection_rule": "Select deterministically in a future session before the first run; do not name or tune the issuer in supplemental regression governance."
     }
   ],
   "synthetic_safety_cases": [

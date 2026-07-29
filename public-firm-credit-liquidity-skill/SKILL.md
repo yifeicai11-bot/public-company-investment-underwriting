@@ -74,7 +74,7 @@ If valuation, consensus, the Public-Data FCF Underwriting Base, or scenario pric
 1. Clarify the target company, ticker, exchange, period, and desired depth if not already provided.
 2. Gather public source documents for the latest annual period and, when available, the latest interim/quarterly period.
 3. Build a versioned evidence object for every material metric, including a stable evidence ID, value, unit, currency, period, as-of date, measurement basis, source level/type/locator, publication and retrieval dates, formula, upstream evidence IDs, confidence, validation status, and subsequent-event status.
-4. Run data-integrity validation before writing analysis: period match, instant-vs-flow, quarter derivation, balance-sheet check, cash-flow check, debt reconciliation, facility check, lease check, covenant check, source freshness, and investment gate.
+4. Run data-integrity validation before writing analysis: period match, instant-vs-flow, quarter derivation, balance-sheet check, cash-flow check, debt reconciliation, facility check, lease check, covenant check, source freshness, and investment gate. Read `references/data_evidence_controls.md` before changing or independently reproducing quarter, YTD, FY, LTM, unit, currency, share-count, fiscal-calendar, denominator, or missing-XBRL logic.
 5. Extract metrics and disclosures relevant to all required issuer-underwriting modules.
 6. Read `references/filing_note_extraction.md` when any module is material, Medium/High, or dependent on note-level disclosure. Debt, revolver/ABL, maturity, lease, covenant, acquisition, and refinancing conclusions require note-level reading.
 7. Build evidence first, then assign risk ratings. Do not choose a rating and then search for confirming evidence.

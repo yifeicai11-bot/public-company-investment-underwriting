@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the S06 regression matrix without running network-backed cases."""
+"""Validate the supplemental Phase B regression governance matrix."""
 
 from __future__ import annotations
 

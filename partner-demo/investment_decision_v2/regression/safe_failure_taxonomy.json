@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "document_type": "safe_failure_taxonomy",
   "phase": "B",
-  "session": "S06",
+  "session": "SUP-B01",
   "outcomes": [
     {
       "outcome_id": "VALIDATED_RESULT",

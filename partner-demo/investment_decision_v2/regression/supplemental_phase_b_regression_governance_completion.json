@@ -2,9 +2,11 @@
   "schema_version": "1.0.0",
   "document_type": "session_completion_record",
   "phase": "B",
-  "session": "S06",
+  "session": "SUP-B01",
   "status": "PASS",
   "completion_date": "2026-07-28",
+  "scope_classification": "Supplemental Phase B testing governance; this record does not count as S06 Period, XBRL and Accounting Controls completion.",
+  "relabelled_on": "2026-07-29",
   "implementation_commit": "6e285a5a8cd9f24402f7c69549bf868c51183bac",
   "objective": "Build a machine-readable cross-industry regression matrix and a formal safe-failure taxonomy without adding issuer-specific analytical logic.",
   "deliverables": [
@@ -179,9 +181,9 @@
   ],
   "next_session_entry": {
     "session": "S07",
-    "first_action": "Use the S06 taxonomy to build executable negative-path fixtures for all six safe outcomes, verify Hard Stop diagnostic-only rendering and suppression consistency, and close the Phase B release gate.",
+    "first_action": "Use the supplemental taxonomy to build executable negative-path fixtures for all six safe outcomes, verify Hard Stop diagnostic-only rendering and suppression consistency, and close the Phase B release gate.",
     "constraints": [
-      "Do not alter the S06 matrix to claim planned coverage as tested.",
+      "Do not alter the supplemental regression matrix to claim planned coverage as tested.",
       "Do not add ticker-specific analytical branches.",
       "Do not select or expose the held-out S17 issuer."
     ]

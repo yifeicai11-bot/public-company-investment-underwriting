@@ -35,11 +35,18 @@ from build_public_company_decision_pack import (  # noqa: E402
     DEFAULT_OUT_ROOT,
     FLOW_TAGS,
     SEC_UA,
+    build_ltm_metric as build_shared_ltm_metric,
     build_company_pack,
     fetch_json,
+    flow_points_for_tags as shared_flow_points_for_tags,
     fmt_usd,
+    is_annual_flow,
+    latest_share_count_fact,
     metric_map,
     safe_float,
+    select_latest_annual_from_points,
+    select_latest_ytd_from_points,
+    select_prior_comparable_ytd_from_points,
     working_capital_component_coverage,
 )
 from underwriting_contract import (  # noqa: E402
@@ -261,48 +268,11 @@ def aligned_return_pair(
     }
 
 
-def fact_points_any(companyfacts: dict[str, Any], tag: str) -> list[dict[str, Any]]:
-    out: list[dict[str, Any]] = []
-    for taxonomy, facts in companyfacts.get("facts", {}).items():
-        if tag not in facts:
-            continue
-        for unit, values in facts[tag].get("units", {}).items():
-            for value in values:
-                point = dict(value)
-                point["unit"] = unit
-                point["tag"] = tag
-                point["taxonomy"] = taxonomy
-                out.append(point)
-    return out
-
-
 def latest_shares(companyfacts: dict[str, Any], as_of_date: str | None = None) -> tuple[float | None, dict[str, Any] | None]:
-    candidates: list[dict[str, Any]] = []
-    for tag in ("EntityCommonStockSharesOutstanding", "CommonStockSharesOutstanding"):
-        candidates.extend(fact_points_any(companyfacts, tag))
-
-    candidates = [
-        c
-        for c in candidates
-        if c.get("val") is not None
-        and c.get("unit") == "shares"
-        and c.get("form") in {"10-Q", "10-K", "10-Q/A", "10-K/A"}
-    ]
-    if as_of_date:
-        dated_candidates = [
-            c
-            for c in candidates
-            if (c.get("end") or c.get("instant") or "") <= as_of_date
-        ]
-        if not dated_candidates:
-            return None, None
-        candidates = dated_candidates
-
-    if not candidates:
+    selection = latest_share_count_fact(companyfacts, as_of_date)
+    if selection["status"] != "PASS":
         return None, None
-    candidates.sort(key=lambda c: (c.get("end") or c.get("instant") or "", c.get("filed", ""), c.get("accn", "")))
-    chosen = candidates[-1]
-    return safe_float(chosen.get("val")), chosen
+    return safe_float(selection["value"]), selection["point"]
 
 
 def duration_days(point: dict[str, Any]) -> int:
@@ -319,18 +289,7 @@ def duration_days(point: dict[str, Any]) -> int:
 
 
 def flow_points(companyfacts: dict[str, Any], tags: tuple[str, ...]) -> list[dict[str, Any]]:
-    points: list[dict[str, Any]] = []
-    for tag in tags:
-        for point in fact_points_any(companyfacts, tag):
-            if (
-                point.get("form") in {"10-Q", "10-K", "10-Q/A", "10-K/A"}
-                and point.get("start")
-                and point.get("end")
-                and point.get("val") is not None
-                and "USD" in str(point.get("unit", ""))
-            ):
-                points.append(point)
-    return points
+    return shared_flow_points_for_tags(companyfacts, tags)
 
 
 def flow_points_for_tag(companyfacts: dict[str, Any], tag: str) -> list[dict[str, Any]]:
@@ -356,115 +315,19 @@ def source_summary(point: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 def latest_annual_from_points(points: list[dict[str, Any]], annual_period: str | None) -> dict[str, Any] | None:
-    annuals = [p for p in points if p.get("form", "").startswith("10-K") and duration_days(p) >= 300]
-    if annual_period:
-        exact = [p for p in annuals if p.get("end") == annual_period]
-        if exact:
-            annuals = exact
-    if not annuals:
-        return None
-    annuals.sort(key=lambda p: (p.get("end", ""), p.get("filed", ""), duration_days(p), p.get("accn", "")))
-    return annuals[-1]
+    return select_latest_annual_from_points(points, annual_period)
 
 
 def latest_ytd_from_points(points: list[dict[str, Any]], latest_q_period: str | None) -> dict[str, Any] | None:
-    if not latest_q_period:
-        return None
-    ytd = [p for p in points if p.get("form", "").startswith("10-Q") and p.get("end") == latest_q_period]
-    if not ytd:
-        return None
-    ytd.sort(key=lambda p: (duration_days(p), p.get("filed", ""), p.get("accn", "")))
-    return ytd[-1]
+    return select_latest_ytd_from_points(points, latest_q_period)
 
 
 def prior_year_ytd_from_points(points: list[dict[str, Any]], current_ytd: dict[str, Any] | None) -> dict[str, Any] | None:
-    if not current_ytd:
-        return None
-    current_fp = current_ytd.get("fp")
-    current_end = current_ytd.get("end", "")
-    current_start = current_ytd.get("start", "")
-    current_duration = duration_days(current_ytd)
-    try:
-        current_end_date = date.fromisoformat(current_end)
-        current_start_date = date.fromisoformat(current_start)
-    except ValueError:
-        return None
-    candidates = [
-        p
-        for p in points
-        if p.get("form", "").startswith("10-Q")
-        and p.get("fp") == current_fp
-        and p.get("end", "") < current_end
-        and duration_days(p) >= max(60, current_duration - 20)
-        and duration_days(p) <= current_duration + 20
-        and p.get("start")
-        and 330 <= (current_end_date - date.fromisoformat(p["end"])).days <= 400
-        and 330 <= (current_start_date - date.fromisoformat(p["start"])).days <= 400
-    ]
-    if not candidates:
-        return None
-    candidates.sort(key=lambda p: (p.get("end", ""), p.get("filed", ""), p.get("accn", "")))
-    return candidates[-1]
+    return select_prior_comparable_ytd_from_points(points, current_ytd)
 
 
 def ltm_metric(companyfacts: dict[str, Any], metric: str, latest_q_period: str | None, annual_period: str | None) -> dict[str, Any]:
-    first_annual_fallback: dict[str, Any] | None = None
-    for tag in FLOW_TAGS[metric]:
-        points = flow_points_for_tag(companyfacts, tag)
-        if not points:
-            continue
-        annual = latest_annual_from_points(points, annual_period)
-        if annual and first_annual_fallback is None:
-            first_annual_fallback = annual
-
-        current = latest_ytd_from_points(points, latest_q_period)
-        prior = prior_year_ytd_from_points(points, current)
-        period_chain_valid = False
-        if annual and current and annual.get("end") and current.get("start"):
-            try:
-                gap = (date.fromisoformat(current["start"]) - date.fromisoformat(annual["end"])).days
-                period_chain_valid = 1 <= gap <= 14
-            except ValueError:
-                period_chain_valid = False
-        if annual and current and prior and period_chain_valid:
-            annual_v = safe_float(annual.get("val"))
-            current_v = safe_float(current.get("val"))
-            prior_v = safe_float(prior.get("val"))
-            if None not in (annual_v, current_v, prior_v):
-                return {
-                    "metric": metric,
-                    "value": annual_v + current_v - prior_v,
-                    "method": "annual + latest YTD - prior-year YTD using one XBRL concept",
-                    "period_type": "LTM",
-                    "confidence": "High",
-                    "evidence_type": "CALC",
-                    "components": {
-                        "annual": source_summary(annual),
-                        "current_ytd": source_summary(current),
-                        "prior_year_ytd": source_summary(prior),
-                    },
-                }
-
-    if first_annual_fallback:
-        return {
-            "metric": metric,
-            "value": safe_float(first_annual_fallback.get("val")),
-            "method": "latest annual fallback using highest-priority available XBRL concept",
-            "period_type": "annual",
-            "confidence": "Medium",
-            "evidence_type": "FACT",
-            "components": {"annual": source_summary(first_annual_fallback)},
-        }
-
-    return {
-        "metric": metric,
-        "value": None,
-        "method": "missing",
-        "period_type": "missing",
-        "confidence": "Low",
-        "evidence_type": "MISSING",
-        "components": {},
-    }
+    return build_shared_ltm_metric(companyfacts, metric, latest_q_period, annual_period)
 
 
 def annual_history(companyfacts: dict[str, Any], metric: str, annual_period: str | None, max_points: int = 5) -> dict[str, Any]:
@@ -472,7 +335,7 @@ def annual_history(companyfacts: dict[str, Any], metric: str, annual_period: str
     best_tag = ""
     for tag in FLOW_TAGS[metric]:
         points = flow_points_for_tag(companyfacts, tag)
-        annuals = [p for p in points if p.get("form", "").startswith("10-K") and duration_days(p) >= 300]
+        annuals = [p for p in points if is_annual_flow(p)]
         if annual_period:
             annuals = [p for p in annuals if p.get("end", "") <= annual_period]
         annuals.sort(key=lambda p: (p.get("end", ""), p.get("filed", ""), p.get("accn", "")))

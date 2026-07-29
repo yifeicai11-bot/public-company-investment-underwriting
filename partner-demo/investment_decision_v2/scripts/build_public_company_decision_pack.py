@@ -245,6 +245,548 @@ class DataPoint:
     subsequent_event_status: str = "NOT_REVIEWED"
 
 
+S06_DATA_CONTROL_VERSION = "1.0.0"
+SEC_FINANCIAL_FORMS = {"10-Q", "10-K", "10-Q/A", "10-K/A"}
+QUARTER_MIN_DAYS = 70
+QUARTER_MAX_DAYS = 105
+ANNUAL_MIN_DAYS = 350
+ANNUAL_MAX_DAYS = 380
+COMPARABLE_YTD_DURATION_TOLERANCE_DAYS = 7
+COMPARABLE_FISCAL_SHIFT_MIN_DAYS = 350
+COMPARABLE_FISCAL_SHIFT_MAX_DAYS = 380
+
+
+def unit_profile(unit: Any) -> dict[str, str]:
+    """Classify an SEC unit without assuming that every monetary fact is USD."""
+
+    raw = str(unit or "").strip()
+    normalized = raw.replace("iso4217:", "")
+    if normalized == "shares":
+        return {"unit": raw, "category": "SHARES", "currency": ""}
+    if normalized == "pure":
+        return {"unit": raw, "category": "PURE", "currency": ""}
+
+    match = re.fullmatch(r"([A-Z]{3})(?:/(?:shares?|common shares?))?", normalized)
+    if match:
+        category = "MONETARY_PER_SHARE" if "/" in normalized else "MONETARY"
+        return {"unit": raw, "category": category, "currency": match.group(1)}
+    return {"unit": raw, "category": "UNKNOWN", "currency": ""}
+
+
+def fact_context_kind(point: dict[str, Any]) -> str:
+    start = str(point.get("start") or "")
+    end = str(point.get("end") or point.get("instant") or "")
+    if end and not start:
+        return "INSTANT"
+    if start and end:
+        return "FLOW"
+    return "INVALID"
+
+
+def is_quarter_flow(point: dict[str, Any]) -> bool:
+    duration = days_between(point.get("start"), point.get("end")) or 0
+    return (
+        fact_context_kind(point) == "FLOW"
+        and str(point.get("form", "")).upper() in {"10-Q", "10-Q/A"}
+        and QUARTER_MIN_DAYS <= duration <= QUARTER_MAX_DAYS
+    )
+
+
+def is_ytd_flow(point: dict[str, Any]) -> bool:
+    duration = days_between(point.get("start"), point.get("end")) or 0
+    if (
+        fact_context_kind(point) != "FLOW"
+        or str(point.get("form", "")).upper() not in {"10-Q", "10-Q/A"}
+    ):
+        return False
+    fiscal_period = str(point.get("fp") or "").upper()
+    if fiscal_period == "Q1":
+        return QUARTER_MIN_DAYS <= duration <= QUARTER_MAX_DAYS
+    if fiscal_period == "Q2":
+        return 140 <= duration <= 210
+    if fiscal_period == "Q3":
+        return 220 <= duration < ANNUAL_MIN_DAYS
+    return QUARTER_MAX_DAYS < duration < ANNUAL_MIN_DAYS
+
+
+def is_annual_flow(point: dict[str, Any]) -> bool:
+    duration = days_between(point.get("start"), point.get("end")) or 0
+    return (
+        fact_context_kind(point) == "FLOW"
+        and str(point.get("form", "")).upper() in {"10-K", "10-K/A"}
+        and ANNUAL_MIN_DAYS <= duration <= ANNUAL_MAX_DAYS
+    )
+
+
+def fiscal_calendar_profile(annual_point: dict[str, Any] | None) -> dict[str, Any]:
+    """Describe a fiscal year from its reported dates, including 53-week years."""
+
+    if not annual_point or not is_annual_flow(annual_point):
+        return {
+            "status": "MISSING",
+            "control_version": S06_DATA_CONTROL_VERSION,
+            "reason": "No validated annual flow context is available.",
+        }
+
+    start = str(annual_point.get("start") or "")
+    end = str(annual_point.get("end") or "")
+    start_date = parse_date(start)
+    end_date = parse_date(end)
+    duration = days_between(start, end)
+    if not start_date or not end_date or duration is None:
+        return {
+            "status": "INVALID",
+            "control_version": S06_DATA_CONTROL_VERSION,
+            "reason": "Annual context dates are invalid.",
+        }
+
+    calendar_basis = (
+        "CALENDAR_YEAR"
+        if (start_date.month, start_date.day, end_date.month, end_date.day)
+        == (1, 1, 12, 31)
+        else "NON_CALENDAR_FISCAL_YEAR"
+    )
+    if 368 <= duration <= 374:
+        week_structure = "53_WEEK"
+    elif (
+        360 <= duration <= 367
+        and start_date.weekday() == (end_date.weekday() + 1) % 7
+    ):
+        week_structure = "52_WEEK"
+    else:
+        week_structure = "DATE_BASED"
+
+    return {
+        "status": "PASS",
+        "control_version": S06_DATA_CONTROL_VERSION,
+        "fiscal_year_start": start,
+        "fiscal_year_end": end,
+        "duration_days": duration,
+        "calendar_basis": calendar_basis,
+        "week_structure": week_structure,
+        "is_non_calendar_fiscal_year": calendar_basis == "NON_CALENDAR_FISCAL_YEAR",
+        "is_53_week_fiscal_year": week_structure == "53_WEEK",
+        "source_tag": annual_point.get("tag", ""),
+        "unit": annual_point.get("unit", ""),
+        "currency": unit_profile(annual_point.get("unit"))["currency"],
+    }
+
+
+def comparable_ytd_periods(current: dict[str, Any], prior: dict[str, Any]) -> tuple[bool, str]:
+    """Require comparable fiscal periods while allowing a one-week 53-week shift."""
+
+    if not is_ytd_flow(current) or not is_ytd_flow(prior):
+        return False, "Both inputs must be validated 10-Q YTD flow contexts."
+    if current.get("tag") != prior.get("tag"):
+        return False, "Current and prior YTD concepts differ."
+    if current.get("unit") != prior.get("unit"):
+        return False, "Current and prior YTD units differ."
+    if unit_profile(current.get("unit"))["currency"] != unit_profile(prior.get("unit"))["currency"]:
+        return False, "Current and prior YTD currencies differ."
+    current_fp = str(current.get("fp") or "")
+    prior_fp = str(prior.get("fp") or "")
+    if current_fp and prior_fp and current_fp != prior_fp:
+        return False, "Current and prior YTD fiscal-period labels differ."
+
+    current_duration = days_between(current.get("start"), current.get("end")) or 0
+    prior_duration = days_between(prior.get("start"), prior.get("end")) or 0
+    if abs(current_duration - prior_duration) > COMPARABLE_YTD_DURATION_TOLERANCE_DAYS:
+        return False, "Current and prior YTD durations differ by more than seven days."
+
+    current_start = parse_date(current.get("start"))
+    current_end = parse_date(current.get("end"))
+    prior_start = parse_date(prior.get("start"))
+    prior_end = parse_date(prior.get("end"))
+    if not all((current_start, current_end, prior_start, prior_end)):
+        return False, "A YTD comparison date is invalid."
+    start_shift = (current_start - prior_start).days
+    end_shift = (current_end - prior_end).days
+    if not (
+        COMPARABLE_FISCAL_SHIFT_MIN_DAYS <= start_shift <= COMPARABLE_FISCAL_SHIFT_MAX_DAYS
+        and COMPARABLE_FISCAL_SHIFT_MIN_DAYS <= end_shift <= COMPARABLE_FISCAL_SHIFT_MAX_DAYS
+    ):
+        return False, "Current and prior YTD contexts are not one comparable fiscal year apart."
+    return True, "Comparable concept, unit, currency, fiscal label, duration, and fiscal-year shift."
+
+
+def controlled_ratio(
+    numerator: Any,
+    denominator: Any,
+    *,
+    multiplier: float = 1.0,
+    require_positive_denominator: bool = True,
+) -> dict[str, Any]:
+    """Return a ratio or a structured safe suppression; never divide implicitly."""
+
+    numerator_value = safe_float(numerator)
+    denominator_value = safe_float(denominator)
+    if numerator_value is None or denominator_value is None:
+        return {"status": "MISSING", "value": None, "reason": "Numerator or denominator is missing."}
+    if not math.isfinite(numerator_value) or not math.isfinite(denominator_value):
+        return {"status": "SUPPRESSED", "value": None, "reason": "Numerator or denominator is non-finite."}
+    if denominator_value == 0:
+        return {"status": "SUPPRESSED", "value": None, "reason": "Denominator is zero."}
+    if require_positive_denominator and denominator_value < 0:
+        return {"status": "SUPPRESSED", "value": None, "reason": "Denominator is negative."}
+    return {
+        "status": "PASS",
+        "value": numerator_value / denominator_value * multiplier,
+        "reason": "Validated denominator.",
+    }
+
+
+def compatible_monetary_inputs(*rows: DataPoint | None) -> dict[str, Any]:
+    present = [row for row in rows if row is not None]
+    if not present:
+        return {"status": "MISSING", "currency": "", "unit": "", "reason": "No monetary inputs are available."}
+    profiles = [unit_profile(row.unit) for row in present]
+    if any(profile["category"] != "MONETARY" for profile in profiles):
+        return {
+            "status": "INCOMPATIBLE",
+            "currency": "",
+            "unit": "",
+            "reason": "At least one input is not a monetary unit.",
+        }
+    currencies = {profile["currency"] for profile in profiles}
+    if len(currencies) != 1 or "" in currencies:
+        return {
+            "status": "INCOMPATIBLE",
+            "currency": "",
+            "unit": "",
+            "reason": "Monetary input currencies differ or are unknown.",
+        }
+    return {
+        "status": "PASS",
+        "currency": profiles[0]["currency"],
+        "unit": present[0].unit,
+        "reason": "Monetary input currencies are compatible.",
+    }
+
+
+def fact_points_any_taxonomy(companyfacts: dict[str, Any], tag: str) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for taxonomy, facts in companyfacts.get("facts", {}).items():
+        item = facts.get(tag)
+        if not item:
+            continue
+        for unit, values in item.get("units", {}).items():
+            for value in values:
+                point = dict(value)
+                point["unit"] = unit
+                point["tag"] = tag
+                point["taxonomy"] = taxonomy
+                out.append(point)
+    return out
+
+
+def latest_share_count_fact(
+    companyfacts: dict[str, Any],
+    as_of_date: str | None = None,
+) -> dict[str, Any]:
+    """Select a point-in-time share count without future-publication leakage."""
+
+    candidates: list[dict[str, Any]] = []
+    for tag in ("EntityCommonStockSharesOutstanding", "CommonStockSharesOutstanding"):
+        candidates.extend(fact_points_any_taxonomy(companyfacts, tag))
+
+    eligible = [
+        point
+        for point in candidates
+        if point.get("val") is not None
+        and unit_profile(point.get("unit"))["category"] == "SHARES"
+        and fact_context_kind(point) == "INSTANT"
+        and str(point.get("form", "")).upper() in SEC_FINANCIAL_FORMS
+    ]
+    if as_of_date:
+        eligible = [
+            point
+            for point in eligible
+            if str(point.get("end") or point.get("instant") or "") <= as_of_date
+            and str(point.get("filed") or "") <= as_of_date
+        ]
+    if not eligible:
+        return {
+            "status": "MISSING",
+            "value": None,
+            "point": None,
+            "reason": "No published point-in-time share-count fact is available on or before the requested date.",
+        }
+
+    eligible.sort(
+        key=lambda point: (
+            point.get("end") or point.get("instant") or "",
+            point.get("filed", ""),
+            point.get("accn", ""),
+        )
+    )
+    latest_date = str(eligible[-1].get("end") or eligible[-1].get("instant") or "")
+    latest_filed = str(eligible[-1].get("filed") or "")
+    latest = [
+        point
+        for point in eligible
+        if str(point.get("end") or point.get("instant") or "") == latest_date
+        and str(point.get("filed") or "") == latest_filed
+    ]
+    distinct_values = sorted(
+        {
+            value
+            for point in latest
+            if (value := safe_float(point.get("val"))) is not None
+        }
+    )
+    if len(distinct_values) > 1:
+        return {
+            "status": "CONFLICT",
+            "value": None,
+            "point": None,
+            "reason": "Multiple different share counts exist for the latest date and filing date; class or dimensional reconciliation is required.",
+            "candidate_values": distinct_values,
+            "share_count_date": latest_date,
+            "publication_date": latest_filed,
+        }
+
+    chosen = latest[-1]
+    return {
+        "status": "PASS",
+        "value": safe_float(chosen.get("val")),
+        "point": chosen,
+        "reason": "Latest published point-in-time share count on or before the requested date.",
+        "share_count_date": latest_date,
+        "publication_date": latest_filed,
+    }
+
+
+def source_summary_from_fact(point: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not point:
+        return None
+    return {
+        "tag": point.get("tag"),
+        "taxonomy": point.get("taxonomy", "us-gaap"),
+        "unit": point.get("unit"),
+        "currency": unit_profile(point.get("unit"))["currency"],
+        "value": point.get("val"),
+        "form": point.get("form"),
+        "fy": point.get("fy"),
+        "fp": point.get("fp"),
+        "start": point.get("start"),
+        "end": point.get("end"),
+        "filed": point.get("filed"),
+        "accn": point.get("accn"),
+    }
+
+
+def flow_points_for_tags(
+    companyfacts: dict[str, Any],
+    tags: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    points: list[dict[str, Any]] = []
+    for tag in tags:
+        points.extend(
+            point
+            for point in fact_points_any_taxonomy(companyfacts, tag)
+            if point.get("val") is not None
+            and fact_context_kind(point) == "FLOW"
+            and str(point.get("form", "")).upper() in SEC_FINANCIAL_FORMS
+            and unit_profile(point.get("unit"))["category"] == "MONETARY"
+        )
+    return points
+
+
+def select_latest_annual_from_points(
+    points: list[dict[str, Any]],
+    annual_period: str | None,
+) -> dict[str, Any] | None:
+    annuals = [point for point in points if is_annual_flow(point)]
+    if annual_period:
+        exact = [point for point in annuals if point.get("end") == annual_period]
+        if exact:
+            annuals = exact
+    if not annuals:
+        return None
+    annuals.sort(
+        key=lambda point: (
+            point.get("end", ""),
+            point.get("filed", ""),
+            days_between(point.get("start"), point.get("end")) or 0,
+            point.get("accn", ""),
+        )
+    )
+    return annuals[-1]
+
+
+def select_latest_ytd_from_points(
+    points: list[dict[str, Any]],
+    latest_q_period: str | None,
+) -> dict[str, Any] | None:
+    if not latest_q_period:
+        return None
+    candidates = [
+        point
+        for point in points
+        if point.get("end") == latest_q_period and is_ytd_flow(point)
+    ]
+    if not candidates:
+        return None
+    candidates.sort(
+        key=lambda point: (
+            days_between(point.get("start"), point.get("end")) or 0,
+            point.get("filed", ""),
+            point.get("accn", ""),
+        )
+    )
+    return candidates[-1]
+
+
+def select_prior_comparable_ytd_from_points(
+    points: list[dict[str, Any]],
+    current_ytd: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not current_ytd:
+        return None
+    candidates = [
+        point
+        for point in points
+        if point.get("end", "") < current_ytd.get("end", "")
+        and comparable_ytd_periods(current_ytd, point)[0]
+    ]
+    if not candidates:
+        return None
+    candidates.sort(
+        key=lambda point: (
+            point.get("end", ""),
+            point.get("filed", ""),
+            point.get("accn", ""),
+        )
+    )
+    return candidates[-1]
+
+
+def build_ltm_metric(
+    companyfacts: dict[str, Any],
+    metric: str,
+    latest_q_period: str | None,
+    annual_period: str | None,
+) -> dict[str, Any]:
+    """Build LTM from one concept and comparable fiscal contexts, or fall back safely."""
+
+    if metric not in FLOW_TAGS:
+        return {
+            "metric": metric,
+            "value": None,
+            "method": "missing",
+            "period_type": "missing",
+            "confidence": "Low",
+            "evidence_type": "MISSING",
+            "validation_status": "MISSING_XBRL_TAG",
+            "components": {},
+        }
+
+    first_annual_fallback: dict[str, Any] | None = None
+    rejected_reasons: list[str] = []
+    for tag in FLOW_TAGS[metric]:
+        points = flow_points_for_tags(companyfacts, (tag,))
+        if not points:
+            continue
+        annual = select_latest_annual_from_points(points, annual_period)
+        if annual and first_annual_fallback is None:
+            first_annual_fallback = annual
+
+        current = select_latest_ytd_from_points(points, latest_q_period)
+        if not annual or not current:
+            rejected_reasons.append(f"{tag}: annual or current YTD context missing.")
+            continue
+
+        prior_candidates = [
+            point
+            for point in points
+            if point.get("end", "") < current.get("end", "")
+            and is_ytd_flow(point)
+        ]
+        comparable_prior: list[dict[str, Any]] = []
+        for point in prior_candidates:
+            comparable, reason = comparable_ytd_periods(current, point)
+            if comparable:
+                comparable_prior.append(point)
+            else:
+                rejected_reasons.append(f"{tag}: {reason}")
+        prior = select_prior_comparable_ytd_from_points(comparable_prior, current)
+        if not prior:
+            continue
+
+        annual_end = parse_date(annual.get("end"))
+        current_start = parse_date(current.get("start"))
+        if not annual_end or not current_start:
+            rejected_reasons.append(f"{tag}: annual-to-current period chain has invalid dates.")
+            continue
+        chain_gap = (current_start - annual_end).days
+        if not 1 <= chain_gap <= 14:
+            rejected_reasons.append(f"{tag}: annual-to-current period chain gap is {chain_gap} days.")
+            continue
+        if len({annual.get("unit"), current.get("unit"), prior.get("unit")}) != 1:
+            rejected_reasons.append(f"{tag}: annual and YTD units differ.")
+            continue
+        if len(
+            {
+                unit_profile(annual.get("unit"))["currency"],
+                unit_profile(current.get("unit"))["currency"],
+                unit_profile(prior.get("unit"))["currency"],
+            }
+        ) != 1:
+            rejected_reasons.append(f"{tag}: annual and YTD currencies differ.")
+            continue
+
+        annual_value = safe_float(annual.get("val"))
+        current_value = safe_float(current.get("val"))
+        prior_value = safe_float(prior.get("val"))
+        if None in (annual_value, current_value, prior_value):
+            rejected_reasons.append(f"{tag}: an LTM component is nonnumeric.")
+            continue
+        return {
+            "metric": metric,
+            "value": annual_value + current_value - prior_value,
+            "method": "annual + latest YTD - prior-year comparable YTD using one XBRL concept",
+            "period_type": "LTM",
+            "confidence": "High",
+            "evidence_type": "CALC",
+            "validation_status": "PASS",
+            "unit": annual.get("unit"),
+            "currency": unit_profile(annual.get("unit"))["currency"],
+            "components": {
+                "annual": source_summary_from_fact(annual),
+                "current_ytd": source_summary_from_fact(current),
+                "prior_year_ytd": source_summary_from_fact(prior),
+            },
+            "rejected_reasons": sorted(set(rejected_reasons)),
+        }
+
+    if first_annual_fallback:
+        return {
+            "metric": metric,
+            "value": safe_float(first_annual_fallback.get("val")),
+            "method": "latest annual fallback; LTM components did not pass shared comparability controls",
+            "period_type": "annual",
+            "confidence": "Medium",
+            "evidence_type": "FACT",
+            "validation_status": "LTM_NOT_AVAILABLE",
+            "unit": first_annual_fallback.get("unit"),
+            "currency": unit_profile(first_annual_fallback.get("unit"))["currency"],
+            "components": {"annual": source_summary_from_fact(first_annual_fallback)},
+            "rejected_reasons": sorted(set(rejected_reasons)),
+        }
+
+    return {
+        "metric": metric,
+        "value": None,
+        "method": "missing",
+        "period_type": "missing",
+        "confidence": "Low",
+        "evidence_type": "MISSING",
+        "validation_status": "MISSING_XBRL_TAG",
+        "components": {},
+        "rejected_reasons": sorted(set(rejected_reasons)),
+    }
+
+
 def fetch_json(url: str) -> Any:
     req = urllib.request.Request(url, headers={"User-Agent": SEC_UA, "Accept-Encoding": "identity"})
     with urllib.request.urlopen(req, timeout=40) as resp:
@@ -377,29 +919,102 @@ def fact_points(companyfacts: dict[str, Any], tag: str) -> list[dict[str, Any]]:
         return []
     out: list[dict[str, Any]] = []
     for unit, values in item.get("units", {}).items():
-        if "USD" not in unit and unit not in {"shares", "pure"}:
-            continue
         for value in values:
             point = dict(value)
             point["unit"] = unit
             point["tag"] = tag
+            point["taxonomy"] = "us-gaap"
             out.append(point)
     return out
 
 
-def choose_instant(companyfacts: dict[str, Any], tags: tuple[str, ...], end: str, accn: str | None = None) -> dict[str, Any] | None:
+def _record_selection(
+    audit_log: list[dict[str, Any]] | None,
+    *,
+    metric_name: str,
+    requested_period: str,
+    expected_context: str,
+    expected_period_type: str,
+    tags: tuple[str, ...],
+    status: str,
+    chosen: dict[str, Any] | None,
+    rejected_reasons: list[str],
+) -> None:
+    if audit_log is None:
+        return
+    audit_log.append(
+        {
+            "metric_name": metric_name,
+            "requested_period": requested_period,
+            "expected_context": expected_context,
+            "expected_period_type": expected_period_type,
+            "expected_unit_category": "MONETARY",
+            "attempted_tags": list(tags),
+            "status": status,
+            "chosen_tag": chosen.get("tag") if chosen else None,
+            "chosen_unit": chosen.get("unit") if chosen else None,
+            "chosen_currency": unit_profile(chosen.get("unit"))["currency"] if chosen else None,
+            "chosen_start": chosen.get("start") if chosen else None,
+            "chosen_end": chosen.get("end") if chosen else None,
+            "chosen_accession": chosen.get("accn") if chosen else None,
+            "rejected_reasons": sorted(set(rejected_reasons)),
+            "missing_value_assumed_zero": False,
+            "control_version": S06_DATA_CONTROL_VERSION,
+        }
+    )
+
+
+def choose_instant(
+    companyfacts: dict[str, Any],
+    tags: tuple[str, ...],
+    end: str,
+    accn: str | None = None,
+    *,
+    metric_name: str = "",
+    audit_log: list[dict[str, Any]] | None = None,
+) -> dict[str, Any] | None:
+    rejected_reasons: list[str] = []
     for tag in tags:
+        points = fact_points(companyfacts, tag)
         values = [
             p
-            for p in fact_points(companyfacts, tag)
+            for p in points
             if p.get("end") == end
-            and p.get("form") in {"10-Q", "10-K"}
-            and not p.get("start")
+            and str(p.get("form", "")).upper() in SEC_FINANCIAL_FORMS
+            and fact_context_kind(p) == "INSTANT"
+            and unit_profile(p.get("unit"))["category"] == "MONETARY"
             and (accn is None or p.get("accn") == accn)
         ]
         if values:
             values.sort(key=lambda p: (p.get("filed", ""), p.get("accn", "")))
-            return values[-1]
+            chosen = values[-1]
+            _record_selection(
+                audit_log,
+                metric_name=metric_name,
+                requested_period=end,
+                expected_context="INSTANT",
+                expected_period_type="instant",
+                tags=tags,
+                status="SELECTED",
+                chosen=chosen,
+                rejected_reasons=rejected_reasons,
+            )
+            return chosen
+        if points:
+            rejected_reasons.append(
+                f"{tag}: no candidate matched date, accession, instant context, filing form, and monetary unit."
+            )
+    _record_selection(
+        audit_log,
+        metric_name=metric_name,
+        requested_period=end,
+        expected_context="INSTANT",
+        expected_period_type="instant",
+        tags=tags,
+        status="MISSING_XBRL_TAG" if not rejected_reasons else "INCOMPATIBLE_XBRL_CONTEXT",
+        chosen=None,
+        rejected_reasons=rejected_reasons,
+    )
     return None
 
 
@@ -411,45 +1026,108 @@ def choose_duration(
     form: str | None = None,
     accn: str | None = None,
     prefer: str = "quarter",
+    metric_name: str = "",
+    audit_log: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any] | None:
+    rejected_reasons: list[str] = []
     for tag in tags:
+        points = fact_points(companyfacts, tag)
         values = [
             p
-            for p in fact_points(companyfacts, tag)
+            for p in points
             if p.get("end") == end
-            and p.get("start")
-            and p.get("form") in {"10-Q", "10-K"}
+            and fact_context_kind(p) == "FLOW"
+            and str(p.get("form", "")).upper() in SEC_FINANCIAL_FORMS
+            and unit_profile(p.get("unit"))["category"] == "MONETARY"
             and (form is None or p.get("form") == form)
             and (accn is None or p.get("accn") == accn)
         ]
         if not values:
+            if points:
+                rejected_reasons.append(
+                    f"{tag}: no candidate matched date, accession, flow context, filing form, and monetary unit."
+                )
             continue
         if prefer == "quarter":
-            selected = [p for p in values if 60 <= (days_between(p.get("start"), p.get("end")) or 0) <= 130]
+            selected = [p for p in values if is_quarter_flow(p)]
             if not selected:
+                rejected_reasons.append(f"{tag}: available flow context is not a validated standalone quarter.")
                 continue
             selected.sort(key=lambda p: (p.get("filed", ""), p.get("accn", "")))
-            return selected[-1]
+            chosen = selected[-1]
+            _record_selection(
+                audit_log,
+                metric_name=metric_name,
+                requested_period=end,
+                expected_context="FLOW",
+                expected_period_type="quarter",
+                tags=tags,
+                status="SELECTED",
+                chosen=chosen,
+                rejected_reasons=rejected_reasons,
+            )
+            return chosen
         if prefer == "ytd":
-            values.sort(key=lambda p: (days_between(p.get("start"), p.get("end")) or 0, p.get("filed", "")))
-            return values[-1]
-        if prefer == "annual":
-            selected = [p for p in values if (days_between(p.get("start"), p.get("end")) or 0) >= 300]
+            selected = [p for p in values if is_ytd_flow(p)]
             if not selected:
+                rejected_reasons.append(f"{tag}: available flow context is not a validated YTD period.")
                 continue
             selected.sort(key=lambda p: (days_between(p.get("start"), p.get("end")) or 0, p.get("filed", "")))
-            return selected[-1]
+            chosen = selected[-1]
+            _record_selection(
+                audit_log,
+                metric_name=metric_name,
+                requested_period=end,
+                expected_context="FLOW",
+                expected_period_type="YTD",
+                tags=tags,
+                status="SELECTED",
+                chosen=chosen,
+                rejected_reasons=rejected_reasons,
+            )
+            return chosen
+        if prefer == "annual":
+            selected = [p for p in values if is_annual_flow(p)]
+            if not selected:
+                rejected_reasons.append(f"{tag}: available flow context is not a validated FY period.")
+                continue
+            selected.sort(key=lambda p: (days_between(p.get("start"), p.get("end")) or 0, p.get("filed", "")))
+            chosen = selected[-1]
+            _record_selection(
+                audit_log,
+                metric_name=metric_name,
+                requested_period=end,
+                expected_context="FLOW",
+                expected_period_type="FY",
+                tags=tags,
+                status="SELECTED",
+                chosen=chosen,
+                rejected_reasons=rejected_reasons,
+            )
+            return chosen
+    _record_selection(
+        audit_log,
+        metric_name=metric_name,
+        requested_period=end,
+        expected_context="FLOW",
+        expected_period_type=prefer.upper(),
+        tags=tags,
+        status="MISSING_XBRL_TAG" if not rejected_reasons else "INCOMPATIBLE_XBRL_CONTEXT",
+        chosen=None,
+        rejected_reasons=rejected_reasons,
+    )
     return None
 
 
 def dp_from_fact(metric_name: str, fact: dict[str, Any], source_url: str, source_location: str, period_type: str, notes: str = "") -> DataPoint:
     start = fact.get("start", "")
     end = fact.get("end", "")
+    profile = unit_profile(fact.get("unit", ""))
     return DataPoint(
         metric_name=metric_name,
         value=fact.get("val"),
-        unit=fact.get("unit", "USD"),
-        currency="USD" if "USD" in fact.get("unit", "USD") else "",
+        unit=fact.get("unit", ""),
+        currency=profile["currency"],
         period_start=start,
         period_end=end,
         period_type=period_type,
@@ -458,7 +1136,7 @@ def dp_from_fact(metric_name: str, fact: dict[str, Any], source_url: str, source
         filing_type=fact.get("form", ""),
         filing_date=fact.get("filed", ""),
         source_location=source_location,
-        source_tag=f"us-gaap:{fact.get('tag', '')}",
+        source_tag=f"{fact.get('taxonomy', 'us-gaap')}:{fact.get('tag', '')}",
         source_url=source_url,
         evidence_type="FACT",
         reported_or_calculated="reported",
@@ -1428,6 +2106,8 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
 
     rows: list[DataPoint] = []
     validations: list[dict[str, Any]] = []
+    xbrl_selection_log: list[dict[str, Any]] = []
+    denominator_control_log: list[dict[str, Any]] = []
 
     if support_assessment["status"] != "SUPPORTED_CORE":
         add_validation(
@@ -1461,7 +2141,14 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     latest_url = filing_for_period.url
 
     for metric, tags in INSTANT_TAGS.items():
-        fact = choose_instant(facts, tags, latest_end, latest_accn)
+        fact = choose_instant(
+            facts,
+            tags,
+            latest_end,
+            latest_accn,
+            metric_name=metric,
+            audit_log=xbrl_selection_log,
+        )
         if fact:
             rows.append(dp_from_fact(metric, fact, latest_url, "Balance sheet / instant fact", "instant"))
 
@@ -1482,11 +2169,31 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             # A Q1 10-Q often repeats the December 31 balance sheet. Prefer the
             # current filing's comparative fact, then the filing that originally
             # reported the opening balance, then the latest filed matching fact.
-            fact = choose_instant(facts, tags, prior_balance_end, latest_accn)
+            fact = choose_instant(
+                facts,
+                tags,
+                prior_balance_end,
+                latest_accn,
+                metric_name=metric,
+                audit_log=xbrl_selection_log,
+            )
             if not fact:
-                fact = choose_instant(facts, tags, prior_balance_end, prior_balance_filing.accession)
+                fact = choose_instant(
+                    facts,
+                    tags,
+                    prior_balance_end,
+                    prior_balance_filing.accession,
+                    metric_name=metric,
+                    audit_log=xbrl_selection_log,
+                )
             if not fact:
-                fact = choose_instant(facts, tags, prior_balance_end)
+                fact = choose_instant(
+                    facts,
+                    tags,
+                    prior_balance_end,
+                    metric_name=metric,
+                    audit_log=xbrl_selection_log,
+                )
             if fact:
                 source_url = latest_url if fact.get("accn") == latest_accn else prior_balance_filing.url
                 rows.append(
@@ -1558,8 +2265,26 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     # Flow metrics.
     if latest_q:
         for metric, tags in FLOW_TAGS.items():
-            quarter = choose_duration(facts, tags, latest_q.period, form="10-Q", accn=latest_q.accession, prefer="quarter")
-            ytd = choose_duration(facts, tags, latest_q.period, form="10-Q", accn=latest_q.accession, prefer="ytd")
+            quarter = choose_duration(
+                facts,
+                tags,
+                latest_q.period,
+                form="10-Q",
+                accn=latest_q.accession,
+                prefer="quarter",
+                metric_name=f"latest_quarter_{metric}",
+                audit_log=xbrl_selection_log,
+            )
+            ytd = choose_duration(
+                facts,
+                tags,
+                latest_q.period,
+                form="10-Q",
+                accn=latest_q.accession,
+                prefer="ytd",
+                metric_name=f"latest_ytd_{metric}",
+                audit_log=xbrl_selection_log,
+            )
             if quarter:
                 rows.append(dp_from_fact(f"latest_quarter_{metric}", quarter, latest_q.url, "Income statement / flow fact", "quarter"))
             if ytd and (not quarter or ytd.get("start") != quarter.get("start")):
@@ -1567,7 +2292,16 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
 
             # Derive standalone quarter from YTD when useful and prior YTD exists.
             if ytd and prior_q:
-                prior_ytd = choose_duration(facts, tags, prior_q.period, form="10-Q", accn=prior_q.accession, prefer="ytd")
+                prior_ytd = choose_duration(
+                    facts,
+                    tags,
+                    prior_q.period,
+                    form="10-Q",
+                    accn=prior_q.accession,
+                    prefer="ytd",
+                    metric_name=f"prior_same_fiscal_year_ytd_{metric}",
+                    audit_log=xbrl_selection_log,
+                )
                 same_concept_and_unit = (
                     prior_ytd
                     and prior_ytd.get("tag") == ytd.get("tag")
@@ -1589,23 +2323,41 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                         derived_start_date = parse_date(prior_q.period)
                         derived_start = (derived_start_date + timedelta(days=1)).isoformat() if derived_start_date else ""
                         derived_duration = days_between(derived_start, latest_q.period) if derived_start else ""
-                        rows.append(
-                            manual_dp(
-                                f"derived_latest_quarter_{metric}",
-                                latest_val - prior_val,
-                                period_start=derived_start,
-                                period_end=latest_q.period,
-                                period_type="derived-quarter",
-                                duration_days_value=derived_duration,
-                                fiscal_period="latest quarter derived from YTD delta",
-                                filing_type=latest_q.form,
-                                filing_date=latest_q.filed,
-                                source_location=f"latest YTD {metric} - prior YTD {metric}",
-                                source_tag="calculation",
-                                source_url=latest_q.url,
-                                notes="Derived from two YTD filings; inspect fiscal calendar for 53-week/restatement/acquisition issues.",
+                        if (
+                            isinstance(derived_duration, int)
+                            and QUARTER_MIN_DAYS <= derived_duration <= QUARTER_MAX_DAYS
+                        ):
+                            rows.append(
+                                manual_dp(
+                                    f"derived_latest_quarter_{metric}",
+                                    latest_val - prior_val,
+                                    unit=ytd.get("unit", ""),
+                                    currency=unit_profile(ytd.get("unit"))["currency"],
+                                    period_start=derived_start,
+                                    period_end=latest_q.period,
+                                    period_type="derived-quarter",
+                                    duration_days_value=derived_duration,
+                                    fiscal_period="latest quarter derived from YTD delta",
+                                    filing_type=latest_q.form,
+                                    filing_date=latest_q.filed,
+                                    source_location=f"latest YTD {metric} - prior YTD {metric}",
+                                    source_tag="calculation",
+                                    source_url=latest_q.url,
+                                    notes="Derived from same-concept, same-unit YTD facts; the derived interval passes 70-105 day quarter control.",
+                                )
                             )
-                        )
+                        else:
+                            add_validation(
+                                validations,
+                                f"P0-quarter-derivation-duration-{metric}",
+                                "MISSING",
+                                "High",
+                                f"Standalone-quarter {metric} was suppressed because the derived interval was {derived_duration or 'invalid'} days.",
+                                "The system does not force an irregular interval into a quarter label.",
+                                "Reconcile the issuer's fiscal calendar and the two YTD contexts before deriving the quarter.",
+                                category="period_validation",
+                                issue_class="WARNING",
+                            )
                 elif prior_ytd and prior_ytd.get("start") == ytd.get("start") and prior_ytd.get("end") != ytd.get("end"):
                     add_validation(
                         validations,
@@ -1620,9 +2372,59 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                     )
     elif latest_k:
         for metric, tags in FLOW_TAGS.items():
-            annual = choose_duration(facts, tags, latest_k.period, form="10-K", accn=latest_k.accession, prefer="annual")
+            annual = choose_duration(
+                facts,
+                tags,
+                latest_k.period,
+                form="10-K",
+                accn=latest_k.accession,
+                prefer="annual",
+                metric_name=f"latest_annual_{metric}",
+                audit_log=xbrl_selection_log,
+            )
             if annual:
                 rows.append(dp_from_fact(f"latest_annual_{metric}", annual, latest_k.url, "Annual statement / flow fact", "annual"))
+
+    annual_anchor: dict[str, Any] | None = None
+    if latest_k:
+        for anchor_metric in ("revenue", "cfo", "net_income"):
+            annual_anchor = choose_duration(
+                facts,
+                FLOW_TAGS[anchor_metric],
+                latest_k.period,
+                form="10-K",
+                accn=latest_k.accession,
+                prefer="annual",
+            )
+            if annual_anchor:
+                break
+    fiscal_profile = fiscal_calendar_profile(annual_anchor)
+
+    ltm_control_results = {
+        metric: build_ltm_metric(
+            facts,
+            metric,
+            latest_q.period if latest_q else None,
+            latest_k.period if latest_k else None,
+        )
+        for metric in ("revenue", "net_income", "cfo", "capex")
+    }
+
+    share_count_result = latest_share_count_fact(
+        facts,
+        datetime.now(UTC).date().isoformat(),
+    )
+    if share_count_result["status"] == "PASS" and share_count_result.get("point"):
+        rows.append(
+            dp_from_fact(
+                "point_in_time_shares_outstanding",
+                share_count_result["point"],
+                f"{SEC_BASE}/api/xbrl/companyfacts/CIK{company['cik']}.json",
+                "DEI cover-page point-in-time share count",
+                "instant",
+                notes="Point-in-time share count; do not substitute weighted-average EPS shares.",
+            )
+        )
 
     m = metric_map(rows)
 
@@ -1643,11 +2445,14 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             and total_assets_row.period_end
             and total_assets_row.period_end == equity_row.period_end
         )
-        if derived_liabilities is not None and dates_match:
+        liability_basis = compatible_monetary_inputs(total_assets_row, equity_row)
+        if derived_liabilities is not None and dates_match and liability_basis["status"] == "PASS":
             rows.append(
                 manual_dp(
                     "total_liabilities",
                     derived_liabilities,
+                    unit=liability_basis["unit"],
+                    currency=liability_basis["currency"],
                     period_end=total_assets_row.period_end,
                     period_type="instant",
                     fiscal_period="latest period",
@@ -1667,12 +2472,16 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     # Calculations.
     cash = val(m, "unrestricted_cash")
     sti = val(m, "short_term_investments")
+    liquid_rows = [m.get(name) for name in ("unrestricted_cash", "short_term_investments") if m.get(name)]
+    liquid_basis = compatible_monetary_inputs(*liquid_rows)
     observed_liquid_inputs = [value for value in (cash, sti) if value is not None]
-    if observed_liquid_inputs:
+    if observed_liquid_inputs and liquid_basis["status"] == "PASS":
         rows.append(
             manual_dp(
                 "available_liquidity_before_facility_notes",
                 sum(observed_liquid_inputs),
+                unit=liquid_basis["unit"],
+                currency=liquid_basis["currency"],
                 period_end=latest_end,
                 fiscal_period="latest period",
                 filing_type=filing_for_period.form,
@@ -1685,14 +2494,18 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         )
 
     m = metric_map(rows)
+    lease_rows = [m.get(name) for name in ("finance_lease_current", "operating_lease_current") if m.get(name)]
+    lease_basis = compatible_monetary_inputs(*lease_rows)
     lease_inputs = [val(m, "finance_lease_current"), val(m, "operating_lease_current")]
     observed_lease_inputs = [value for value in lease_inputs if value is not None]
     current_lease_total = sum(observed_lease_inputs) if observed_lease_inputs else None
-    if current_lease_total is not None:
+    if current_lease_total is not None and lease_basis["status"] == "PASS":
         rows.append(
             manual_dp(
                 "current_lease_obligations_total",
                 current_lease_total,
+                unit=lease_basis["unit"],
+                currency=lease_basis["currency"],
                 period_end=latest_end,
                 fiscal_period="latest period",
                 filing_type=filing_for_period.form,
@@ -1707,12 +2520,15 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     m = metric_map(rows)
     cfo_ytd = val(m, "latest_ytd_cfo")
     capex_ytd = val(m, "latest_ytd_capex")
-    if cfo_ytd is not None and capex_ytd is not None:
+    ytd_fcf_basis = compatible_monetary_inputs(m.get("latest_ytd_cfo"), m.get("latest_ytd_capex"))
+    if cfo_ytd is not None and capex_ytd is not None and ytd_fcf_basis["status"] == "PASS":
         ytd_row = m["latest_ytd_cfo"]
         rows.append(
             manual_dp(
                 "latest_ytd_fcf",
                 cfo_ytd - capex_ytd,
+                unit=ytd_fcf_basis["unit"],
+                currency=ytd_fcf_basis["currency"],
                 period_start=ytd_row.period_start,
                 period_end=ytd_row.period_end,
                 period_type="YTD",
@@ -1746,11 +2562,20 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         and q_cfo_row.period_end == q_capex_row.period_end
         and q_cfo_row.duration_days == q_capex_row.duration_days
     )
-    if q_cfo is not None and q_capex is not None and q_cfo_row and quarter_periods_match:
+    quarter_fcf_basis = compatible_monetary_inputs(q_cfo_row, q_capex_row)
+    if (
+        q_cfo is not None
+        and q_capex is not None
+        and q_cfo_row
+        and quarter_periods_match
+        and quarter_fcf_basis["status"] == "PASS"
+    ):
         rows.append(
             manual_dp(
                 quarter_fcf_metric,
                 q_cfo - q_capex,
+                unit=quarter_fcf_basis["unit"],
+                currency=quarter_fcf_basis["currency"],
                 period_start=q_cfo_row.period_start,
                 period_end=q_cfo_row.period_end,
                 period_type=q_cfo_row.period_type,
@@ -1785,12 +2610,23 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         period_days = days_between(latest_rev_row.period_start, latest_rev_row.period_end) or 90
         ar_now = val(m, "accounts_receivable_net")
         ar_prior = val(m, "prior_accounts_receivable_net")
-        if rev and ar_now is not None and ar_prior is not None:
-            dso = ((ar_now + ar_prior) / 2) / rev * period_days
+        dso_result = controlled_ratio(
+            ((ar_now + ar_prior) / 2) if ar_now is not None and ar_prior is not None else None,
+            rev,
+            multiplier=period_days,
+        )
+        denominator_control_log.append(
+            {
+                "metric_name": "dso_avg_ar",
+                "denominator_metric": "latest_quarter_revenue",
+                **dso_result,
+            }
+        )
+        if dso_result["status"] == "PASS":
             rows.append(
                 manual_dp(
                     "dso_avg_ar",
-                    dso,
+                    dso_result["value"],
                     unit="days",
                     currency="",
                     period_start=latest_rev_row.period_start,
@@ -1812,12 +2648,23 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         inv_prior = val(m, "prior_inventory_net")
         ap_now = val(m, "accounts_payable")
         ap_prior = val(m, "prior_accounts_payable")
-        if cogs and inv_now is not None and inv_prior is not None:
-            dio = ((inv_now + inv_prior) / 2) / cogs * period_days
+        dio_result = controlled_ratio(
+            ((inv_now + inv_prior) / 2) if inv_now is not None and inv_prior is not None else None,
+            cogs,
+            multiplier=period_days,
+        )
+        denominator_control_log.append(
+            {
+                "metric_name": "dio_avg_inventory",
+                "denominator_metric": "latest_quarter_cogs",
+                **dio_result,
+            }
+        )
+        if dio_result["status"] == "PASS":
             rows.append(
                 manual_dp(
                     "dio_avg_inventory",
-                    dio,
+                    dio_result["value"],
                     unit="days",
                     currency="",
                     period_start=latest_cogs_row.period_start,
@@ -1838,12 +2685,25 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             and ap_balance_is_trade_compatible(m["accounts_payable"].source_tag)
             and ap_balance_is_trade_compatible(m["prior_accounts_payable"].source_tag)
         )
-        if cogs and ap_now is not None and ap_prior is not None and ap_rows_trade_compatible:
-            dpo = ((ap_now + ap_prior) / 2) / cogs * period_days
+        dpo_result = controlled_ratio(
+            ((ap_now + ap_prior) / 2)
+            if ap_now is not None and ap_prior is not None and ap_rows_trade_compatible
+            else None,
+            cogs,
+            multiplier=period_days,
+        )
+        denominator_control_log.append(
+            {
+                "metric_name": "dpo_avg_ap",
+                "denominator_metric": "latest_quarter_cogs",
+                **dpo_result,
+            }
+        )
+        if dpo_result["status"] == "PASS":
             rows.append(
                 manual_dp(
                     "dpo_avg_ap",
-                    dpo,
+                    dpo_result["value"],
                     unit="days",
                     currency="",
                     period_start=latest_cogs_row.period_start,
@@ -1912,11 +2772,26 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     facility_availability = val(m, "facility_availability_reported")
     borrowing_availability = total_available_borrowings if total_available_borrowings is not None else facility_availability
     liquidity_before_facility = val(m, "available_liquidity_before_facility_notes")
-    if borrowing_availability is not None and liquidity_before_facility is not None:
+    facility_metric_name = (
+        "total_available_borrowings_reported"
+        if total_available_borrowings is not None
+        else "facility_availability_reported"
+    )
+    facility_liquidity_basis = compatible_monetary_inputs(
+        m.get("available_liquidity_before_facility_notes"),
+        m.get(facility_metric_name),
+    )
+    if (
+        borrowing_availability is not None
+        and liquidity_before_facility is not None
+        and facility_liquidity_basis["status"] == "PASS"
+    ):
         rows.append(
             manual_dp(
                 "available_liquidity_including_reported_facility",
                 liquidity_before_facility + borrowing_availability,
+                unit=facility_liquidity_basis["unit"],
+                currency=facility_liquidity_basis["currency"],
                 period_end=latest_end,
                 fiscal_period="latest period",
                 filing_type=filing_for_period.form,
@@ -1982,6 +2857,305 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
 
     # Validation gates.
     m = metric_map(rows)
+    if fiscal_profile["status"] == "PASS":
+        calendar_labels = [
+            fiscal_profile["calendar_basis"],
+            fiscal_profile["week_structure"],
+            f"{fiscal_profile['duration_days']} days",
+        ]
+        add_validation(
+            validations,
+            "P0-fiscal-calendar-control",
+            "PASS",
+            "Critical",
+            "Validated fiscal-year context: " + ", ".join(calendar_labels) + ".",
+            "Quarter, YTD, FY, and LTM controls use reported fiscal dates instead of assuming a December year-end or 365-day year.",
+            "Re-evaluate the profile after every annual filing or restatement.",
+            category="period_validation",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-fiscal-calendar-control",
+            "MISSING",
+            "High",
+            fiscal_profile.get("reason", "Fiscal-calendar profile is unavailable."),
+            "Non-calendar and 53-week period comparability cannot be confirmed automatically.",
+            "Source a validated annual flow context before constructing FY or LTM metrics.",
+            category="period_validation",
+            issue_class="WARNING",
+        )
+
+    context_issues: list[str] = []
+    for row in rows:
+        if row.period_type == "instant" and row.period_start:
+            context_issues.append(f"{row.metric_name}: instant row has a start date")
+        elif row.period_type in {"quarter", "derived-quarter"}:
+            duration = safe_float(row.duration_days)
+            if (
+                not row.period_start
+                or not row.period_end
+                or duration is None
+                or not QUARTER_MIN_DAYS <= duration <= QUARTER_MAX_DAYS
+            ):
+                context_issues.append(f"{row.metric_name}: invalid quarter context")
+        elif row.period_type == "YTD":
+            fiscal_period_label = str(row.fiscal_period or "").split()
+            point = {
+                "start": row.period_start,
+                "end": row.period_end,
+                "form": row.filing_type,
+                "fp": fiscal_period_label[-1] if fiscal_period_label else "",
+            }
+            if not is_ytd_flow(point):
+                context_issues.append(f"{row.metric_name}: invalid YTD context")
+        elif row.period_type == "annual":
+            duration = safe_float(row.duration_days)
+            if (
+                not row.period_start
+                or not row.period_end
+                or duration is None
+                or not ANNUAL_MIN_DAYS <= duration <= ANNUAL_MAX_DAYS
+            ):
+                context_issues.append(f"{row.metric_name}: invalid FY context")
+    if context_issues:
+        add_validation(
+            validations,
+            "P0-instant-flow-period-control",
+            "FAIL",
+            "Critical",
+            "; ".join(context_issues),
+            "A point-in-time fact or flow metric has an incompatible context or period label.",
+            "Correct the shared context selector before generating a report.",
+            category="period_validation",
+            issue_class="HARD_STOP",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-instant-flow-period-control",
+            "PASS",
+            "Critical",
+            "Every selected instant, quarter, YTD, derived-quarter, and FY row has a compatible XBRL context and duration.",
+            "Prevents instant/flow contamination and quarter/YTD/FY relabeling.",
+            "Keep the shared selector as the only financial-fact ingestion path.",
+            category="period_validation",
+        )
+
+    xbrl_rows = [
+        row
+        for row in rows
+        if row.reported_or_calculated == "reported"
+        and row.source_tag.startswith(("us-gaap:", "dei:"))
+    ]
+    unit_issues: list[str] = []
+    monetary_currencies: set[str] = set()
+    for row in xbrl_rows:
+        profile = unit_profile(row.unit)
+        expected_category = "SHARES" if row.metric_name == "point_in_time_shares_outstanding" else "MONETARY"
+        if profile["category"] != expected_category:
+            unit_issues.append(
+                f"{row.metric_name}: expected {expected_category}, received {row.unit or 'blank'}"
+            )
+        if profile["category"] == "MONETARY":
+            monetary_currencies.add(profile["currency"])
+    if "" in monetary_currencies or len(monetary_currencies) > 1:
+        unit_issues.append(
+            "Selected monetary facts contain an unknown currency or more than one reporting currency."
+        )
+    if unit_issues:
+        add_validation(
+            validations,
+            "P0-unit-currency-control",
+            "FAIL",
+            "Critical",
+            "; ".join(unit_issues),
+            "A material calculation could combine incompatible units or currencies.",
+            "Reconcile the source units and reporting currency in the shared Data and Evidence Layer.",
+            category="unit_currency_validation",
+            issue_class="HARD_STOP",
+        )
+    else:
+        currency_label = next(iter(monetary_currencies), "not observed")
+        add_validation(
+            validations,
+            "P0-unit-currency-control",
+            "PASS",
+            "Critical",
+            f"All selected financial facts use validated semantic units and one reporting currency ({currency_label}); share count uses shares.",
+            "Prevents silent unit, currency, and share-count basis mixing.",
+            "Require explicit conversion evidence before combining another currency.",
+            category="unit_currency_validation",
+        )
+
+    if share_count_result["status"] == "CONFLICT":
+        add_validation(
+            validations,
+            "P0-share-count-control",
+            "FAIL",
+            "Critical",
+            share_count_result["reason"],
+            "Market capitalization and per-share outputs would be unreproducible.",
+            "Reconcile share classes, dimensions, filing date, and the point-in-time share-count source.",
+            category="share_count_validation",
+            issue_class="HARD_STOP",
+        )
+    elif share_count_result["status"] == "PASS":
+        add_validation(
+            validations,
+            "P0-share-count-control",
+            "PASS",
+            "Critical",
+            (
+                f"Point-in-time shares were selected as of {share_count_result['share_count_date']} "
+                f"from a filing published {share_count_result['publication_date']}."
+            ),
+            "The system separates point-in-time shares from weighted-average EPS shares and blocks future-publication leakage.",
+            "Re-select shares against the exact market-price date before valuation.",
+            category="share_count_validation",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-share-count-control",
+            "MISSING",
+            "High",
+            share_count_result["reason"],
+            "Market capitalization and per-share valuation must remain unavailable.",
+            "Source a published point-in-time cover-page share count on or before the market date.",
+            category="share_count_validation",
+            issue_class="WARNING",
+        )
+
+    ltm_pass = [
+        metric
+        for metric, result in ltm_control_results.items()
+        if result.get("period_type") == "LTM" and result.get("validation_status") == "PASS"
+    ]
+    if ltm_pass:
+        add_validation(
+            validations,
+            "P0-ltm-construction-control",
+            "PASS",
+            "Critical",
+            "Validated LTM construction is available for: " + ", ".join(sorted(ltm_pass)) + ".",
+            "Each LTM value uses one concept, one unit/currency, a validated FY, and comparable current/prior YTD contexts.",
+            "Keep annual fallback clearly labeled for metrics that do not pass LTM construction.",
+            category="period_validation",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-ltm-construction-control",
+            "MISSING",
+            "High",
+            "No key metric passed the complete shared LTM construction control; annual fallback or missing status is retained.",
+            "The system does not fabricate LTM values from non-comparable periods.",
+            "Reconcile annual, current YTD, and prior comparable YTD contexts using one XBRL concept.",
+            category="period_validation",
+            issue_class="WARNING",
+        )
+
+    required_selection_names = {
+        "unrestricted_cash",
+        "accounts_receivable_net",
+        "current_assets",
+        "current_liabilities",
+        "total_assets",
+        "shareholders_equity",
+    }
+    if latest_q:
+        required_selection_names.update(
+            {
+                "latest_quarter_revenue",
+                "latest_ytd_cfo",
+                "latest_ytd_capex",
+            }
+        )
+    else:
+        required_selection_names.update(
+            {
+                "latest_annual_revenue",
+                "latest_annual_cfo",
+                "latest_annual_capex",
+            }
+        )
+    selected_names = {
+        item["metric_name"]
+        for item in xbrl_selection_log
+        if item["status"] == "SELECTED"
+    }
+    unresolved_required = sorted(required_selection_names - selected_names)
+    unsafe_missing_defaults = [
+        item["metric_name"]
+        for item in xbrl_selection_log
+        if item.get("missing_value_assumed_zero")
+    ]
+    if unsafe_missing_defaults:
+        add_validation(
+            validations,
+            "P0-missing-xbrl-safe-handling",
+            "FAIL",
+            "Critical",
+            "Missing XBRL selections were assigned numeric defaults: " + ", ".join(unsafe_missing_defaults) + ".",
+            "Missing disclosure may be misrepresented as a zero balance or zero cash flow.",
+            "Remove the default and preserve MISSING or NOT_APPLICABLE pending analyst review.",
+            category="xbrl_coverage",
+            issue_class="HARD_STOP",
+        )
+    elif unresolved_required:
+        add_validation(
+            validations,
+            "P0-missing-xbrl-safe-handling",
+            "MISSING",
+            "High",
+            "Required selections remain missing or incompatible: " + ", ".join(unresolved_required) + "; none was assumed to be zero.",
+            "Affected calculations and conclusions remain suppressed or qualified.",
+            "Inspect the filing taxonomy, statement table, and company-specific extension tags before analyst validation.",
+            category="xbrl_coverage",
+            issue_class="WARNING",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-missing-xbrl-safe-handling",
+            "PASS",
+            "High",
+            "Required shared selections were found and no missing XBRL fact was converted to zero.",
+            "Preserves the distinction between a reported zero and unavailable disclosure.",
+            "Retain explicit MISSING status for optional or future metrics.",
+            category="xbrl_coverage",
+        )
+
+    suppressed_denominators = [
+        item for item in denominator_control_log if item["status"] == "SUPPRESSED"
+    ]
+    if suppressed_denominators:
+        add_validation(
+            validations,
+            "P0-negative-denominator-control",
+            "WARNING",
+            "High",
+            "; ".join(
+                f"{item['metric_name']}: {item['reason']}" for item in suppressed_denominators
+            ),
+            "The affected ratio is suppressed instead of presenting an economically invalid working-capital metric.",
+            "Use a valid positive same-period denominator or classify the metric as not meaningful.",
+            category="ratio_validation",
+            issue_class="WARNING",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-negative-denominator-control",
+            "PASS",
+            "High",
+            "No calculated working-capital ratio used a zero, negative, missing, or non-finite denominator.",
+            "Prevents invalid DSO, DIO, or DPO outputs.",
+            "Apply the same shared ratio control to every future denominator-based metric.",
+            category="ratio_validation",
+        )
+
     nonnegative_balance_metrics = {
         "unrestricted_cash",
         "cash_and_restricted_cash",
@@ -2340,6 +3514,56 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         )
 
     enrich_data_points(company, rows)
+    rows_by_evidence_id = {row.evidence_id: row for row in rows}
+    calculation_basis_issues: list[str] = []
+    for row in rows:
+        if row.reported_or_calculated != "calculated":
+            continue
+        inputs = [
+            rows_by_evidence_id[evidence_id]
+            for evidence_id in (row.input_evidence_ids or [])
+            if evidence_id in rows_by_evidence_id
+        ]
+        monetary_inputs = [
+            input_row
+            for input_row in inputs
+            if unit_profile(input_row.unit)["category"] == "MONETARY"
+        ]
+        input_currencies = {unit_profile(input_row.unit)["currency"] for input_row in monetary_inputs}
+        output_profile = unit_profile(row.unit)
+        if "" in input_currencies or len(input_currencies) > 1:
+            calculation_basis_issues.append(
+                f"{row.metric_name}: upstream monetary currencies are missing or inconsistent"
+            )
+        elif output_profile["category"] == "MONETARY" and input_currencies:
+            if output_profile["currency"] not in input_currencies:
+                calculation_basis_issues.append(
+                    f"{row.metric_name}: output currency does not match upstream evidence"
+                )
+    if calculation_basis_issues:
+        add_validation(
+            validations,
+            "P0-calculation-unit-currency-lineage",
+            "FAIL",
+            "Critical",
+            "; ".join(calculation_basis_issues),
+            "A calculated metric cannot be reproduced on a consistent unit and currency basis.",
+            "Correct the shared calculation inputs and suppress the affected output.",
+            category="unit_currency_validation",
+            issue_class="HARD_STOP",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-calculation-unit-currency-lineage",
+            "PASS",
+            "Critical",
+            "Every calculated metric preserves a consistent monetary currency across its linked input evidence.",
+            "Prevents a renderer or downstream module from hiding unit or currency mismatches.",
+            "Retain linked input evidence for every future calculation.",
+            category="unit_currency_validation",
+        )
+
     missing_lineage = [
         row.metric_name
         for row in rows
@@ -2443,7 +3667,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         "latest_interim_period": latest_q.period if latest_q else None,
         "subsequent_event_index_review_through": datetime.now(UTC).date().isoformat(),
         "market_price_date": None,
-        "share_count_date": None,
+        "share_count_date": share_count_result.get("share_count_date"),
         "retrieval_timestamp": utc_now(),
     }
 
@@ -2459,11 +3683,21 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     data_payload = {
         "schema_version": SCHEMA_VERSION,
         "engine": "shared_data_and_evidence_engine",
+        "data_control_version": S06_DATA_CONTROL_VERSION,
         "report_id": stable_id("RPT", company["cik"], latest_end, utc_now()),
         "company": company,
         "build_date": utc_now(),
         "supported_universe": support_assessment,
         "as_of_registry": as_of_registry,
+        "fiscal_calendar_profile": fiscal_profile,
+        "xbrl_selection_log": xbrl_selection_log,
+        "ltm_control_results": ltm_control_results,
+        "share_count_control": {
+            key: value
+            for key, value in share_count_result.items()
+            if key != "point"
+        },
+        "denominator_control_log": denominator_control_log,
         "filings": {k: asdict(v) if v else None for k, v in {"latest_q": latest_q, "prior_q": prior_q, "latest_k": latest_k}.items()},
         "subsequent_event_filings": events,
         "source_registry": sorted(sources_by_id.values(), key=lambda row: row["source_id"]),
