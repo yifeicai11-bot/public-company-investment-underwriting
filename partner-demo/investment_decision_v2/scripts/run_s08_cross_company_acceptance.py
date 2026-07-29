@@ -68,6 +68,11 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def normalize_manifest_path(path: Path) -> Path:
+    """Interpret a CLI manifest path relative to the caller's working directory."""
+    return path.resolve()
+
+
 def git_output(*args: str) -> str:
     return subprocess.check_output(
         ["git", *args],
@@ -538,6 +543,7 @@ def run_acceptance(
     render_root: Path,
     diagnostic_root: Path,
 ) -> dict[str, Any]:
+    manifest_path = normalize_manifest_path(manifest_path)
     started = datetime.now(UTC)
     manifest = load_json(manifest_path)
     errors = validate_manifest(manifest)

@@ -17,8 +17,10 @@ if str(SCRIPT_DIR) not in sys.path:
 from render_public_company_artifacts import render  # noqa: E402
 from run_s08_cross_company_acceptance import (  # noqa: E402
     DEFAULT_MANIFEST,
+    REPO_ROOT,
     build_hard_stop_contract,
     build_synthetic_safe_failure_results,
+    normalize_manifest_path,
     validate_manifest,
     validate_note_event_assessment,
 )
@@ -71,6 +73,14 @@ class S08ManifestAndAssessmentTests(unittest.TestCase):
                 "restatements",
                 "subsequent_events",
             ],
+        )
+
+    def test_runner_resolves_relative_manifest_before_reporting(self) -> None:
+        relative = DEFAULT_MANIFEST.relative_to(REPO_ROOT)
+        self.assertFalse(relative.is_absolute())
+        self.assertEqual(
+            normalize_manifest_path(relative),
+            DEFAULT_MANIFEST.resolve(),
         )
 
     def test_missing_module_requires_explicit_missing_information(self) -> None:
