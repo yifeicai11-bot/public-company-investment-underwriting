@@ -180,8 +180,8 @@
     "Full-pipeline diagnostic rendering for every synthetic safe-failure outcome remains a separate release-gate task."
   ],
   "next_session_entry": {
-    "session": "S07",
-    "first_action": "Use the supplemental taxonomy to build executable negative-path fixtures for all six safe outcomes, verify Hard Stop diagnostic-only rendering and suppression consistency, and close the Phase B release gate.",
+    "session": "S07_THEN_S08",
+    "first_action": "Complete S07 shared notes-and-events hardening first. In S08, use this supplemental taxonomy for cross-company safe-outcome, Hard Stop rendering, and anti-hardcoding acceptance.",
     "constraints": [
       "Do not alter the supplemental regression matrix to claim planned coverage as tested.",
       "Do not add ticker-specific analytical branches.",

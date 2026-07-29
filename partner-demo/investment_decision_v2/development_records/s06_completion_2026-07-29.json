@@ -180,7 +180,7 @@
   ],
   "next_session_entry": {
     "session": "S07",
-    "first_action": "Build executable negative-path fixtures for all safe outcomes and verify Hard Stop diagnostic-only rendering and suppression consistency.",
+    "first_action": "Harden the shared Data and Evidence Layer for debt, leases, covenants, receivables, bad debt, supplier finance, amendments, restatements, and subsequent events.",
     "starting_commit": "52d1a3e3346d42b1038d4df1061f6b5e5f5cdd65"
   }
 }
