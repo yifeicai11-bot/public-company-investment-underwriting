@@ -349,6 +349,9 @@ class S07NoteModuleTests(unittest.TestCase):
         self.assertEqual(len(signals), 1)
         self.assertEqual(signals[0]["unit"], "text")
         self.assertIn("amount not duplicated", signals[0]["value"])
+        self.assertTrue(
+            signals[0]["source_tag"].startswith("structured-fact-signal:")
+        )
         self.assertEqual(
             module["required_elements"][
                 "unselected_fact_not_promoted_to_amount"

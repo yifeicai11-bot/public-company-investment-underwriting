@@ -1027,7 +1027,9 @@ def _build_note_modules(
                 ),
                 selected_filing,
                 source_location="SEC companyfacts; unselected acquisition concept signal",
-                source_tag=f"{fact.get('taxonomy')}:{fact.get('tag')}",
+                source_tag=(
+                    f"structured-fact-signal:{fact.get('taxonomy')}:{fact.get('tag')}"
+                ),
                 filing_type=str(fact.get("form", "")),
                 filing_date=str(fact.get("filing_date", "")),
                 period_end=str(fact.get("period_end", "")),
