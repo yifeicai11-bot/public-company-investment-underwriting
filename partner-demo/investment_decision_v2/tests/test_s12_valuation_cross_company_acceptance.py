@@ -3,17 +3,23 @@
 
 from __future__ import annotations
 
+import copy
 import sys
 import unittest
 from pathlib import Path
 
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1] / "scripts"
+INVESTMENT_ROOT = SCRIPT_DIR.parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from build_public_company_investment_layer import (  # noqa: E402
+    apply_friday_v1_contract_semantics,
+)
 from run_s12_valuation_cross_company_acceptance import (  # noqa: E402
     DEFAULT_MANIFEST,
+    REAL_CONTRACT_PATHS,
     SYNTHETIC_LABEL,
     build_guard_case,
     build_status_case,
@@ -21,6 +27,7 @@ from run_s12_valuation_cross_company_acceptance import (  # noqa: E402
     validate_manifest,
 )
 from regression_governance import load_json  # noqa: E402
+from underwriting_contract import finalize_output_contract  # noqa: E402
 
 
 class S12ValuationCrossCompanyAcceptanceTests(unittest.TestCase):
@@ -145,6 +152,56 @@ class S12ValuationCrossCompanyAcceptanceTests(unittest.TestCase):
                 self.assertEqual(row["no_input_s11_status"], "NOT_PROVIDED")
                 self.assertEqual(row["no_input_valuation_scope"], "RANGE_ONLY")
                 self.assertFalse(row["synthetic_valuation_backfill"])
+
+    def test_real_contracts_pass_the_production_schema_5_1_migration_path(
+        self,
+    ) -> None:
+        for ticker, contract_path in REAL_CONTRACT_PATHS.items():
+            with self.subTest(ticker=ticker):
+                research_path = (
+                    INVESTMENT_ROOT
+                    / "research_inputs"
+                    / f"{ticker.lower()}_gate3_public_input.json"
+                )
+                research_input = (
+                    load_json(research_path) if research_path.exists() else {}
+                )
+                migrated = apply_friday_v1_contract_semantics(
+                    copy.deepcopy(load_json(contract_path)),
+                    research_input,
+                )
+                final = finalize_output_contract(migrated)
+                outputs = final["valuation_contract"]["outputs"]
+
+                self.assertEqual(final["schema_version"], "5.1.0")
+                self.assertEqual(
+                    final["contract_validation"]["status"],
+                    "PASS",
+                    final["contract_validation"]["errors"],
+                )
+                self.assertEqual(
+                    final["forward_valuation_contract"]["status"],
+                    "DRIVER_MODEL_NOT_AVAILABLE",
+                )
+                self.assertEqual(
+                    final["valuation_cross_check_contract"]["status"],
+                    "NOT_PROVIDED",
+                )
+                self.assertEqual(final["valuation_status"]["status"], "RANGE_ONLY")
+                self.assertEqual(
+                    outputs["base_case_return"]["status"],
+                    "NOT_EVALUATED",
+                )
+                self.assertEqual(
+                    outputs["probability_weighted_return"]["status"],
+                    "NOT_EVALUATED",
+                )
+                self.assertEqual(
+                    outputs["partner_internal_return"]["status"],
+                    "DISABLED_PRIVATE_GATE_4_ONLY",
+                )
+                self.assertIsNone(final["target_price"])
+                self.assertIsNone(final["position_sizing"])
 
     def test_complete_acceptance_runner_passes(self) -> None:
         result = run_acceptance()

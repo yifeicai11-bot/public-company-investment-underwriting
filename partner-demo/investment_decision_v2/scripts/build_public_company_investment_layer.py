@@ -2569,6 +2569,16 @@ def apply_friday_v1_contract_semantics(
         contract["report_id"] = stable_id("RPT", prior_report_id, SCHEMA_VERSION)
     _migrate_friday_v1_evidence_semantics(contract)
     if (
+        not isinstance(contract.get("forward_valuation_contract"), dict)
+        or not contract.get("forward_valuation_contract", {}).get(
+            "contract_version"
+        )
+    ):
+        contract["forward_valuation_contract"] = build_forward_valuation_contract(
+            contract,
+            research_input,
+        )
+    if (
         not isinstance(contract.get("valuation_cross_check_contract"), dict)
         or not contract.get("valuation_cross_check_contract", {}).get(
             "contract_version"
