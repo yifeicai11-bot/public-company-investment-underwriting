@@ -12,6 +12,7 @@ for the local portfolio overlay. It contains no real fund or Partner data.
 | Exposure summary | CSV or XLSX | Stores reviewed issuer, sector, country, correlation, gross, net, cash, or hedge exposures |
 | Current holdings | CSV or XLSX | Stores issuer-level aggregate positions or complete security-level holdings, depending on the selected mode |
 | Opportunity set | CSV or XLSX | Stores locally reviewed alternatives for later opportunity-cost comparison |
+| Portfolio constraint inputs | JSON or YAML | Binds the candidate and dated return, downside, liquidity, hedge, risk-budget, and liquid-weight inputs to one Gate 3 contract |
 | Approval config | JSON or YAML | Separates system assessment from the Partner-owned decision and disables automatic trading |
 | Gate 3 freshness attestation | JSON or YAML | Binds a dated public-source review to one exact Gate 3 report ID and contract hash |
 
@@ -26,8 +27,8 @@ a lower-granularity mode.
 | `AGGREGATED_PORTFOLIO` | Exposure summary plus issuer-level aggregate holdings | Aggregate exposure and NAV/weight reconciliation | Security-level liquidity is `NOT_EVALUATED` |
 | `FULL_HOLDINGS` | Complete security-level holdings; independent exposure summary optional | Full NAV/weight and security-level input validation | System portfolio assessment still remains `NOT_EVALUATED` |
 
-The same policy, opportunity-set, approval, and Gate 3 freshness documents are
-required in all three modes.
+The same policy, opportunity-set, portfolio-constraint, approval, and Gate 3
+freshness documents are required in all three modes.
 
 ## Field Governance
 
@@ -60,6 +61,11 @@ supplied value and a not-applicable record cannot coexist.
 - Exposure-only and aggregated modes require reviewed GROSS and NET rows.
 - Exposure dimensions overlap and must not be summed across issuer, sector,
   country, or correlation buckets.
+- Issuer, sector, country, and correlation exposure rows must explicitly use
+  `GROSS_LONG_WEIGHT`; aggregate gross, net, cash, and hedge rows use their
+  controlled measurement bases.
+- Candidate ADVT must be in portfolio base currency and within the policy's
+  explicit maximum age.
 - In full-holdings mode, an exposure summary is optional and can be used as an
   independent reconciliation input.
 
@@ -71,7 +77,9 @@ invalid until the Partner completes them locally.
 - `GATE_4_FRAMEWORK_READY`: public schemas, templates, and validation logic exist.
 - `GATE_4_PRIVATE_INPUTS_REQUIRED`: one or more required private fields or files are missing or invalid.
 - `GATE_4_INPUTS_VALIDATED`: the local input set is structurally complete and reconciled.
-- `GATE_4_SYSTEM_ASSESSMENT_READY`: reserved for the later constraint engine.
+- `GATE_4_CONSTRAINTS_CALCULATED`: every required S13 constraint ceiling is reproducible.
+- `GATE_4_CONSTRAINTS_INCOMPLETE`: at least one required S13 input or ceiling is missing.
+- `GATE_4_SYSTEM_ASSESSMENT_READY`: reserved for S14.
 - `PARTNER_APPROVAL_PENDING`: no Partner decision may be treated as approved before the system assessment.
 - `GATE_4_APPROVED`: reserved for a named Partner decision after system assessment.
 
@@ -111,8 +119,22 @@ python3 partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
 The local entry writes only
 `~/investment_private/private_outputs/gate4_local_entry_diagnostic.json`.
 It omits raw holdings, policy values, opportunity rows, reviewer names, and
-approval rationales. S04 validates inputs and the Gate 3 entry boundary only;
-the later constraint engine is still `NOT_EVALUATED`.
+approval rationales. S04 validates inputs and the Gate 3 entry boundary only.
+
+After completing `portfolio_constraint_inputs.yaml`, run S13 locally:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+The runner reloads and rechecks Gate 3 immediately before calculation, writes
+the private result to `gate4_constraint_engine_result.json`, and does not print
+private values or the calculated ceiling. It separately records every limit,
+formula, missing item, and binding constraint. The maximum is not a suggested
+or approved position; S13 leaves System Portfolio Assessment `NOT_EVALUATED`
+and Partner Decision `PENDING`.
 
 ## Privacy Controls
 

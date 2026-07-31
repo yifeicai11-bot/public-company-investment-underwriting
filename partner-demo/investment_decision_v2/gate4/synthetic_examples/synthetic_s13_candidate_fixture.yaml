@@ -1,0 +1,70 @@
+# Public synthetic fixture only; never replace this with real portfolio data.
+schema_version: "1.0.0"
+document_type: portfolio_constraint_inputs
+data_classification: SYNTHETIC_PUBLIC_EXAMPLE
+as_of_date: "2026-07-17"
+gate3_binding:
+  report_id: RPT-D12C3A257792FC
+  contract_hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d
+candidate:
+  security_identifier: CROX
+  issuer_identifier: "0001334036"
+  issuer_name: Crocs, Inc.
+  security_type: EQUITY
+  position_side: LONG
+  sector: Consumer
+  country: United States
+  correlation_bucket: Consumer Growth
+  expected_return:
+    status: VALIDATED
+    value: 0.28
+    basis: PARTNER_INTERNAL_RETURN
+    methodology: Synthetic dated-horizon return used only to test the local Gate 4 interface.
+    as_of_date: "2026-07-15"
+    target_date: "2027-07-15"
+    holding_period_days: 365
+    source_contract_hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d
+    reviewed_by: Synthetic Return Reviewer
+    reviewed_at: "2026-07-17T12:00:00Z"
+  downside_return:
+    status: VALIDATED
+    value: -0.20
+    basis: PARTNER_STRESS_RETURN
+    methodology: Synthetic one-year downside return used only to test the local Gate 4 interface.
+    as_of_date: "2026-07-15"
+    target_date: "2027-07-15"
+    holding_period_days: 365
+    source_contract_hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d
+    reviewed_by: Synthetic Downside Reviewer
+    reviewed_at: "2026-07-17T12:00:00Z"
+  liquidity:
+    status: VALIDATED
+    average_daily_value_traded: 50000000
+    base_currency: USD
+    source_as_of_date: "2026-07-15"
+    source_locator: synthetic://market-data/CROX/2026-07-15
+    reviewed_by: Synthetic Liquidity Reviewer
+    reviewed_at: "2026-07-17T12:00:00Z"
+  proposed_hedge:
+    status: NONE
+    instrument:
+    hedge_ratio:
+    effectiveness_status: NOT_EVALUATED
+    required_for_candidate: false
+    reviewed_by:
+    reviewed_at:
+portfolio_state:
+  current_risk_budget_usage:
+    status: VALIDATED
+    value: 0.06
+    methodology: DOWNSIDE_LOSS_BUDGET
+    source_locator: synthetic://portfolio/risk-budget/2026-07-17
+    reviewed_by: Synthetic Risk Reviewer
+    reviewed_at: "2026-07-17T12:00:00Z"
+  current_liquid_portfolio_weight:
+    status: VALIDATED
+    value: 0.70
+    methodology: REVIEWED_AGGREGATE
+    source_locator: synthetic://portfolio/liquidity/2026-07-17
+    reviewed_by: Synthetic Liquidity Reviewer
+    reviewed_at: "2026-07-17T12:00:00Z"

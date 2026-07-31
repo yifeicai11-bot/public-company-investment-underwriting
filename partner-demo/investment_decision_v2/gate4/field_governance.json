@@ -1,5 +1,5 @@
 {
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "requirement_classes": [
     "CORE_REQUIRED",
     "CONDITIONAL",
@@ -13,6 +13,7 @@
         "policy",
         "exposures",
         "opportunities",
+        "constraints",
         "approval",
         "freshness"
       ],
@@ -25,6 +26,7 @@
         "exposures",
         "holdings",
         "opportunities",
+        "constraints",
         "approval",
         "freshness"
       ],
@@ -36,6 +38,7 @@
         "policy",
         "holdings",
         "opportunities",
+        "constraints",
         "approval",
         "freshness"
       ],
@@ -176,6 +179,13 @@
       "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
       "requirement_class": "CORE_REQUIRED",
       "validation_method": "Finite signed ratio."
+    },
+    {
+      "document": "exposures",
+      "field_path": "measurement_basis",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Dimension rows must use GROSS_LONG_WEIGHT; aggregate rows use their controlled aggregate basis."
     },
     {
       "document": "exposures",
@@ -323,6 +333,90 @@
       "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
       "requirement_class": "CONDITIONAL",
       "validation_method": "Required when return_status is VALIDATED."
+    },
+    {
+      "document": "constraints",
+      "field_path": "gate3_binding.report_id",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must match the exact Gate 3 freshness attestation and consumed contract."
+    },
+    {
+      "document": "constraints",
+      "field_path": "gate3_binding.contract_hash",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must match the exact Gate 3 freshness attestation and consumed contract."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.issuer_identifier",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Stable identifier used to measure existing issuer exposure."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.sector",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed sector key used by the concentration engine."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.country",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed country key used when the country limit applies."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.correlation_bucket",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed correlated-exposure bucket."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.expected_return.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state; missing or provisional values remain visible but cannot unlock a complete constraint result."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.downside_return.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit formal-return state; price sensitivity is prohibited."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.liquidity.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for dated ADVT evidence."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.proposed_hedge.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit NONE or PROPOSED status; no hedge benefit is inferred."
+    },
+    {
+      "document": "constraints",
+      "field_path": "portfolio_state.current_risk_budget_usage.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for current downside-loss budget usage."
+    },
+    {
+      "document": "constraints",
+      "field_path": "portfolio_state.current_liquid_portfolio_weight.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for the current policy-defined liquid weight."
     },
     {
       "document": "approval",

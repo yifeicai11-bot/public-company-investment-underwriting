@@ -12,7 +12,7 @@
     "field_rules"
   ],
   "properties": {
-    "contract_version": {"const": "1.0.0"},
+    "contract_version": {"const": "1.1.0"},
     "requirement_classes": {
       "type": "array",
       "minItems": 4,
@@ -63,6 +63,7 @@
               "exposures",
               "holdings",
               "opportunities",
+              "constraints",
               "approval",
               "freshness"
             ]
@@ -120,6 +121,7 @@
               "exposures",
               "holdings",
               "opportunities",
+              "constraints",
               "approval",
               "freshness"
             ]
@@ -134,6 +136,7 @@
               "exposures",
               "holdings",
               "opportunities",
+              "constraints",
               "approval",
               "freshness"
             ]
@@ -148,6 +151,7 @@
               "exposures",
               "holdings",
               "opportunities",
+              "constraints",
               "approval",
               "freshness"
             ]

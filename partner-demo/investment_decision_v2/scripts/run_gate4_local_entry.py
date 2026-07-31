@@ -112,7 +112,7 @@ def build_local_entry_result(
             status = INPUT_STATUS_REQUIRED
 
     return {
-        "gate4_local_entry_version": "2.0.0",
+        "gate4_local_entry_version": "2.1.0",
         "generated_at": utc_now(),
         "status": status,
         "private_input_status": private_status,
@@ -137,7 +137,7 @@ def build_local_entry_result(
         "raw_private_values_included": False,
         "private_input_diagnostic": private_diagnostic,
         "next_action": (
-            "Proceed to the future local constraint engine."
+            "Proceed to the local S13 constraint engine."
             if status == INPUT_STATUS_VALIDATED
             else (
                 "Refresh or correct the Gate 3 issuer contract."

@@ -514,6 +514,8 @@ class Gate4PrivacyTests(unittest.TestCase):
             "gate4_privacy.py",
             "initialize_gate4_private_workspace.py",
             "run_gate4_local_entry.py",
+            "gate4_constraint_engine.py",
+            "run_gate4_constraint_engine.py",
             "sanitize_gate4_private_pdf.py",
         ):
             tree = ast.parse((SCRIPT_DIR / filename).read_text(encoding="utf-8"))

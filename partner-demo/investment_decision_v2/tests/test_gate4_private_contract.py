@@ -58,7 +58,7 @@ class Gate4PrivateContractTests(unittest.TestCase):
         expected = {
             "synthetic_exposure_only_manifest.json": (
                 "EXPOSURE_ONLY",
-                5,
+                6,
                 0,
                 "NOT_EVALUATED",
             ),

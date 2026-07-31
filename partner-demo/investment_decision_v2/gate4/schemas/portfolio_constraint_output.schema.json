@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/portfolio_constraint_output.schema.json",
+  "title": "Gate 4 S13 Portfolio Constraint Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "constraint_engine_version",
+    "constraint_output_contract_version",
+    "generated_at",
+    "status",
+    "input_mode",
+    "private_input_status",
+    "gate3_precheck",
+    "gate3_recheck",
+    "constraints",
+    "formula_registry",
+    "missing_items",
+    "tightest_known_constraint",
+    "binding_constraints",
+    "maximum_constraint_based_incremental_position_weight",
+    "maximum_constraint_based_total_position_weight",
+    "maximum_constraint_based_position_is_recommendation",
+    "system_portfolio_assessment",
+    "partner_decision",
+    "automatic_trade_execution",
+    "external_transmission",
+    "raw_private_values_included",
+    "next_action"
+  ],
+  "properties": {
+    "constraint_engine_version": {"const": "1.0.0"},
+    "constraint_output_contract_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {
+      "enum": [
+        "GATE_4_CONSTRAINTS_CALCULATED",
+        "GATE_4_CONSTRAINTS_INCOMPLETE",
+        "GATE_4_PRIVATE_INPUTS_REQUIRED",
+        "GATE_4_BLOCKED_STALE_GATE_3",
+        "GATE_4_BLOCKED_INELIGIBLE_GATE_3",
+        "GATE_4_BLOCKED_GATE_3_CHANGED_DURING_RECHECK",
+        "GATE_4_CONSTRAINT_OUTPUT_INVALID"
+      ]
+    },
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "input_mode": {
+      "enum": [
+        "EXPOSURE_ONLY",
+        "AGGREGATED_PORTFOLIO",
+        "FULL_HOLDINGS",
+        "NOT_EVALUATED"
+      ]
+    },
+    "private_input_status": {"type": "string"},
+    "measurement_basis": {"const": "GROSS_LONG_WEIGHT"},
+    "gate3_precheck": {"type": "object"},
+    "gate3_recheck": {"type": "object"},
+    "gate3_identity": {"type": "object"},
+    "candidate_identity": {"type": "object"},
+    "constraints": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/constraint"}
+    },
+    "formula_registry": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "missing_items": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string"}
+    },
+    "tightest_known_constraint": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "constraint_id",
+        "maximum_incremental_position_weight",
+        "not_final_while_inputs_missing"
+      ],
+      "properties": {
+        "constraint_id": {"type": "string"},
+        "maximum_incremental_position_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "not_final_while_inputs_missing": {"type": "boolean"}
+      }
+    },
+    "binding_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "constraint_id",
+          "maximum_incremental_position_weight"
+        ],
+        "properties": {
+          "constraint_id": {"type": "string"},
+          "maximum_incremental_position_weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "maximum_constraint_based_incremental_position_weight": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "maximum_constraint_based_total_position_weight": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "maximum_constraint_based_position_is_recommendation": {"const": false},
+    "constraint_ceiling_disclosure_en": {"type": "string"},
+    "constraint_ceiling_disclosure_zh": {"type": "string"},
+    "system_portfolio_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "assessment", "position_range"],
+      "properties": {
+        "status": {"const": "NOT_EVALUATED"},
+        "assessment": {"type": "null"},
+        "position_range": {"type": "null"}
+      }
+    },
+    "partner_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_status",
+        "decision",
+        "approved_position_range"
+      ],
+      "properties": {
+        "workflow_status": {"const": "PARTNER_APPROVAL_PENDING"},
+        "decision": {"const": "PENDING"},
+        "approved_position_range": {"type": "null"}
+      }
+    },
+    "automatic_trade_execution": {"const": false},
+    "external_transmission": {"const": "DENIED"},
+    "local_private_output_only": {"type": "boolean"},
+    "raw_private_values_included": {"type": "boolean"},
+    "private_input_diagnostic": {"type": "object"},
+    "output_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "error_count", "error_paths"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "error_count": {"type": "integer", "minimum": 0},
+        "error_paths": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "next_action": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "GATE_4_CONSTRAINTS_CALCULATED",
+              "GATE_4_CONSTRAINTS_INCOMPLETE"
+            ]
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "required": [
+          "data_classification",
+          "measurement_basis",
+          "gate3_identity",
+          "candidate_identity",
+          "constraint_ceiling_disclosure_en",
+          "constraint_ceiling_disclosure_zh",
+          "local_private_output_only"
+        ],
+        "properties": {
+          "raw_private_values_included": {"const": true}
+        }
+      },
+      "else": {
+        "properties": {
+          "raw_private_values_included": {"const": false}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint_id",
+        "label_en",
+        "label_zh",
+        "status",
+        "required_for_ceiling",
+        "limit_value",
+        "current_value",
+        "candidate_value",
+        "remaining_capacity",
+        "maximum_incremental_position_weight",
+        "formula",
+        "formula_inputs",
+        "source_fields",
+        "missing_fields",
+        "escalation_threshold",
+        "escalation_triggered",
+        "binding",
+        "notes_en",
+        "notes_zh"
+      ],
+      "properties": {
+        "constraint_id": {"type": "string", "minLength": 1},
+        "label_en": {"type": "string", "minLength": 1},
+        "label_zh": {"type": "string", "minLength": 1},
+        "status": {
+          "enum": ["PASS", "BREACH", "MISSING", "WARNING", "NOT_APPLICABLE"]
+        },
+        "required_for_ceiling": {"type": "boolean"},
+        "limit_value": {"type": ["number", "integer", "null"]},
+        "current_value": {"type": ["number", "integer", "null"]},
+        "candidate_value": {"type": ["number", "integer", "null"]},
+        "remaining_capacity": {"type": ["number", "null"]},
+        "maximum_incremental_position_weight": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "formula": {"type": "string", "minLength": 1},
+        "formula_inputs": {"type": "object"},
+        "source_fields": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "missing_fields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "escalation_threshold": {"type": ["number", "null"]},
+        "escalation_triggered": {"type": ["boolean", "null"]},
+        "binding": {"type": "boolean"},
+        "notes_en": {"type": "string"},
+        "notes_zh": {"type": "string"}
+      }
+    }
+  }
+}

@@ -37,7 +37,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 GATE4_DIR = SCRIPT_DIR.parent / "gate4"
 SCHEMA_DIR = GATE4_DIR / "schemas"
 FIELD_GOVERNANCE_PATH = GATE4_DIR / "field_governance.json"
-PRIVATE_INPUT_CONTRACT_VERSION = "2.0.0"
+PRIVATE_INPUT_CONTRACT_VERSION = "2.1.0"
 FRAMEWORK_STATUS = "GATE_4_FRAMEWORK_READY"
 INPUT_STATUS_REQUIRED = "GATE_4_PRIVATE_INPUTS_REQUIRED"
 INPUT_STATUS_VALIDATED = "GATE_4_INPUTS_VALIDATED"
@@ -58,6 +58,7 @@ DOCUMENT_MANIFEST_FIELDS = {
     "exposures": "exposure_summary",
     "holdings": "current_holdings",
     "opportunities": "opportunity_set",
+    "constraints": "portfolio_constraint_inputs",
     "approval": "approval_config",
     "freshness": "gate3_freshness_attestation",
 }
@@ -109,6 +110,7 @@ class PrivateInputBundle:
     exposures: list[dict[str, Any]]
     holdings: list[dict[str, Any]]
     opportunities: list[dict[str, Any]]
+    constraint_inputs: dict[str, Any]
     approval: dict[str, Any]
     freshness_attestation: dict[str, Any]
     field_governance_contract: dict[str, Any]
@@ -531,6 +533,7 @@ def _load_bundle_documents(
         "exposures": read_table,
         "holdings": read_table,
         "opportunities": read_table,
+        "constraints": read_mapping,
         "approval": read_mapping,
         "freshness": read_mapping,
     }
@@ -614,6 +617,7 @@ def _load_bundle_documents(
             for row in loaded.get("holdings", [])
         ],
         opportunities=[normalize_opportunity_row(row) for row in loaded["opportunities"]],
+        constraint_inputs=loaded["constraints"],
         approval=loaded["approval"],
         freshness_attestation=loaded["freshness"],
         field_governance_contract=field_governance_contract,
@@ -716,6 +720,8 @@ def _governed_payloads(
         return [(None, None, bundle.approval)]
     if document == "freshness":
         return [(None, None, bundle.freshness_attestation)]
+    if document == "constraints":
+        return [(None, None, bundle.constraint_inputs)]
     row_config = {
         "exposures": (bundle.exposures, "exposure_id"),
         "holdings": (bundle.holdings, "position_id"),
@@ -861,6 +867,13 @@ def _validate_document_schemas(
     ).get(mode, {})
     required_documents = set(mode_requirements.get("required_documents", []))
     checks.extend(schema_checks("policy", bundle.policy, "portfolio_policy.schema.json"))
+    checks.extend(
+        schema_checks(
+            "constraints",
+            bundle.constraint_inputs,
+            "portfolio_constraint_inputs.schema.json",
+        )
+    )
     checks.extend(schema_checks("approval", bundle.approval, "approval_config.schema.json"))
     checks.extend(
         schema_checks(
@@ -944,6 +957,7 @@ def _classification_and_date_checks(
     classification = bundle.manifest.get("data_classification")
     documents: list[tuple[str, Any]] = [
         ("policy", bundle.policy),
+        ("constraints", bundle.constraint_inputs),
         ("approval", bundle.approval),
         ("freshness", bundle.freshness_attestation),
     ]
@@ -1398,6 +1412,217 @@ def _opportunity_checks(bundle: PrivateInputBundle, checks: list[PrivateInputChe
     )
 
 
+def _constraint_input_checks(
+    bundle: PrivateInputBundle,
+    checks: list[PrivateInputCheck],
+) -> None:
+    payload = bundle.constraint_inputs
+    candidate = payload.get("candidate", {})
+    portfolio_state = payload.get("portfolio_state", {})
+    binding = payload.get("gate3_binding", {})
+    freshness = bundle.freshness_attestation
+    manifest_date = parse_date(bundle.manifest.get("as_of_date"))
+
+    add_check(
+        checks,
+        check_id="G4I-constraint-gate3-binding",
+        document="constraints",
+        passed=(
+            isinstance(binding, dict)
+            and binding.get("report_id") == freshness.get("gate3_report_id")
+            and binding.get("contract_hash") == freshness.get("gate3_contract_hash")
+        ),
+        field="gate3_binding",
+        message_pass="Constraint inputs are bound to the same Gate 3 identity as the freshness attestation.",
+        message_fail="Constraint inputs and the freshness attestation reference different Gate 3 objects.",
+        remediation="Repeat the private review and bind both documents to the exact consumed Gate 3 report ID and hash.",
+    )
+
+    expected = candidate.get("expected_return", {}) if isinstance(candidate, dict) else {}
+    downside = candidate.get("downside_return", {}) if isinstance(candidate, dict) else {}
+    both_validated = (
+        isinstance(expected, dict)
+        and isinstance(downside, dict)
+        and expected.get("status") == "VALIDATED"
+        and downside.get("status") == "VALIDATED"
+    )
+    horizons_match = (
+        not both_validated
+        or (
+            expected.get("as_of_date") == downside.get("as_of_date")
+            and expected.get("target_date") == downside.get("target_date")
+            and expected.get("holding_period_days")
+            == downside.get("holding_period_days")
+        )
+    )
+    add_check(
+        checks,
+        check_id="G4I-constraint-return-horizon-alignment",
+        document="constraints",
+        passed=horizons_match,
+        field="candidate.expected_return,candidate.downside_return",
+        message_pass="Validated expected-return and downside inputs use one dated holding-period basis.",
+        message_fail="Expected-return and downside inputs use different dates or holding periods.",
+        remediation="Rebuild both return inputs on the same as-of date, target date, and holding period.",
+    )
+
+    for label, return_input in (
+        ("expected-return", expected),
+        ("downside-return", downside),
+    ):
+        if not isinstance(return_input, dict) or return_input.get("status") != "VALIDATED":
+            checks.append(
+                PrivateInputCheck(
+                    check_id=f"G4I-constraint-{label}-explicit-status",
+                    document="constraints",
+                    status="PASS",
+                    issue_class="INFO",
+                    field=f"candidate.{label.replace('-', '_')}.status",
+                    row_number=None,
+                    message="The return input is explicitly marked provisional or missing; S13 must keep dependent constraints incomplete.",
+                    remediation="None.",
+                )
+            )
+            continue
+        as_of = parse_date(return_input.get("as_of_date"))
+        target = parse_date(return_input.get("target_date"))
+        holding_days = parse_integer(return_input.get("holding_period_days"))
+        reviewed_at = parse_datetime(return_input.get("reviewed_at"))
+        calculated_days = (target - as_of).days if as_of and target else None
+        chronology_valid = (
+            manifest_date is not None
+            and as_of is not None
+            and target is not None
+            and as_of <= manifest_date
+            and target > as_of
+            and holding_days is not None
+            and calculated_days == holding_days
+            and reviewed_at is not None
+            and reviewed_at.date() <= manifest_date
+        )
+        add_check(
+            checks,
+            check_id=f"G4I-constraint-{label}-chronology",
+            document="constraints",
+            passed=chronology_valid,
+            field=f"candidate.{label.replace('-', '_')}.as_of_date,target_date,holding_period_days,reviewed_at",
+            message_pass="The validated return input has reproducible dates, holding period, and review chronology.",
+            message_fail="The return dates, holding period, or review chronology do not reproduce.",
+            remediation="Use target date minus as-of date as holding_period_days and complete review no later than the manifest date.",
+        )
+        add_check(
+            checks,
+            check_id=f"G4I-constraint-{label}-contract-binding",
+            document="constraints",
+            passed=return_input.get("source_contract_hash") == binding.get("contract_hash"),
+            field=f"candidate.{label.replace('-', '_')}.source_contract_hash",
+            message_pass="The validated return input is bound to the selected Gate 3 contract.",
+            message_fail="The return input references a different or missing Gate 3 contract hash.",
+            remediation="Revalidate the return input against the exact Gate 3 contract consumed by S13.",
+        )
+
+    liquidity = candidate.get("liquidity", {}) if isinstance(candidate, dict) else {}
+    if isinstance(liquidity, dict) and liquidity.get("status") == "VALIDATED":
+        liquidity_date = parse_date(liquidity.get("source_as_of_date"))
+        liquidity_reviewed_at = parse_datetime(liquidity.get("reviewed_at"))
+        maximum_advt_age = parse_integer(
+            bundle.policy.get("liquidity_requirement", {}).get(
+                "maximum_advt_age_days"
+            )
+        )
+        advt_age = (
+            (manifest_date - liquidity_date).days
+            if manifest_date is not None and liquidity_date is not None
+            else None
+        )
+        liquidity_valid = (
+            manifest_date is not None
+            and liquidity_date is not None
+            and advt_age is not None
+            and maximum_advt_age is not None
+            and 0 <= advt_age <= maximum_advt_age
+            and liquidity_reviewed_at is not None
+            and liquidity_reviewed_at.date() <= manifest_date
+            and liquidity.get("base_currency") == bundle.manifest.get("base_currency")
+        )
+        add_check(
+            checks,
+            check_id="G4I-constraint-liquidity-chronology-currency",
+            document="constraints",
+            passed=liquidity_valid,
+            field="candidate.liquidity",
+            message_pass="Candidate liquidity uses current, reviewed ADVT in the portfolio base currency.",
+            message_fail="Candidate liquidity is stale or has an invalid date, reviewer chronology, or currency.",
+            remediation="Refresh ADVT within the policy age limit, convert it to the manifest base currency, and complete local review.",
+        )
+
+    reviewed_state_names = (
+        "current_risk_budget_usage",
+        "current_liquid_portfolio_weight",
+    )
+    for state_name in reviewed_state_names:
+        state = (
+            portfolio_state.get(state_name, {})
+            if isinstance(portfolio_state, dict)
+            else {}
+        )
+        if not isinstance(state, dict) or state.get("status") != "VALIDATED":
+            continue
+        reviewed_at = parse_datetime(state.get("reviewed_at"))
+        add_check(
+            checks,
+            check_id=f"G4I-constraint-{state_name}-review",
+            document="constraints",
+            passed=(
+                manifest_date is not None
+                and reviewed_at is not None
+                and reviewed_at.date() <= manifest_date
+            ),
+            field=f"portfolio_state.{state_name}.reviewed_at",
+            message_pass="The portfolio-state input has valid reviewer chronology.",
+            message_fail="The portfolio-state reviewer timestamp is missing or later than the manifest date.",
+            remediation="Complete and date the local portfolio-state review no later than the manifest date.",
+        )
+
+    risk_state = (
+        portfolio_state.get("current_risk_budget_usage", {})
+        if isinstance(portfolio_state, dict)
+        else {}
+    )
+    add_check(
+        checks,
+        check_id="G4I-constraint-risk-method",
+        document="constraints",
+        passed=(
+            not isinstance(risk_state, dict)
+            or risk_state.get("status") != "VALIDATED"
+            or risk_state.get("methodology") == bundle.policy.get("risk_budget_method")
+        ),
+        field="portfolio_state.current_risk_budget_usage.methodology",
+        message_pass="Current risk-budget usage and policy use the same method.",
+        message_fail="Current risk-budget usage and policy use different methods.",
+        remediation="Recalculate current usage using the policy-defined risk-budget method.",
+    )
+
+    hedge = candidate.get("proposed_hedge", {}) if isinstance(candidate, dict) else {}
+    if isinstance(hedge, dict) and hedge.get("status") == "PROPOSED":
+        hedge_reviewed_at = parse_datetime(hedge.get("reviewed_at"))
+        add_check(
+            checks,
+            check_id="G4I-constraint-hedge-review",
+            document="constraints",
+            passed=(
+                manifest_date is not None
+                and hedge_reviewed_at is not None
+                and hedge_reviewed_at.date() <= manifest_date
+            ),
+            field="candidate.proposed_hedge.reviewed_at",
+            message_pass="The proposed hedge has valid reviewer chronology.",
+            message_fail="The proposed hedge review is missing or later than the manifest date.",
+            remediation="Complete the local hedge review no later than the manifest date.",
+        )
+
+
 def _approval_checks(
     bundle: PrivateInputBundle,
     checks: list[PrivateInputCheck],
@@ -1520,6 +1745,7 @@ def validate_private_input_bundle(
     _exposure_checks(bundle, checks)
     _holding_checks(bundle, checks)
     _opportunity_checks(bundle, checks)
+    _constraint_input_checks(bundle, checks)
     _approval_checks(
         bundle,
         checks,

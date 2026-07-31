@@ -198,9 +198,15 @@ mode. Apply the shared four-class field-governance contract and require a dated,
 row-specific reviewer record for every permitted not-applicable field.
 
 Private-input validation may return `GATE_4_INPUTS_VALIDATED`, but this means
-only that the dated local bundle is complete and reconciled. Until the shared
-constraint engine is implemented and run, keep System Portfolio Assessment
-`NOT_EVALUATED`, Partner Decision `PENDING`, and every sizing/action field null.
+only that the dated local bundle is structurally valid, reconciled where
+applicable, and explicit about provisional or missing constraint values. S13
+must reload and recheck Gate 3 immediately before calculation, verify the
+candidate SEC CIK and equity ticker against the consumed issuer contract, and
+calculate each limit from the shared engine. A missing required ceiling returns
+`GATE_4_CONSTRAINTS_INCOMPLETE` and keeps the final maximum null. A complete
+result returns `GATE_4_CONSTRAINTS_CALCULATED`, but the maximum is only a
+constraint ceiling. Until S14, keep System Portfolio Assessment
+`NOT_EVALUATED`, Partner Decision `PENDING`, and approved range null.
 The legacy `build_partner_portfolio_overlay.py` path is restricted to
 `SYNTHETIC_PUBLIC_EXAMPLE` demos and must reject real inputs.
 

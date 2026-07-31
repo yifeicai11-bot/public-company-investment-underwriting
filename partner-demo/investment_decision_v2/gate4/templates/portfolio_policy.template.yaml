@@ -1,4 +1,4 @@
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: portfolio_policy
 data_classification: TEMPLATE_NO_DATA
 policy_id:
@@ -10,6 +10,8 @@ downside_tolerance:
 holding_period_days:
 single_name_position_limit:
 sector_concentration_limit:
+correlated_exposure_limit:
+concentration_measurement_basis: GROSS_LONG_WEIGHT
 country_limit_status:
 country_concentration_limit:
 country_limit_rationale:
@@ -17,16 +19,21 @@ liquidity_requirement:
   minimum_liquid_portfolio_weight:
   maximum_days_to_exit:
   minimum_average_daily_value_traded:
+  maximum_daily_volume_participation:
+  maximum_advt_age_days:
 risk_budget_limit:
+risk_budget_method: DOWNSIDE_LOSS_BUDGET
 opportunity_cost_requirement:
   comparison_required: true
   minimum_excess_return:
   minimum_comparable_opportunities:
+  maximum_holding_period_mismatch_days:
 permitted_hedge_instruments: []
 maximum_hedge_ratio:
 escalation_thresholds:
   single_name_limit_utilization:
   sector_limit_utilization:
+  correlated_exposure_limit_utilization:
   country_limit_utilization:
   downside_limit_utilization:
   risk_budget_utilization:

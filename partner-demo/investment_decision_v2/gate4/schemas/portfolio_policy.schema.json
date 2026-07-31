@@ -17,10 +17,13 @@
     "holding_period_days",
     "single_name_position_limit",
     "sector_concentration_limit",
+    "correlated_exposure_limit",
+    "concentration_measurement_basis",
     "country_limit_status",
     "country_concentration_limit",
     "liquidity_requirement",
     "risk_budget_limit",
+    "risk_budget_method",
     "opportunity_cost_requirement",
     "permitted_hedge_instruments",
     "maximum_hedge_ratio",
@@ -31,7 +34,7 @@
     "gate3_eligibility_policy"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "1.1.0"},
     "document_type": {"const": "portfolio_policy"},
     "data_classification": {
       "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
@@ -45,6 +48,8 @@
     "holding_period_days": {"type": "integer", "minimum": 1, "maximum": 3650},
     "single_name_position_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
     "sector_concentration_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "correlated_exposure_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "concentration_measurement_basis": {"const": "GROSS_LONG_WEIGHT"},
     "country_limit_status": {"enum": ["APPLICABLE", "NOT_APPLICABLE"]},
     "country_concentration_limit": {
       "type": ["number", "null"],
@@ -58,7 +63,9 @@
       "required": [
         "minimum_liquid_portfolio_weight",
         "maximum_days_to_exit",
-        "minimum_average_daily_value_traded"
+        "minimum_average_daily_value_traded",
+        "maximum_daily_volume_participation",
+        "maximum_advt_age_days"
       ],
       "properties": {
         "minimum_liquid_portfolio_weight": {
@@ -74,17 +81,29 @@
         "minimum_average_daily_value_traded": {
           "type": "number",
           "minimum": 0
+        },
+        "maximum_daily_volume_participation": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "maximum_advt_age_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
         }
       }
     },
     "risk_budget_limit": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "risk_budget_method": {"const": "DOWNSIDE_LOSS_BUDGET"},
     "opportunity_cost_requirement": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "comparison_required",
         "minimum_excess_return",
-        "minimum_comparable_opportunities"
+        "minimum_comparable_opportunities",
+        "maximum_holding_period_mismatch_days"
       ],
       "properties": {
         "comparison_required": {"const": true},
@@ -93,6 +112,11 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1000
+        },
+        "maximum_holding_period_mismatch_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3650
         }
       }
     },
@@ -108,6 +132,7 @@
       "required": [
         "single_name_limit_utilization",
         "sector_limit_utilization",
+        "correlated_exposure_limit_utilization",
         "country_limit_utilization",
         "downside_limit_utilization",
         "risk_budget_utilization",
@@ -116,6 +141,7 @@
       "properties": {
         "single_name_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
         "sector_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "correlated_exposure_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
         "country_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
         "downside_limit_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
         "risk_budget_utilization": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},

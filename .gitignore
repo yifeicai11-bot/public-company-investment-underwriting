@@ -37,6 +37,9 @@ investment_private/
 **/opportunity_set.csv
 **/opportunity_set.xlsx
 **/opportunity_set.xls
+**/portfolio_constraint_inputs.yaml
+**/portfolio_constraint_inputs.yml
+**/portfolio_constraint_inputs.json
 **/approval_config.yaml
 **/approval_config.yml
 **/approval_config.json
@@ -44,6 +47,7 @@ investment_private/
 **/gate3_freshness_attestation.yml
 **/gate3_freshness_attestation.json
 **/gate4_local_entry_diagnostic.json
+**/gate4_constraint_engine_result.json
 **/gate4_system_assessment.json
 **/gate4_partner_decision.json
 

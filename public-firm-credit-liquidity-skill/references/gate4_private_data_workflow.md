@@ -49,6 +49,7 @@ Complete these files locally:
 - `exposure_summary.csv` when required by the selected mode
 - `current_holdings.csv` when required by the selected mode
 - `opportunity_set.csv` or an XLSX equivalent named in the manifest
+- `portfolio_constraint_inputs.yaml`
 - `approval_config.yaml`
 - `gate3_freshness_attestation.yaml`
 
@@ -88,8 +89,43 @@ The local entry:
 7. Leaves Partner decision `PENDING`.
 8. Leaves every sizing, action, and trade field null.
 
-`GATE_4_INPUTS_VALIDATED` means the inputs are complete enough for the future
-constraint engine. It is not an investment approval.
+`GATE_4_INPUTS_VALIDATED` means the local documents are structurally valid and
+explicitly identify provisional or missing constraint values. It is not an
+investment approval and does not guarantee that S13 can calculate every
+ceiling.
+
+## S13 Constraint Calculation
+
+After entry validation, run:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+The S13 runner reloads and rechecks Gate 3 immediately before calculation. It
+then calculates existing issuer, single-name, sector, country, correlated
+exposure, liquidity, holding period, downside, risk budget, opportunity cost,
+and applicable hedge constraints. Every row stores the limit, current and
+candidate values, formula, source fields, missing fields, escalation threshold,
+and binding status.
+
+The complete local result is written to:
+
+`~/investment_private/private_outputs/gate4_constraint_engine_result.json`
+
+It contains private values and must remain local. The terminal prints only
+status flags.
+
+- `GATE_4_CONSTRAINTS_CALCULATED` means every required ceiling is reproducible.
+- `GATE_4_CONSTRAINTS_INCOMPLETE` means at least one required input remains
+  missing; final maximum and binding constraints remain null or empty.
+
+The maximum is a constraint ceiling, not a suggested position. S13 leaves
+System Portfolio Assessment `NOT_EVALUATED`, Partner Decision `PENDING`, and
+approved position range null. Read `portfolio_constraint_engine.md` for binding
+formulas and language rules.
 
 ## Git Protection
 
@@ -120,6 +156,6 @@ XMP, rejects attachments and document-level active actions, verifies page
 count, reopens the file, and writes mode `0600`. Its terminal diagnostic does
 not print private paths. Sanitization does not authorize transmission.
 
-The system never automatically places a trade. A later system assessment may
-calculate a constraint-based maximum, but the Partner remains responsible for
-the final decision and approved range.
+The system never automatically places a trade. S13 may calculate a
+constraint-based maximum, but S14 and the Partner remain responsible for the
+assessment, final decision, and approved range.

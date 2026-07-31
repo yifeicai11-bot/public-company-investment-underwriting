@@ -149,6 +149,12 @@ Complete the files under `~/investment_private` locally, then run:
 
 `partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
 
+For S13 constraint calculations, read
+`references/portfolio_constraint_engine.md`, complete
+`portfolio_constraint_inputs.yaml`, and run:
+
+`partner-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
+
 Gate 4 accepts only the immutable shared `underwriting_output_contract.json`; ticker-only input and legacy `step3_data.json` are prohibited because Gate 4 must not rebuild or overwrite issuer analysis. Before any portfolio calculation, validate the contract version and hash, Data Gate, report/financial/market dates, latest filing, subsequent-event review, probability freshness, valuation eligibility, Hard Stops, and unresolved issuer warnings. Age limits, eligible valuation statuses, probability requirements, and warning-escalation rules must be supplied explicitly; do not invent defaults.
 
 Apply the shared field-governance contract. JSON-Schema-required fields are
@@ -156,7 +162,7 @@ Apply the shared field-governance contract. JSON-Schema-required fields are
 `REVIEWER_CONFIRMED_NOT_APPLICABLE`. Never waive a core field. Accept a blank
 not-applicable field only with one dated, row-specific reviewer record.
 
-If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; complete validated inputs return `GATE_4_INPUTS_VALIDATED`, with system assessment still `NOT_EVALUATED` and Partner decision still `PENDING`. Exposure-only or aggregated inputs must never be described as security-level liquidity evidence. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. Portfolio action and position range may appear only after the future constraint engine and explicit human approval, and must never trigger a trade.
+If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; structurally validated inputs return `GATE_4_INPUTS_VALIDATED`. S13 must reload and recheck Gate 3 immediately before calculation, show every limit, formula, missing item, and binding constraint, and return `GATE_4_CONSTRAINTS_INCOMPLETE` when any required ceiling is missing. Exposure-only or aggregated inputs must never be described as security-level liquidity evidence. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. A calculated maximum is a constraint ceiling, never a suggested or approved position. Until S14 and explicit human approval, keep system assessment `NOT_EVALUATED`, Partner decision `PENDING`, approved range null, and trade execution disabled.
 
 Direct private PDF writes are prohibited. To create a private PDF, use
 `sanitize_gate4_private_pdf.py` inside the local workspace and require its

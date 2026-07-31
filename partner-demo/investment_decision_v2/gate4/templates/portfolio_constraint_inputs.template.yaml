@@ -1,0 +1,69 @@
+schema_version: "1.0.0"
+document_type: portfolio_constraint_inputs
+data_classification: TEMPLATE_NO_DATA
+as_of_date:
+gate3_binding:
+  report_id:
+  contract_hash:
+candidate:
+  security_identifier:
+  issuer_identifier:
+  issuer_name:
+  security_type:
+  position_side: LONG
+  sector:
+  country:
+  correlation_bucket:
+  expected_return:
+    status: MISSING
+    value:
+    basis:
+    methodology:
+    as_of_date:
+    target_date:
+    holding_period_days:
+    source_contract_hash:
+    reviewed_by:
+    reviewed_at:
+  downside_return:
+    status: MISSING
+    value:
+    basis:
+    methodology:
+    as_of_date:
+    target_date:
+    holding_period_days:
+    source_contract_hash:
+    reviewed_by:
+    reviewed_at:
+  liquidity:
+    status: MISSING
+    average_daily_value_traded:
+    base_currency:
+    source_as_of_date:
+    source_locator:
+    reviewed_by:
+    reviewed_at:
+  proposed_hedge:
+    status: NONE
+    instrument:
+    hedge_ratio:
+    effectiveness_status: NOT_EVALUATED
+    required_for_candidate: false
+    reviewed_by:
+    reviewed_at:
+portfolio_state:
+  current_risk_budget_usage:
+    status: MISSING
+    value:
+    methodology:
+    source_locator:
+    reviewed_by:
+    reviewed_at:
+  current_liquid_portfolio_weight:
+    status: MISSING
+    value:
+    methodology:
+    source_locator:
+    reviewed_by:
+    reviewed_at:

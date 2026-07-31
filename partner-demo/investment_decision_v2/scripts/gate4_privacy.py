@@ -40,6 +40,7 @@ PRIVATE_TEMPLATE_TARGETS = {
     "exposure_summary.template.csv": "exposure_summary.csv",
     "current_holdings.template.csv": "current_holdings.csv",
     "opportunity_set.template.csv": "opportunity_set.csv",
+    "portfolio_constraint_inputs.template.yaml": "portfolio_constraint_inputs.yaml",
     "approval_config.template.yaml": "approval_config.yaml",
     "gate3_freshness_attestation.template.yaml": "gate3_freshness_attestation.yaml",
 }
@@ -71,6 +72,9 @@ SENSITIVE_EXACT_FILENAMES = {
     "opportunity_set.csv",
     "opportunity_set.xlsx",
     "opportunity_set.xls",
+    "portfolio_constraint_inputs.yaml",
+    "portfolio_constraint_inputs.yml",
+    "portfolio_constraint_inputs.json",
     "approval_config.yaml",
     "approval_config.yml",
     "approval_config.json",
@@ -78,6 +82,7 @@ SENSITIVE_EXACT_FILENAMES = {
     "gate3_freshness_attestation.yml",
     "gate3_freshness_attestation.json",
     "gate4_local_entry_diagnostic.json",
+    "gate4_constraint_engine_result.json",
     "gate4_system_assessment.json",
     "gate4_partner_decision.json",
 }
@@ -94,6 +99,7 @@ SENSITIVE_NAME_TOKENS = {
     "partner_holdings",
     "portfolio_constraints",
     "position_sizing",
+    "constraint_inputs",
     "approved_position",
 }
 
@@ -111,6 +117,9 @@ PRIVATE_CONTENT_FIELDS = {
     "approved_position_min",
     "approved_position_max",
     "designated_partner",
+    "current_risk_budget_usage",
+    "current_liquid_portfolio_weight",
+    "correlated_exposure_limit",
 }
 
 TEXT_DATA_SUFFIXES = {

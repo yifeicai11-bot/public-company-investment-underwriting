@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/portfolio_constraint_inputs.schema.json",
+  "title": "Gate 4 Portfolio Constraint Inputs",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document_type",
+    "data_classification",
+    "as_of_date",
+    "gate3_binding",
+    "candidate",
+    "portfolio_state"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "document_type": {"const": "portfolio_constraint_inputs"},
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "as_of_date": {"type": "string", "format": "date"},
+    "gate3_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "contract_hash"],
+      "properties": {
+        "report_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "contract_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "security_identifier",
+        "issuer_identifier",
+        "issuer_name",
+        "security_type",
+        "position_side",
+        "sector",
+        "country",
+        "correlation_bucket",
+        "expected_return",
+        "downside_return",
+        "liquidity",
+        "proposed_hedge"
+      ],
+      "properties": {
+        "security_identifier": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "issuer_identifier": {
+          "type": "string",
+          "pattern": "^[0-9]{10}$"
+        },
+        "issuer_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "security_type": {
+          "enum": ["EQUITY", "BOND", "ETF", "OTHER"]
+        },
+        "position_side": {"const": "LONG"},
+        "sector": {"type": "string", "minLength": 1, "maxLength": 128},
+        "country": {"type": "string", "minLength": 2, "maxLength": 128},
+        "correlation_bucket": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "expected_return": {"$ref": "#/$defs/expectedReturn"},
+        "downside_return": {"$ref": "#/$defs/downsideReturn"},
+        "liquidity": {"$ref": "#/$defs/liquidity"},
+        "proposed_hedge": {"$ref": "#/$defs/proposedHedge"}
+      }
+    },
+    "portfolio_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_risk_budget_usage",
+        "current_liquid_portfolio_weight"
+      ],
+      "properties": {
+        "current_risk_budget_usage": {"$ref": "#/$defs/riskBudgetUsage"},
+        "current_liquid_portfolio_weight": {
+          "$ref": "#/$defs/liquidPortfolioWeight"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "validationStatus": {
+      "enum": ["VALIDATED", "PROVISIONAL", "MISSING"]
+    },
+    "expectedReturn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "value",
+        "basis",
+        "methodology",
+        "as_of_date",
+        "target_date",
+        "holding_period_days",
+        "source_contract_hash",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/validationStatus"},
+        "value": {"type": ["number", "null"], "minimum": -1, "maximum": 10},
+        "basis": {
+          "type": ["string", "null"],
+          "enum": [
+            "PUBLIC_PROBABILITY_WEIGHTED_RETURN",
+            "PARTNER_INTERNAL_RETURN",
+            "OTHER_VALIDATED_RETURN",
+            null
+          ]
+        },
+        "methodology": {"type": ["string", "null"], "minLength": 1, "maxLength": 2000},
+        "as_of_date": {"type": ["string", "null"], "format": "date"},
+        "target_date": {"type": ["string", "null"], "format": "date"},
+        "holding_period_days": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 3650
+        },
+        "source_contract_hash": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "VALIDATED"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "value": {"type": "number"},
+              "basis": {"type": "string"},
+              "methodology": {"type": "string"},
+              "as_of_date": {"type": "string"},
+              "target_date": {"type": "string"},
+              "holding_period_days": {"type": "integer"},
+              "source_contract_hash": {"type": "string"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "downsideReturn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "value",
+        "basis",
+        "methodology",
+        "as_of_date",
+        "target_date",
+        "holding_period_days",
+        "source_contract_hash",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/validationStatus"},
+        "value": {
+          "type": ["number", "null"],
+          "minimum": -1,
+          "exclusiveMaximum": 0
+        },
+        "basis": {
+          "type": ["string", "null"],
+          "enum": [
+            "FORMAL_BEAR_CASE_RETURN",
+            "PARTNER_STRESS_RETURN",
+            null
+          ]
+        },
+        "methodology": {"type": ["string", "null"], "minLength": 1, "maxLength": 2000},
+        "as_of_date": {"type": ["string", "null"], "format": "date"},
+        "target_date": {"type": ["string", "null"], "format": "date"},
+        "holding_period_days": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 3650
+        },
+        "source_contract_hash": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "VALIDATED"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "value": {"type": "number"},
+              "basis": {"type": "string"},
+              "methodology": {"type": "string"},
+              "as_of_date": {"type": "string"},
+              "target_date": {"type": "string"},
+              "holding_period_days": {"type": "integer"},
+              "source_contract_hash": {"type": "string"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "liquidity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "average_daily_value_traded",
+        "base_currency",
+        "source_as_of_date",
+        "source_locator",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/validationStatus"},
+        "average_daily_value_traded": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "base_currency": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Z]{3}$"
+        },
+        "source_as_of_date": {"type": ["string", "null"], "format": "date"},
+        "source_locator": {"type": ["string", "null"], "minLength": 1, "maxLength": 1000},
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "VALIDATED"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "average_daily_value_traded": {"type": "number"},
+              "base_currency": {"type": "string"},
+              "source_as_of_date": {"type": "string"},
+              "source_locator": {"type": "string"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "proposedHedge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "instrument",
+        "hedge_ratio",
+        "effectiveness_status",
+        "required_for_candidate",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"enum": ["NONE", "PROPOSED"]},
+        "instrument": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "hedge_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "effectiveness_status": {
+          "enum": ["NOT_EVALUATED", "VALIDATED"]
+        },
+        "required_for_candidate": {"type": "boolean"},
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "NONE"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "instrument": {"type": "null"},
+              "hedge_ratio": {"type": "null"},
+              "effectiveness_status": {"const": "NOT_EVALUATED"},
+              "required_for_candidate": {"const": false},
+              "reviewed_by": {"type": "null"},
+              "reviewed_at": {"type": "null"}
+            }
+          },
+          "else": {
+            "properties": {
+              "instrument": {"type": "string"},
+              "hedge_ratio": {"type": "number"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "riskBudgetUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "value",
+        "methodology",
+        "source_locator",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/validationStatus"},
+        "value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "methodology": {
+          "type": ["string", "null"],
+          "enum": ["DOWNSIDE_LOSS_BUDGET", null]
+        },
+        "source_locator": {"type": ["string", "null"], "minLength": 1, "maxLength": 1000},
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "VALIDATED"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "value": {"type": "number"},
+              "methodology": {"type": "string"},
+              "source_locator": {"type": "string"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    },
+    "liquidPortfolioWeight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "value",
+        "methodology",
+        "source_locator",
+        "reviewed_by",
+        "reviewed_at"
+      ],
+      "properties": {
+        "status": {"$ref": "#/$defs/validationStatus"},
+        "value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "methodology": {
+          "type": ["string", "null"],
+          "enum": [
+            "REVIEWED_AGGREGATE",
+            "DERIVED_FROM_HOLDINGS",
+            null
+          ]
+        },
+        "source_locator": {"type": ["string", "null"], "minLength": 1, "maxLength": 1000},
+        "reviewed_by": {"type": ["string", "null"], "minLength": 2, "maxLength": 256},
+        "reviewed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "VALIDATED"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "value": {"type": "number"},
+              "methodology": {"type": "string"},
+              "source_locator": {"type": "string"},
+              "reviewed_by": {"type": "string"},
+              "reviewed_at": {"type": "string"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

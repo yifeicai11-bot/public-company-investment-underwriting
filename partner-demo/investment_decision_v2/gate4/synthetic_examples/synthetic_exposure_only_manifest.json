@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "document_type": "gate4_private_workspace_manifest",
   "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
   "workspace_id": "SYNTHETIC-GATE4-EXPOSURE-ONLY",
@@ -9,7 +9,7 @@
   "base_currency": "USD",
   "weight_reconciliation_tolerance": 0.0001,
   "field_governance": {
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "reviewer_confirmed_not_applicable": [
       {
         "document": "manifest",
@@ -58,6 +58,14 @@
         "rationale": "The synthetic exposure-only fixture supplies reviewed weights without absolute market values.",
         "reviewed_by": "Synthetic Governance Reviewer",
         "reviewed_at": "2026-07-17T12:00:00Z"
+      },
+      {
+        "document": "exposures",
+        "field_path": "market_value_base_currency",
+        "row_id": "SYNTH-ONLY-ISSUER",
+        "rationale": "The synthetic exposure-only fixture supplies a reviewed zero issuer weight without absolute market value.",
+        "reviewed_by": "Synthetic Governance Reviewer",
+        "reviewed_at": "2026-07-17T12:00:00Z"
       }
     ]
   },
@@ -66,6 +74,7 @@
     "exposure_summary": "synthetic_exposure_only_summary.csv",
     "current_holdings": null,
     "opportunity_set": "synthetic_opportunity_set.csv",
+    "portfolio_constraint_inputs": "synthetic_s13_candidate_fixture.yaml",
     "approval_config": "synthetic_approval_config.yaml",
     "gate3_freshness_attestation": "synthetic_gate3_freshness_attestation.yaml",
     "private_output_dir": "synthetic_private_outputs"

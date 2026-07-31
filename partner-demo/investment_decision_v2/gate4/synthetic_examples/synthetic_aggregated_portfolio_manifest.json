@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "document_type": "gate4_private_workspace_manifest",
   "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
   "workspace_id": "SYNTHETIC-GATE4-AGGREGATED",
@@ -9,7 +9,7 @@
   "base_currency": "USD",
   "weight_reconciliation_tolerance": 0.0001,
   "field_governance": {
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "reviewer_confirmed_not_applicable": [
       {
         "document": "holdings",
@@ -42,6 +42,7 @@
     "exposure_summary": "synthetic_aggregated_exposure_summary.csv",
     "current_holdings": "synthetic_aggregated_holdings.csv",
     "opportunity_set": "synthetic_opportunity_set.csv",
+    "portfolio_constraint_inputs": "synthetic_s13_candidate_fixture.yaml",
     "approval_config": "synthetic_approval_config.yaml",
     "gate3_freshness_attestation": "synthetic_gate3_freshness_attestation.yaml",
     "private_output_dir": "synthetic_private_outputs"

@@ -1,4 +1,4 @@
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: portfolio_policy
 data_classification: SYNTHETIC_PUBLIC_EXAMPLE
 policy_id: SYNTHETIC-POLICY-001
@@ -10,6 +10,8 @@ downside_tolerance: -0.25
 holding_period_days: 365
 single_name_position_limit: 0.10
 sector_concentration_limit: 0.35
+correlated_exposure_limit: 0.40
+concentration_measurement_basis: GROSS_LONG_WEIGHT
 country_limit_status: APPLICABLE
 country_concentration_limit: 0.80
 country_limit_rationale:
@@ -17,11 +19,15 @@ liquidity_requirement:
   minimum_liquid_portfolio_weight: 0.25
   maximum_days_to_exit: 5
   minimum_average_daily_value_traded: 1000000
+  maximum_daily_volume_participation: 0.10
+  maximum_advt_age_days: 5
 risk_budget_limit: 0.15
+risk_budget_method: DOWNSIDE_LOSS_BUDGET
 opportunity_cost_requirement:
   comparison_required: true
   minimum_excess_return: 0.03
   minimum_comparable_opportunities: 2
+  maximum_holding_period_mismatch_days: 0
 permitted_hedge_instruments:
   - SYNTHETIC_INDEX_HEDGE
   - SYNTHETIC_SECTOR_HEDGE
@@ -29,6 +35,7 @@ maximum_hedge_ratio: 0.50
 escalation_thresholds:
   single_name_limit_utilization: 0.80
   sector_limit_utilization: 0.80
+  correlated_exposure_limit_utilization: 0.80
   country_limit_utilization: 0.80
   downside_limit_utilization: 0.80
   risk_budget_utilization: 0.80

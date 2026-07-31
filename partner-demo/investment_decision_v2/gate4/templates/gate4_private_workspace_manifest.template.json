@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "document_type": "gate4_private_workspace_manifest",
   "data_classification": "TEMPLATE_NO_DATA",
   "workspace_id": null,
@@ -9,7 +9,7 @@
   "base_currency": null,
   "weight_reconciliation_tolerance": null,
   "field_governance": {
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "reviewer_confirmed_not_applicable": []
   },
   "files": {
@@ -17,6 +17,7 @@
     "exposure_summary": "exposure_summary.csv",
     "current_holdings": "current_holdings.csv",
     "opportunity_set": "opportunity_set.csv",
+    "portfolio_constraint_inputs": "portfolio_constraint_inputs.yaml",
     "approval_config": "approval_config.yaml",
     "gate3_freshness_attestation": "gate3_freshness_attestation.yaml",
     "private_output_dir": "private_outputs"
