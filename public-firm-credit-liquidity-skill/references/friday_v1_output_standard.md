@@ -76,11 +76,23 @@ Research readiness does not measure investment attractiveness and does not autho
 
 Allowed values:
 
-- `RANGE_ONLY`
-- `PARTIALLY_VALIDATED`
-- `MULTI_METHOD_VALIDATED`
+- `RANGE_ONLY`: reproducible scenario price sensitivity may exist, but the
+  driver forecast, forward share bridge, and independent cross-check are not
+  all validated. A forward model alone or a cross-check alone cannot upgrade
+  this status.
+- `PARTIALLY_VALIDATED`: the driver-based forward forecast, target-date share
+  bridge, and at least one independent valuation cross-check all validate.
+- `MULTI_METHOD_VALIDATED`: the `PARTIALLY_VALIDATED` requirements plus the
+  complete S09 horizon, reverse valuation, full S11 multi-method context, and
+  named human review all validate.
 
 Disclose the separate status of peer valuation, historical valuation, DCF cross-check, driver-based forward forecast, and forward share-count bridge. Scenario multiples are analyst-owned sensitivity references unless independently validated; never describe them as fair-value multiples merely because their calculations reproduce.
+
+The aggregate Valuation Status is stricter than an individual S10 or S11
+component status. In particular, S11 `PARTIALLY_VALIDATED` means at least one
+S11 method validates; it does not by itself make the aggregate valuation
+`PARTIALLY_VALIDATED`. A complete S11 contract without a validated S09 horizon
+cannot produce aggregate `MULTI_METHOD_VALIDATED`.
 
 ## Share-Count Basis
 

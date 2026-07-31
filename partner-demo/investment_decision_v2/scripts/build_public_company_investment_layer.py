@@ -2173,19 +2173,69 @@ def build_valuation_scope_status(
         key: value if value in allowed_components else "NOT_COMPLETED"
         for key, value in components.items()
     }
-    if (
-        s11_contract.get("status") == "MULTI_METHOD_VALIDATED"
-        and components["driver_based_forward_forecast"] == "COMPLETED"
-        and components["forward_share_count_bridge"] == "COMPLETED"
-    ):
+    status_evidence = {
+        "validated_s09_horizon": (
+            return_context.get("formal_return_language_allowed") is True
+        ),
+        "validated_driver_based_forward_forecast": (
+            components["driver_based_forward_forecast"] == "COMPLETED"
+        ),
+        "validated_forward_share_count_bridge": (
+            components["forward_share_count_bridge"] == "COMPLETED"
+        ),
+        "validated_reverse_valuation": (
+            components["reverse_valuation"] == "COMPLETED"
+        ),
+        "validated_independent_cross_check": (
+            components["dcf_cross_check"] == "COMPLETED"
+        ),
+        "validated_s11_multi_method_context": (
+            s11_contract.get("status") == "MULTI_METHOD_VALIDATED"
+        ),
+    }
+    partial_ready = all(
+        (
+            status_evidence["validated_driver_based_forward_forecast"],
+            status_evidence["validated_forward_share_count_bridge"],
+            status_evidence["validated_independent_cross_check"],
+        )
+    )
+    multi_method_ready = partial_ready and all(
+        (
+            status_evidence["validated_s09_horizon"],
+            status_evidence["validated_reverse_valuation"],
+            status_evidence["validated_s11_multi_method_context"],
+        )
+    )
+    if multi_method_ready:
         status = "MULTI_METHOD_VALIDATED"
-    elif (
-        s11_contract.get("status") == "PARTIALLY_VALIDATED"
-        or components["driver_based_forward_forecast"] == "COMPLETED"
-    ):
+    elif partial_ready:
         status = "PARTIALLY_VALIDATED"
     else:
         status = "RANGE_ONLY"
+    unmet_status_requirements = {
+        "PARTIALLY_VALIDATED": [
+            key
+            for key in (
+                "validated_driver_based_forward_forecast",
+                "validated_forward_share_count_bridge",
+                "validated_independent_cross_check",
+            )
+            if not status_evidence[key]
+        ],
+        "MULTI_METHOD_VALIDATED": [
+            key
+            for key in (
+                "validated_s09_horizon",
+                "validated_driver_based_forward_forecast",
+                "validated_forward_share_count_bridge",
+                "validated_reverse_valuation",
+                "validated_independent_cross_check",
+                "validated_s11_multi_method_context",
+            )
+            if not status_evidence[key]
+        ],
+    }
     multiples = sorted(
         {
             float(value)
@@ -2219,6 +2269,8 @@ def build_valuation_scope_status(
         "valuation_cross_check_contract_status": (
             s11_contract.get("status") or "NOT_PROVIDED"
         ),
+        "status_evidence": status_evidence,
+        "unmet_status_requirements": unmet_status_requirements,
     }
 
 

@@ -29,6 +29,12 @@ Use:
 does not mean the methods agree, establish fair value, justify a target price,
 or authorize an investment action.
 
+These are S11 component-contract statuses. The report-level Valuation Status is
+stricter: S11 partial support alone remains report-level `RANGE_ONLY`, and S11
+multi-method support cannot become report-level `MULTI_METHOD_VALIDATED`
+without a validated S10 forecast/share bridge and complete S09 horizon. Read
+`valuation_cross_company_acceptance.md` for the combined status rules.
+
 Below Gate 3, suppress S11 valuation values and S11 CALC evidence. Do not leak
 analyst assumptions through the public output contract.
 

@@ -106,7 +106,9 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Data and Evidence | [`build_public_company_decision_pack.py`](partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
 | Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
 | Shared Equity Valuation | [`equity_valuation_contract.py`](partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py) | Dated horizon, price sensitivity, Base-Case Return, Probability-Weighted Return, and public/private return boundaries |
+| Forward Operating Model | [`forward_operating_model.py`](partner-demo/investment_decision_v2/scripts/forward_operating_model.py) | Controlled business-model drivers, forward FCF, and target-date share bridge |
 | Valuation Cross-Checks | [`valuation_cross_checks.py`](partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py) | Controlled peers, historical valuation, reverse valuation, independent DCF, method agreement, and probability governance |
+| Cross-Company Valuation QA | [`run_s12_valuation_cross_company_acceptance.py`](partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py) | Offline six-model and five-contract acceptance, status-boundary checks, return-language controls, and anti-hardcoding scan |
 | Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
 | Gate 4 Local Entry | [`run_gate4_local_entry.py`](partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
 | Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
@@ -233,6 +235,12 @@ python3 -m unittest discover \
   -s partner-demo/investment_decision_v2/tests \
   -p 'test_*.py' \
   -v
+```
+
+Run the frozen S12 valuation acceptance matrix:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
 ```
 
 Validate the cross-industry matrix and safe-failure taxonomy:
