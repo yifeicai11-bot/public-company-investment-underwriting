@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.1.0",
+  "document_type": "development_session_completion_record",
+  "phase": "C",
+  "session": "S11",
+  "name": "Valuation Cross-Checks and Governance",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-31",
+  "branch": "codex/phase-c-equity-valuation",
+  "phase_ab_main_baseline": "8156f5d168f897054822fd54be7b39a97a62543d",
+  "s10_accepted_baseline": "d5275126b40f17ab0c9e76146d4341b8a1f223f5",
+  "implementation_commit": "0a0b7f7ac1640ce3033070492bbd589bbb6dcf5e",
+  "shared_contract": {
+    "output_contract_schema": "5.1.0",
+    "valuation_cross_check_contract_version": "1.0.0",
+    "probability_governance_version": "1.0.0",
+    "authoritative_component": "partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py",
+    "investment_layer_consumer": "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+    "contract_validator": "partner-demo/investment_decision_v2/scripts/underwriting_contract.py",
+    "renderer_recalculation_allowed": false,
+    "ticker_specific_logic_allowed": false
+  },
+  "required_scope": [
+    "Add a controlled peer comparison with automatic suppression of incomparable rows.",
+    "Add controlled historical valuation without look-ahead data.",
+    "Add reproducible reverse valuation using the authoritative dated market-capital or enterprise-value basis.",
+    "Add at least one reasonable independent valuation cross-check.",
+    "Require probability method, evidence, dates, sensitivity, expiration, and independent research approval.",
+    "Keep S09 price sensitivity and return permissions authoritative.",
+    "Keep Gate 4 portfolio sizing and action disabled."
+  ],
+  "valuation_methods": {
+    "controlled_peer_comparison": {
+      "supported_metrics": [
+        "EV/SALES",
+        "EV/EBITDA",
+        "P/E",
+        "P/FCF",
+        "FCF_YIELD"
+      ],
+      "minimum_distinct_comparable_peers": 3,
+      "automatic_suppression": [
+        "Non-positive denominator.",
+        "Period or period-basis mismatch without a controlled bridge.",
+        "Currency mismatch without controlled normalization.",
+        "Accounting-definition mismatch.",
+        "Formula mismatch.",
+        "Missing or mismatched evidence.",
+        "Duplicate ticker and metric.",
+        "Missing peer identity or business-model-fit classification."
+      ]
+    },
+    "historical_valuation": {
+      "minimum_distinct_observations": 5,
+      "minimum_span_days": 365,
+      "look_ahead_allowed": false,
+      "required_alignment": [
+        "Metric.",
+        "Currency.",
+        "Period basis.",
+        "Accounting definition."
+      ]
+    },
+    "reverse_valuation": {
+      "supported_methods": [
+        "EQUITY_FCF_MULTIPLE",
+        "EQUITY_EARNINGS_MULTIPLE",
+        "ENTERPRISE_VALUE_EBITDA_MULTIPLE",
+        "ENTERPRISE_VALUE_REVENUE_MULTIPLE",
+        "EQUITY_FCF_YIELD"
+      ],
+      "authoritative_capital_basis_required": true,
+      "forward_reference_basis_required": true,
+      "analyst_owned_reference_required": true,
+      "compatible_peer_or_history_support_required_for_full_validation": true
+    },
+    "independent_cross_check": {
+      "method": "DISCOUNTED_CASH_FLOW_GORDON_GROWTH",
+      "cash_flow_basis": "UNLEVERED_FCFF",
+      "discount_rate_basis": "WACC",
+      "forecast_period_count": "3 to 10 annual periods",
+      "sensitivity": "3x3 discount-rate and terminal-growth grid",
+      "explicit_zero_required": true,
+      "allowed_share_bases": [
+        "POINT_IN_TIME_OUTSTANDING",
+        "POINT_IN_TIME_DILUTED",
+        "FORWARD_DILUTED"
+      ],
+      "look_ahead_fact_or_calc_evidence_allowed": false
+    }
+  },
+  "probability_governance": {
+    "allowed_methods": [
+      "HISTORICAL_FREQUENCY",
+      "MANAGEMENT_GUIDANCE_CONFIDENCE",
+      "SCENARIO_JUDGMENT",
+      "MONTE_CARLO",
+      "BASE_RATE_ANALYSIS"
+    ],
+    "required_controls": [
+      "Method-specific details.",
+      "Source Level 1 through 4 evidence available by the probability as-of date.",
+      "Bear, Base, and Bull rationales.",
+      "Probabilities totaling 100 percent.",
+      "As-of date and expiration review date.",
+      "New earnings or guidance review trigger.",
+      "Downside-heavy, central, and upside-heavy sensitivity cases.",
+      "Named methodology owner.",
+      "Different named independent research approver.",
+      "Approval date and approval scope."
+    ],
+    "approval_scope": "PROBABILITY_METHODOLOGY_AND_WEIGHTS",
+    "formal_return_boundary": "Validated probability governance cannot override an incomplete S09 probability-weighted-return output."
+  },
+  "system_wide_controls": [
+    "Every material S11 calculated output receives a stable CALC evidence ID, formula, source locator, and input evidence IDs.",
+    "Persisted S11 outputs and CALC evidence are rebuilt and compared to authoritative parent data to detect tampering.",
+    "Unknown, unavailable, future, lower-priority, or mismatched evidence cannot silently satisfy a valuation input.",
+    "The renderer reads the shared contract and does not calculate valuation results.",
+    "One-Page and Full Report consume the same valuation cross-check object.",
+    "Partner-facing peer rows suppress numerical values when comparability fails.",
+    "Below Gate 3, all S11 values, evidence, source references, and dependent priced-in conclusions are removed.",
+    "Frozen schema 5.0.0 rejects injected S11 fields and remains unchanged.",
+    "No company name or ticker controls method selection, status, or conclusion."
+  ],
+  "local_review_resolutions": [
+    {
+      "finding": "A DCF FACT or CALC line could match evidence published after the valuation date.",
+      "status": "RESOLVED",
+      "control": "Exact model-line matching is now restricted to known evidence available by the valuation as-of date; unresolved or future evidence invalidates the line."
+    },
+    {
+      "finding": "The independent DCF share denominator did not explicitly distinguish current outstanding, current diluted, and forward diluted shares.",
+      "status": "RESOLVED",
+      "control": "A validated share-basis type, matching basis date, exact metric evidence, rationale, and reviewer are now mandatory."
+    },
+    {
+      "finding": "Probability methodology approval could be misread as permission to display a formal weighted return.",
+      "status": "RESOLVED",
+      "control": "The final permission is reconstructed from the authoritative S09 probability-weighted-return output and is tamper tested."
+    }
+  ],
+  "verification": {
+    "dedicated_s11_tests": {
+      "status": "PASS",
+      "passed": 43,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_s11_valuation_cross_checks.py'"
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 290,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_*.py'"
+    },
+    "friday_v1_frozen_render_pdf_pixel_baseline": {
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0,
+      "tag": "v1.0.0-friday",
+      "frozen_commit": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+      "python": "3.12.13"
+    },
+    "no_input_cross_company_fallback": {
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AZO",
+        "ODFL",
+        "ITT"
+      ],
+      "expected_status": "NOT_PROVIDED",
+      "s11_calc_evidence_count_per_company": 0
+    },
+    "skill_structure_validation": "PASS",
+    "python_compile_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "privacy_and_secret_scan": "PASS",
+    "company_specific_branch_scan": "PASS",
+    "remote_independent_code_review": {
+      "status": "UNAVAILABLE_NETWORK",
+      "attempts": 3,
+      "representation": "No independent remote code-review conclusion is claimed."
+    }
+  },
+  "acceptance_interpretation": [
+    "S11 is accepted as a shared, fail-closed valuation-governance contract.",
+    "MULTI_METHOD_VALIDATED means the methods are reproducible and governed; it does not mean the methods agree or establish fair value.",
+    "A validated independent DCF remains a cross-check range, not a target price.",
+    "A validated probability framework does not create a formal return unless the separate S09 horizon and output also validate.",
+    "No S11 input produces NOT_PROVIDED rather than an invented peer set, historical range, DCF, or probability."
+  ],
+  "scope_boundary": [
+    "S11 does not automatically select peers, acquire licensed consensus, or create analyst assumptions.",
+    "S11 does not prove that real-company peer sets, historical series, reverse assumptions, or DCF inputs are complete; that is the S12 cross-company acceptance task.",
+    "S11 does not create a target price, position size, portfolio action, or trade.",
+    "Gate 4 remains a separate private, human-approved portfolio workflow."
+  ],
+  "exact_next_starting_point": {
+    "session": "S12",
+    "name": "Valuation Cross-Company Acceptance",
+    "first_action": "Freeze the S12 company and business-model test matrix before running real peer, history, reverse-valuation, scenario-price, and return-language acceptance cases.",
+    "starting_commit": "0a0b7f7ac1640ce3033070492bbd589bbb6dcf5e"
+  }
+}
