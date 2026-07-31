@@ -51,7 +51,12 @@ Read `references/friday_v1_output_standard.md` before creating or changing any p
 
 Read `references/system_architecture_and_contract.md` before changing any script, schema, gate, or renderer. Its system-wide applicability, supported-universe, source hierarchy, output-contract, Hard Stop, and testing requirements are binding.
 
-Read `references/probability_and_peer_governance.md` whenever scenarios, probability-weighted return, peer valuation, or historical valuation context is requested. Its method, freshness, approval, and forced-comparison rules are binding.
+Read `references/probability_and_peer_governance.md` whenever scenarios,
+probability-weighted return, peer valuation, historical valuation, reverse
+valuation, independent DCF, or method agreement is requested. Use the shared
+S11 contract. Its exact evidence binding, minimum peer/history coverage,
+forced-comparison suppression, reverse-capital basis, DCF sensitivity,
+freshness, and independent probability-approval rules are binding.
 
 Read `references/shared_valuation_contract.md` whenever producing, validating, or rendering equity price sensitivities or returns. Its dated-horizon fields, four-output separation, formulas, forward-share requirement, and private Gate 4 boundary are binding.
 
@@ -115,6 +120,19 @@ To supply analyst-owned assumptions, use:
 `partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker>" --research-input "<validated input json>"`
 
 Start from the generated `analyst_input_template.json`. Scenario implied prices are allowed only when the selected positive multiple-based metric has a validated, dated, currency-matched, evidence-linked basis; the valuation method, Bear/Base/Bull inputs, growth bridge, sensitivity, falsification triggers, and reviewer ownership must also pass Gate 3. The Public-Data FCF Underwriting Base is the default shared metric, while another metric requires its own explicit `scenario_model.metric_basis`. Base-Case Return additionally requires the full S09 dated horizon, controlled period/dividend/exit semantics, and forward share basis. Probability-Weighted Return additionally requires a validated probability method, linked evidence, review dates, sensitivity, freshness, and explicit human approval. Keep Partner Internal Return disabled until the repo-external private Gate 4 workflow.
+
+For S11, complete `valuation_cross_checks` in the same analyst input. Do not
+mark peer, historical, reverse valuation, or independent DCF complete with a
+free-text status. Each method must pass the shared engine. Require at least
+three comparable peers, five distinct historical observations spanning at
+least one year, a reverse reference supported by a compatible peer or
+historical range, and a three-to-ten-period Gordon-growth DCF with explicit
+3x3 sensitivity. Every DCF FACT/CALC input must have been available by the
+valuation date, and the per-share denominator must declare a validated
+current-outstanding, current-diluted, or forward-diluted basis with a matching
+date and exact evidence. Preserve incomparable rows in the audit object while
+suppressing their values in partner-facing output. A complete S11 contract
+does not by itself authorize a target price, expected return, or trade.
 
 Use `external_evidence` for public facts that are not already extracted from SEC XBRL, such as guidance, investor-presentation details, consensus, covenant terms, and industry evidence. Give each item a unique `external_key`, full source hierarchy metadata, as-of/publication/retrieval dates, source locator, and reviewer. Issuer modules and Key Debates may reference `evidence_keys`; the engine resolves them into stable evidence IDs.
 

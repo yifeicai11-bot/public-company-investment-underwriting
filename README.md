@@ -106,6 +106,7 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Data and Evidence | [`build_public_company_decision_pack.py`](partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
 | Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
 | Shared Equity Valuation | [`equity_valuation_contract.py`](partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py) | Dated horizon, price sensitivity, Base-Case Return, Probability-Weighted Return, and public/private return boundaries |
+| Valuation Cross-Checks | [`valuation_cross_checks.py`](partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py) | Controlled peers, historical valuation, reverse valuation, independent DCF, method agreement, and probability governance |
 | Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
 | Gate 4 Local Entry | [`run_gate4_local_entry.py`](partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
 | Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
@@ -250,7 +251,7 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 122 shared accounting, evidence, market-data, gate, scenario, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- 290 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
 - The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.

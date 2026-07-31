@@ -62,11 +62,14 @@ from forward_operating_model import (  # noqa: E402
     driver_module_catalog,
     forward_share_basis_input,
 )
+from valuation_cross_checks import (  # noqa: E402
+    build_probability_governance,
+    build_valuation_cross_check_contract,
+    valuation_cross_check_calculation_records,
+)
 from underwriting_contract import (  # noqa: E402
     FCF_NORMALIZATION_STATUSES,
     PEER_COMPARABILITY_STATUSES,
-    PROBABILITY_METHOD_REQUIRED_DETAILS,
-    PROBABILITY_METHOD_TYPES,
     PUBLIC_DATA_INVESTMENT_VIEWS,
     SCHEMA_VERSION,
     determine_data_gate,
@@ -1478,54 +1481,15 @@ def build_probability_validation(
     records: list[dict[str, Any]],
     analysis_date: str,
 ) -> dict[str, Any]:
-    """Validate probability ownership separately from reproducible scenario prices."""
+    """Route all new probability work through the shared S11 governance engine."""
 
-    supplied = research_input.get("probability_framework", {})
-    if not isinstance(supplied, dict):
-        supplied = {}
-    scenario_probabilities = {scenario.name: scenario.probability for scenario in scenarios}
-    probabilities_provided = any(value is not None for value in scenario_probabilities.values())
-    base = {
-        "status": "NOT_PROVIDED",
-        "weighted_return_allowed": False,
-        "method_type": None,
-        "methodology": None,
-        "method_details": {},
-        "method_evidence_ids": [],
-        "scenario_rationales": {},
-        "as_of_date": None,
-        "expiration_review_date": None,
-        "freshness_status": "NOT_APPLICABLE",
-        "review_triggers": [],
-        "reviewed_by": None,
-        "approval": {"status": "NOT_APPROVED", "approved_by": None},
-        "sensitivity_table": [],
-        "limitations": [],
-        "validation_issues": [],
-    }
-    if not probabilities_provided:
-        base["limitations"] = [
-            "Scenario prices may be shown, but no probability-weighted return is available. / 可展示情景价格，但不提供概率加权回报。"
-        ]
-        return base
-
-    method_type = str(supplied.get("method_type") or "").upper()
-    methodology = str(supplied.get("methodology") or "").strip()
-    method_details = supplied.get("method_details", {}) if isinstance(supplied.get("method_details"), dict) else {}
-    required_details = PROBABILITY_METHOD_REQUIRED_DETAILS.get(method_type, set())
-    method_text_is_substantive = bool(methodology) and methodology.lower() not in {
-        "analyst judgment",
-        "scenario judgment",
-        "judgment",
-    }
-    method_valid = (
-        method_type in PROBABILITY_METHOD_TYPES
-        and method_text_is_substantive
-        and all(method_details.get(key) not in (None, "", [], {}) for key in required_details)
+    supplied = deepcopy(
+        research_input.get("probability_framework", {})
+        if isinstance(research_input.get("probability_framework"), dict)
+        else {}
     )
-
     known_ids, key_to_id, metric_to_id = _evidence_maps(records)
-    evidence_ids, unknown_references = resolve_evidence_references(
+    resolved, unknown = resolve_evidence_references(
         supplied.get("evidence_ids", []),
         supplied.get("evidence_keys", []),
         known_ids,
@@ -1533,171 +1497,15 @@ def build_probability_validation(
         supplied.get("evidence_metrics", []),
         metric_to_id,
     )
-
-    rationales_input = supplied.get("scenario_rationales", {})
-    rationales: dict[str, str] = {}
-    if isinstance(rationales_input, dict):
-        for name in ("Bear", "Base", "Bull"):
-            value = rationales_input.get(name)
-            if isinstance(value, dict):
-                value = value.get("rationale")
-            if value:
-                rationales[name] = str(value)
-    for scenario in scenarios:
-        if scenario.probability_rationale and scenario.name not in rationales:
-            rationales[scenario.name] = scenario.probability_rationale
-
-    probability_values = list(scenario_probabilities.values())
-    numeric_probabilities = [safe_float(value) for value in probability_values]
-    probability_math_valid = (
-        len(numeric_probabilities) == 3
-        and all(value is not None and 0 <= value <= 1 for value in numeric_probabilities)
-        and abs(sum(value or 0.0 for value in numeric_probabilities) - 1.0) <= 1e-9
+    supplied["evidence_ids"] = sorted(resolved)
+    if unknown:
+        supplied["evidence_ids"].extend(unknown)
+    return build_probability_governance(
+        supplied,
+        scenarios,
+        records,
+        analysis_date,
     )
-
-    as_of_date = supplied.get("as_of_date")
-    expiration_date = supplied.get("probability_expiration_review_date")
-    dates_valid = valid_iso_date(as_of_date) and valid_iso_date(expiration_date)
-    freshness_status = "NOT_APPLICABLE"
-    if dates_valid:
-        analysis_day = date.fromisoformat(analysis_date) if valid_iso_date(analysis_date) else datetime.now(UTC).date()
-        as_of_day = date.fromisoformat(str(as_of_date))
-        expiration_day = date.fromisoformat(str(expiration_date))
-        if expiration_day < as_of_day or analysis_day > expiration_day:
-            freshness_status = "STALE"
-        elif (expiration_day - analysis_day).days <= 30:
-            freshness_status = "EXPIRING_SOON"
-        else:
-            freshness_status = "CURRENT"
-
-        triggers = {str(value).upper() for value in supplied.get("review_triggers", []) if value}
-        if "NEW_EARNINGS_OR_GUIDANCE" in triggers:
-            later_material_dates = [
-                str(row.get("publication_date"))
-                for row in records
-                if row.get("source_level") in {1, 2}
-                and valid_iso_date(row.get("publication_date"))
-                and str(row.get("publication_date")) > str(as_of_date)
-            ]
-            if later_material_dates:
-                freshness_status = "SUPERSEDED"
-
-    approval = supplied.get("approval", {}) if isinstance(supplied.get("approval"), dict) else {}
-    approval_valid = approval.get("status") == "APPROVED" and bool(approval.get("approved_by"))
-    reviewer_valid = bool(supplied.get("reviewed_by"))
-    rationales_valid = all(rationales.get(name) for name in ("Bear", "Base", "Bull"))
-
-    scenario_prices = {scenario.name: scenario.target_price for scenario in scenarios}
-    sensitivity_table: list[dict[str, Any]] = []
-    for row in supplied.get("sensitivity_cases", []):
-        if not isinstance(row, dict):
-            continue
-        weights = row.get("probabilities", {}) if isinstance(row.get("probabilities"), dict) else {}
-        numeric = {name: safe_float(weights.get(name)) for name in ("Bear", "Base", "Bull")}
-        if any(value is None or value < 0 or value > 1 for value in numeric.values()):
-            continue
-        if abs(sum(value or 0.0 for value in numeric.values()) - 1.0) > 1e-9:
-            continue
-        if any(scenario_prices.get(name) is None for name in numeric):
-            continue
-        result = sum(
-            (numeric[name] or 0.0) * (scenario_prices[name] or 0.0)
-            for name in numeric
-        )
-        sensitivity_table.append(
-            {
-                "label": row.get("label") or f"Sensitivity {len(sensitivity_table) + 1}",
-                "probabilities": numeric,
-                "weighted_implied_price_sensitivity": result,
-                "formal_weighted_expected_return": None,
-                "formula": "sum(scenario_probability * scenario_implied_price)",
-            }
-        )
-    sensitivity_valid = bool(method_details.get("sensitivity_completed")) and len(sensitivity_table) >= 3
-    if method_type != "SCENARIO_JUDGMENT":
-        sensitivity_valid = bool(supplied.get("sensitivity_completed", sensitivity_table))
-
-    requested_status = str(supplied.get("status") or "ILLUSTRATIVE").upper()
-    formal_valid = all(
-        (
-            requested_status == "VALIDATED",
-            probability_math_valid,
-            method_valid,
-            bool(evidence_ids),
-            not unknown_references,
-            rationales_valid,
-            dates_valid,
-            freshness_status in {"CURRENT", "EXPIRING_SOON"},
-            reviewer_valid,
-            approval_valid,
-            sensitivity_valid,
-        )
-    )
-    if freshness_status in {"STALE", "SUPERSEDED"}:
-        status = "STALE"
-    elif formal_valid:
-        status = "VALIDATED"
-    elif requested_status == "VALIDATED":
-        status = "INVALID"
-    else:
-        status = "ILLUSTRATIVE"
-
-    limitations: list[str] = []
-    if not method_valid:
-        limitations.append("Probability method type, substantive methodology, or method-specific details are incomplete.")
-    if not probability_math_valid:
-        limitations.append("Scenario probabilities are missing, outside [0,1], or do not total 100%.")
-    if not evidence_ids or unknown_references:
-        limitations.append(f"Probability evidence is incomplete or unresolved: {unknown_references}.")
-    if not rationales_valid:
-        limitations.append("Bear, Base, and Bull probability rationales are incomplete.")
-    if not dates_valid or freshness_status in {"STALE", "SUPERSEDED"}:
-        limitations.append("Probability dates are invalid, expired, or superseded by later earnings/guidance evidence.")
-    if not approval_valid:
-        limitations.append("Named human approval has not been provided.")
-    if not sensitivity_valid:
-        limitations.append("Method-appropriate probability sensitivity has not been completed.")
-
-    issues: list[dict[str, Any]] = []
-    if status != "VALIDATED":
-        issues.append(
-            {
-                "check_id": "G3-probability-methodology",
-                "category": "scenario_probability",
-                "status": "WARNING" if status in {"ILLUSTRATIVE", "STALE"} else "FAIL",
-                "issue_class": "WARNING",
-                "severity": "P1",
-                "message": f"Probability status={status}; method={method_type or 'MISSING'}; freshness={freshness_status}.",
-                "decision_impact": "Scenario prices remain available, but probability-weighted expected return is suppressed.",
-                "remediation": "Provide a controlled method type, method-specific details, evidence, scenario rationales, review dates, sensitivity, and named human approval.",
-                "evidence_ids": sorted(evidence_ids),
-                "scope": "shared_investment_analysis_engine",
-            }
-        )
-
-    return {
-        "status": status,
-        "weighted_return_allowed": status == "VALIDATED",
-        "method_type": method_type or None,
-        "methodology": methodology or None,
-        "method_details": method_details,
-        "method_evidence_ids": sorted(evidence_ids),
-        "unknown_evidence_references": unknown_references,
-        "scenario_rationales": rationales,
-        "as_of_date": as_of_date,
-        "expiration_review_date": expiration_date,
-        "freshness_status": freshness_status,
-        "review_triggers": supplied.get("review_triggers", []),
-        "reviewed_by": supplied.get("reviewed_by"),
-        "approval": {
-            "status": approval.get("status", "NOT_APPROVED"),
-            "approved_by": approval.get("approved_by"),
-            "approval_date": approval.get("approval_date"),
-        },
-        "sensitivity_table": sensitivity_table,
-        "limitations": limitations,
-        "validation_issues": issues,
-    }
 
 
 def build_peer_valuation_context(
@@ -2288,8 +2096,58 @@ def build_valuation_scope_status(
     supplied = research_input.get("valuation_completion", {})
     if not isinstance(supplied, dict):
         supplied = {}
-    peer_status = "COMPLETED" if contract.get("peer_valuation_context", {}).get("status") == "VALIDATED" else "NOT_COMPLETED"
-    historical_raw = contract.get("peer_valuation_context", {}).get("historical_context", {}).get("status")
+    s11_contract = (
+        contract.get("valuation_cross_check_contract", {})
+        if isinstance(contract.get("valuation_cross_check_contract"), dict)
+        else {}
+    )
+    s11_components = (
+        s11_contract.get("components", {})
+        if isinstance(s11_contract.get("components"), dict)
+        else {}
+    )
+    if s11_contract.get("contract_version"):
+        peer_status = (
+            "COMPLETED"
+            if s11_components.get("peer_comparison") == "VALIDATED"
+            else "NOT_COMPLETED"
+        )
+        historical_status = (
+            "COMPLETED"
+            if s11_components.get("historical_valuation") == "VALIDATED"
+            else "NOT_COMPLETED"
+        )
+        reverse_status = (
+            "COMPLETED"
+            if s11_components.get("reverse_valuation") == "VALIDATED"
+            else "PROVISIONAL"
+            if s11_components.get("reverse_valuation") == "PARTIALLY_VALIDATED"
+            else "NOT_COMPLETED"
+        )
+        independent_status = (
+            "COMPLETED"
+            if s11_components.get("independent_cross_check") == "VALIDATED"
+            else "NOT_COMPLETED"
+        )
+    else:
+        peer_status = (
+            "COMPLETED"
+            if contract.get("peer_valuation_context", {}).get("status")
+            == "VALIDATED"
+            else "NOT_COMPLETED"
+        )
+        historical_raw = (
+            contract.get("peer_valuation_context", {})
+            .get("historical_context", {})
+            .get("status")
+        )
+        historical_status = (
+            "COMPLETED" if historical_raw == "VALIDATED" else "NOT_COMPLETED"
+        )
+        reverse_status = "NOT_COMPLETED"
+        independent_status = str(
+            supplied.get("dcf_cross_check") or "NOT_COMPLETED"
+        ).upper()
     forward_valuation_contract = (
         forward_valuation_contract
         if isinstance(forward_valuation_contract, dict)
@@ -2298,8 +2156,9 @@ def build_valuation_scope_status(
     forward_status = forward_valuation_contract.get("status")
     components = {
         "peer_valuation": peer_status,
-        "historical_valuation": "COMPLETED" if historical_raw == "VALIDATED" else "NOT_COMPLETED",
-        "dcf_cross_check": str(supplied.get("dcf_cross_check") or "NOT_COMPLETED").upper(),
+        "historical_valuation": historical_status,
+        "reverse_valuation": reverse_status,
+        "dcf_cross_check": independent_status,
         "driver_based_forward_forecast": (
             "COMPLETED"
             if forward_status == "VALIDATED"
@@ -2314,10 +2173,16 @@ def build_valuation_scope_status(
         key: value if value in allowed_components else "NOT_COMPLETED"
         for key, value in components.items()
     }
-    completed = sum(value == "COMPLETED" for value in components.values())
-    if return_context.get("formal_return_language_allowed") and completed == len(components):
+    if (
+        s11_contract.get("status") == "MULTI_METHOD_VALIDATED"
+        and components["driver_based_forward_forecast"] == "COMPLETED"
+        and components["forward_share_count_bridge"] == "COMPLETED"
+    ):
         status = "MULTI_METHOD_VALIDATED"
-    elif components["driver_based_forward_forecast"] == "COMPLETED" and completed >= 2:
+    elif (
+        s11_contract.get("status") == "PARTIALLY_VALIDATED"
+        or components["driver_based_forward_forecast"] == "COMPLETED"
+    ):
         status = "PARTIALLY_VALIDATED"
     else:
         status = "RANGE_ONLY"
@@ -2333,19 +2198,26 @@ def build_valuation_scope_status(
         "status": status,
         "calculation_framework_status": contract.get("valuation_framework", {}).get("status", "NOT_VALIDATED"),
         "components": components,
-        "selected_multiple_status": "ANALYST_OWNED_REFERENCE",
+        "selected_multiple_status": (
+            "ANALYST_OWNED_REFERENCE_WITH_VALIDATED_CONTEXT"
+            if reverse_status == "COMPLETED"
+            else "ANALYST_OWNED_REFERENCE"
+        ),
         "scenario_multiple_set": multiples,
         "disclosure": (
-            f"The selected {multiple_text} multiples are analyst-owned sensitivity references. "
-            "They are not validated fair-value multiples. / "
-            f"所选{multiple_text}倍数为分析师设定的敏感性参考，并非经验证的公允价值倍数。"
+            f"The selected {multiple_text} multiples remain sensitivity references. "
+            "S11 may validate their peer or historical context, but does not convert them into fair-value facts. / "
+            f"所选{multiple_text}倍数仍为敏感性参考；S11可验证其同业或历史背景，但不会将其转化为公允价值事实。"
         ),
         "limitations": [
-            "Independent peer, historical, DCF, driver-based forecast, and forward share-count support remain incomplete where marked NOT_COMPLETED. / "
-            "标记为NOT_COMPLETED的同业、历史估值、DCF、驱动型预测及前瞻股数支持尚未完成。"
+            "Peer, historical, reverse valuation, independent DCF, driver-based forecast, and forward share-count support remain incomplete where marked NOT_COMPLETED. / "
+            "标记为NOT_COMPLETED的同业、历史估值、反向估值、独立DCF、驱动型预测及前瞻股数支持尚未完成。"
         ],
         "forward_valuation_contract_status": (
             forward_status or "DRIVER_MODEL_NOT_AVAILABLE"
+        ),
+        "valuation_cross_check_contract_status": (
+            s11_contract.get("status") or "NOT_PROVIDED"
         ),
     }
 
@@ -2356,6 +2228,103 @@ def build_what_is_priced_in(
     fcf_base: dict[str, Any],
 ) -> dict[str, Any]:
     metric_map = _metric_record_map(contract)
+    s11_reverse = (
+        contract.get("valuation_cross_check_contract", {}).get(
+            "reverse_valuation",
+            {},
+        )
+        if isinstance(contract.get("valuation_cross_check_contract"), dict)
+        else {}
+    )
+    if s11_reverse.get("status") in {"VALIDATED", "PARTIALLY_VALIDATED"}:
+        selected_reference = safe_float(
+            s11_reverse.get("selected_reference", {}).get("value")
+        )
+        required_metric = safe_float(s11_reverse.get("required_metric_value"))
+        comparison_metric = safe_float(
+            s11_reverse.get("comparison_metric", {}).get("value")
+        )
+        metric_name = str(s11_reverse.get("valuation_metric") or "VALUATION_METRIC")
+        difference = (
+            required_metric - comparison_metric
+            if required_metric is not None and comparison_metric is not None
+            else None
+        )
+        difference_percent = (
+            difference / comparison_metric
+            if difference is not None and comparison_metric not in (None, 0)
+            else None
+        )
+        support_status = s11_reverse.get("reference_support", {}).get("status")
+        conclusion = (
+            f"Under the controlled {metric_name} reference of {selected_reference:g}, "
+            f"the dated {s11_reverse.get('capital_basis')} requires "
+            f"{required_metric:,.2f} {s11_reverse.get('required_metric_currency')} "
+            "of the associated forward metric. "
+            + (
+                f"This is {abs(difference_percent) * 100:,.1f}% "
+                f"{'above' if difference_percent > 0 else 'below'} the evidenced comparison metric. "
+                if difference_percent is not None
+                else ""
+            )
+            + "It is an implied expectation, not a fair-value conclusion. / "
+            f"在受控的{metric_name}参考值{selected_reference:g}下，时点"
+            f"{s11_reverse.get('capital_basis')}要求相关前瞻指标达到"
+            f"{required_metric:,.2f} {s11_reverse.get('required_metric_currency')}。"
+            + (
+                f"该要求较有证据支持的比较指标"
+                f"{'高' if difference_percent > 0 else '低'}"
+                f"{abs(difference_percent) * 100:,.1f}%。"
+                if difference_percent is not None
+                else ""
+            )
+            + "这是市场隐含要求，不是公允价值结论。"
+        )
+        return {
+            "status": "VALIDATED",
+            "valuation_metric": metric_name,
+            "selected_reference": selected_reference,
+            "selected_multiple": (
+                selected_reference if metric_name != "FCF_YIELD" else None
+            ),
+            "multiple_status": (
+                "ANALYST_OWNED_REFERENCE_WITH_VALIDATED_CONTEXT"
+                if support_status == "SUPPORTED"
+                else "ANALYST_OWNED_REFERENCE"
+            ),
+            "required_metric_value": required_metric,
+            "required_fcf": (
+                required_metric
+                if metric_name in {"P/FCF", "FCF_YIELD"}
+                else None
+            ),
+            "comparison_metric_value": comparison_metric,
+            "fcf_underwriting_base": (
+                comparison_metric
+                if metric_name in {"P/FCF", "FCF_YIELD"}
+                else None
+            ),
+            "difference": difference,
+            "difference_percent": difference_percent,
+            "conditional_conclusion": conclusion,
+            "risk_interpretation": (
+                "Test the implied requirement against the forward operating bridge, management guidance, market expectations, balance-sheet constraints, and the independent valuation range. / "
+                "应结合前瞻经营桥、管理层指引、市场预期、资产负债表约束及独立估值区间检验该隐含要求。"
+            ),
+            "formula": s11_reverse.get("formula"),
+            "evidence_ids": _unique_text(
+                s11_reverse.get("capital_evidence_ids", [])
+                + s11_reverse.get("selected_reference", {}).get(
+                    "evidence_ids",
+                    [],
+                )
+                + s11_reverse.get("comparison_metric", {}).get(
+                    "evidence_ids",
+                    [],
+                )
+            ),
+            "evidence_class": "CALC_AND_INFERENCE",
+        }
     reverse = contract.get("valuation_framework", {}).get("reverse_valuation", {})
     multiple = safe_float(reverse.get("selected_multiple"))
     required = safe_float(reverse.get("required_metric_value"))
@@ -2445,6 +2414,19 @@ def build_evidence_presentation(contract: dict[str, Any]) -> tuple[list[dict[str
             output.extend(section.get(field, []) if isinstance(section.get(field), list) else [])
         return _unique_text(output)
 
+    def nested_evidence_ids(value: Any) -> list[str]:
+        output: list[str] = []
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key.endswith("evidence_ids") and isinstance(child, list):
+                    output.extend(str(item) for item in child if item)
+                else:
+                    output.extend(nested_evidence_ids(child))
+        elif isinstance(value, list):
+            for child in value:
+                output.extend(nested_evidence_ids(child))
+        return _unique_text(output)
+
     debate_ids: list[str] = []
     for debate in contract.get("key_debates", []):
         debate_ids.extend(debate.get("market_evidence_ids", []))
@@ -2485,6 +2467,9 @@ def build_evidence_presentation(contract: dict[str, Any]) -> tuple[list[dict[str
             "valuation_market",
             "Market expectations and valuation sensitivity / 市场预期与估值敏感性",
             section_ids(contract.get("market_expectations", {}), market_fields)
+            + nested_evidence_ids(
+                contract.get("valuation_cross_check_contract", {})
+            )
             + metric_ids(
                 [
                     "market_price_unadjusted_close",
@@ -2531,6 +2516,18 @@ def apply_friday_v1_contract_semantics(
         contract["prior_report_id"] = prior_report_id
         contract["report_id"] = stable_id("RPT", prior_report_id, SCHEMA_VERSION)
     _migrate_friday_v1_evidence_semantics(contract)
+    if (
+        not isinstance(contract.get("valuation_cross_check_contract"), dict)
+        or not contract.get("valuation_cross_check_contract", {}).get(
+            "contract_version"
+        )
+    ):
+        contract["valuation_cross_check_contract"] = (
+            build_valuation_cross_check_contract(
+                contract,
+                research_input.get("valuation_cross_checks", {}),
+            )
+        )
 
     summary = contract.get("investment_decision_summary", {})
     action_map = {
@@ -2608,11 +2605,6 @@ def apply_friday_v1_contract_semantics(
     for row in probability.get("sensitivity_table", []):
         row.pop("probability_weighted_return", None)
         row["formal_weighted_expected_return"] = None
-        if not return_context.get("formal_return_language_allowed"):
-            row["formula"] = (
-                "sum(scenario_probability * scenario_implied_price); "
-                "formal expected return not evaluated without a horizon"
-            )
     contract["probability_validation"] = probability
 
     confidence = determine_decision_confidence(
@@ -3353,7 +3345,117 @@ def analyst_input_template(company: dict[str, Any], evidence_records: list[dict[
             "review_triggers": ["NEW_EARNINGS_OR_GUIDANCE"],
             "sensitivity_cases": [],
             "reviewed_by": "",
-            "approval": {"status": "NOT_APPROVED", "approved_by": "", "approval_date": ""},
+            "approval": {
+                "status": "NOT_APPROVED",
+                "approved_by": "",
+                "approval_date": "",
+                "approval_scope": "PROBABILITY_METHODOLOGY_AND_WEIGHTS",
+                "independent_research_review": False,
+            },
+        },
+        "valuation_cross_checks": {
+            "status": "NOT_PROVIDED",
+            "as_of_date": "",
+            "reviewed_by": "",
+            "peer_comparison": {
+                "status": "NOT_PROVIDED",
+                "as_of_date": "",
+                "selection_rationale": "",
+                "minimum_comparable_peers": 3,
+                "subject_metrics": [],
+                "peers": [],
+                "limitations": [],
+                "reviewed_by": "",
+            },
+            "historical_valuation": {
+                "status": "NOT_PROVIDED",
+                "as_of_date": "",
+                "current_observation": {},
+                "observations": [],
+                "minimum_observations": 5,
+                "minimum_span_days": 365,
+                "comparability_rationale": "",
+                "limitations": [],
+                "reviewed_by": "",
+            },
+            "reverse_valuation": {
+                "status": "NOT_PROVIDED",
+                "as_of_date": "",
+                "method": "",
+                "capital_evidence_ids": [],
+                "selected_reference": {
+                    "value": None,
+                    "evidence_class": "JUDGMENT",
+                    "evidence_ids": [],
+                    "rationale": "",
+                    "reviewed_by": "",
+                },
+                "reference_basis": {
+                    "metric": "",
+                    "currency": "",
+                    "period_basis": "NTM or FY1",
+                    "accounting_definition": "",
+                },
+                "metric_period": {
+                    "status": "NOT_DEFINED",
+                    "period_type": "FORWARD_METRIC",
+                    "start_date": "",
+                    "end_date": "",
+                },
+                "comparison_metric": {
+                    "value": None,
+                    "metric_name": "",
+                    "currency": "",
+                    "period_basis": "",
+                    "accounting_definition": "",
+                    "evidence_ids": [],
+                },
+            },
+            "independent_cross_check": {
+                "status": "NOT_PROVIDED",
+                "as_of_date": "",
+                "method": "DISCOUNTED_CASH_FLOW_GORDON_GROWTH",
+                "cash_flow_basis": "UNLEVERED_FCFF",
+                "discount_rate_basis": "WACC",
+                "forecast_cash_flows": [],
+                "discount_rate": {},
+                "terminal_growth": {},
+                "net_debt": {},
+                "non_operating_assets": {},
+                "minority_interest": {},
+                "shares": {},
+                "share_basis": {
+                    "status": "NOT_VALIDATED",
+                    "basis_type": (
+                        "POINT_IN_TIME_OUTSTANDING, "
+                        "POINT_IN_TIME_DILUTED, or FORWARD_DILUTED"
+                    ),
+                    "basis_date": "",
+                    "rationale": "",
+                    "reviewed_by": "",
+                },
+                "sensitivity": {
+                    "discount_rate_step": None,
+                    "terminal_growth_step": None,
+                    "evidence_class": "JUDGMENT",
+                    "evidence_ids": [],
+                    "rationale": "",
+                    "reviewed_by": "",
+                },
+                "limitations": [],
+                "reviewed_by": "",
+            },
+            "method_agreement": {
+                "tolerance": {
+                    "value": None,
+                    "unit": "RATIO",
+                    "evidence_class": "JUDGMENT",
+                    "evidence_ids": [],
+                    "rationale": "",
+                    "reviewed_by": "",
+                }
+            },
+            "limitations": [],
         },
         "peer_valuation_context": {
             "status": "NOT_VALIDATED",
@@ -3934,8 +4036,8 @@ def build_analysis_evidence(
     market_cap_id = add(
         "market_cap_point_in_time",
         valuation.get("market_cap"),
-        unit="USD",
-        currency="USD",
+        unit=str(valuation.get("price_currency") or "USD").upper(),
+        currency=str(valuation.get("price_currency") or "USD").upper(),
         period_end=valuation.get("price_date", ""),
         as_of_date=valuation.get("price_date", ""),
         measurement_basis="calculated_from_point_in_time_price_and_shares",
@@ -5858,6 +5960,43 @@ def build_investment_layer(
     )
     all_supplemental_records = external_records + analysis_records
     all_analysis_records = list(step2.get("evidence_records", step2.get("data_points", []))) + all_supplemental_records
+    valuation_cross_check_contract = build_valuation_cross_check_contract(
+        {
+            "schema_version": SCHEMA_VERSION,
+            "company": company,
+            "valuation": valuation,
+            "report_dates": {
+                "market_price_date": valuation.get("price_date"),
+            },
+            "scenarios": [asdict(scenario) for scenario in scenarios],
+            "evidence_records": all_analysis_records,
+        },
+        research_input.get("valuation_cross_checks", {}),
+    )
+    s11_calculation_records = valuation_cross_check_calculation_records(
+        valuation_cross_check_contract,
+        {
+            "company": company,
+            "valuation": valuation,
+            "scenarios": [asdict(scenario) for scenario in scenarios],
+        },
+    )
+    if s11_calculation_records:
+        analysis_records.extend(s11_calculation_records)
+        all_supplemental_records.extend(s11_calculation_records)
+        all_analysis_records.extend(s11_calculation_records)
+        analysis_sources.append(
+            {
+                "source_id": "SRC-S11-SHARED-CALC",
+                "source_level": 0,
+                "source_type": "shared_valuation_cross_check_calculation",
+                "source_name": "Shared S11 valuation cross-check engine",
+                "source_url": "",
+                "source_locator": "valuation_cross_check_contract",
+                "publication_date": valuation.get("price_date"),
+                "retrieval_date": valuation.get("price_date"),
+            }
+        )
     peer_valuation_context = build_peer_valuation_context(research_input, all_analysis_records)
     fcf_quality_assessment = build_fcf_quality_assessment(research_input, all_analysis_records)
     investment_decision_summary = build_investment_decision_summary(research_input, all_analysis_records)
@@ -5899,6 +6038,7 @@ def build_investment_layer(
         + issuer_underwriting.get("validation_issues", [])
         + market_expectations.get("validation_issues", [])
         + probability_validation.get("validation_issues", [])
+        + valuation_cross_check_contract.get("validation_issues", [])
         + peer_valuation_context.get("validation_issues", [])
         + fcf_quality_assessment.get("validation_issues", [])
         + investment_decision_summary.get("validation_issues", [])
@@ -5958,6 +6098,20 @@ def build_investment_layer(
         human_approval=human_approval,
         probabilities_validated=probabilities_validated,
     )
+    if float(data_gate["level"]) < 3:
+        valuation_cross_check_contract = build_valuation_cross_check_contract(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "company": company,
+                "valuation": valuation,
+                "report_dates": {
+                    "market_price_date": valuation.get("price_date"),
+                },
+                "scenarios": [],
+                "evidence_records": all_analysis_records,
+            },
+            {},
+        )
     confidence = determine_decision_confidence(
         gate_level=float(data_gate["level"]),
         issues=issues,
@@ -6124,7 +6278,10 @@ def build_investment_layer(
             if row.get("metric_name") in suppressed_metric_names and row.get("evidence_id")
         }
         evidence_records = [
-            row for row in evidence_records if row.get("metric_name") not in suppressed_metric_names
+            row
+            for row in evidence_records
+            if row.get("metric_name") not in suppressed_metric_names
+            and not str(row.get("metric_name") or "").startswith("s11_")
         ]
         for scenario in scenarios:
             scenario.evidence_ids = [
@@ -6196,6 +6353,7 @@ def build_investment_layer(
         "valuation": valuation,
         "valuation_framework": validated_valuation_framework,
         "forward_valuation_contract": forward_valuation_contract,
+        "valuation_cross_check_contract": valuation_cross_check_contract,
         "peer_valuation_context": peer_valuation_context,
         "public_data_drivers": drivers,
         "market_expectations": market_expectations,

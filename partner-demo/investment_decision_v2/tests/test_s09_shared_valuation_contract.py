@@ -274,11 +274,14 @@ class SharedValuationContractTests(unittest.TestCase):
                 },
                 "as_of_date": "2026-07-01",
                 "probability_expiration_review_date": "2026-12-31",
+                "review_triggers": ["NEW_EARNINGS_OR_GUIDANCE"],
                 "reviewed_by": "Probability reviewer",
                 "approval": {
                     "status": "APPROVED",
                     "approved_by": "Independent approver",
                     "approval_date": "2026-07-01",
+                    "approval_scope": "PROBABILITY_METHODOLOGY_AND_WEIGHTS",
+                    "independent_research_review": True,
                 },
                 "sensitivity_cases": [
                     {
@@ -296,7 +299,14 @@ class SharedValuationContractTests(unittest.TestCase):
         result = build_probability_validation(
             supplied,
             scenarios,
-            [{"evidence_id": "EV-PROB"}],
+            [
+                {
+                    "evidence_id": "EV-PROB",
+                    "validation_status": "PASS",
+                    "publication_date": "2026-07-01",
+                    "source_level": 2,
+                }
+            ],
             "2026-07-01",
         )
         self.assertEqual(result["status"], "VALIDATED")

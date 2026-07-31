@@ -63,6 +63,9 @@ but it must not contain ticker branches, company values, or investment views.
 - Reverse valuation and scenario status.
 - The S10 modular forward valuation contract: business-model revenue drivers,
   common FCF bridge, target-date share bridge, and safe module fallback.
+- The S11 valuation cross-check contract: controlled peer and historical
+  comparison, reverse valuation, independent DCF, method agreement, stable CALC
+  evidence, and probability governance.
 - The shared valuation contract: dated horizon, forecast and metric periods, dividend, current and forward share bases, exit basis, and separately governed price-sensitivity/base-return/probability-weighted-return outputs.
 - Upgrade, downgrade, and thesis-invalidation rules.
 - Data Gate determination and output suppression.
@@ -293,6 +296,9 @@ One-Page and Full Report must consume the same versioned object. Required fields
 - the versioned S10 forward valuation contract, when evaluated, including the
   selected controlled module, Bear/Base/Bull operating bridges, line-level
   evidence classes, calculated forward FCF, and forward diluted-share bridge
+- the versioned S11 valuation cross-check contract, including controlled peer
+  comparison, historical valuation, reverse valuation, independent DCF,
+  method agreement, suppression reasons, and stable CALC evidence IDs
 - the versioned shared valuation contract, including valuation as-of date, target date, holding period, forecast period, metric period, dividend assumption, share basis, exit basis, and four separated valuation outputs
 - catalysts, thesis breaks, decision rules
 - evidence records, source registry, Hard Stops, and Warnings
@@ -322,6 +328,17 @@ Tests must prove:
 - One-Page and Full Report contain no raw `EV-...` strings.
 - Every per-share sensitivity discloses the share-count date, source, basis, subsequent-event status, and proxy status.
 - Scenario price and priced-in FCF calculations reproduce from dated price, point-in-time market cap, share count, FCF, and analyst-owned multiple.
+- Peer and historical medians exclude negative denominators, mismatched
+  periods, currencies, definitions, formulas, and evidence; fewer than the
+  controlled minimum observations suppresses the statistic.
+- Reverse valuation uses the authoritative market-cap or enterprise-value
+  basis and ignores a user-supplied replacement.
+- Independent DCF, its 3x3 sensitivity range, and method-agreement calculation
+  reproduce from stable evidence IDs; removing or changing a CALC record fails
+  contract validation.
+- Probability-weighted output remains unavailable unless method details,
+  Source Level 1-4 evidence, dates, three directional sensitivity sets,
+  freshness, and a different named independent approver all validate.
 - One-Page and Full Report share report ID and contract hash.
 - English and Chinese outputs do not contradict each other.
 - No renderer or shared engine contains ticker-specific facts or conclusions.

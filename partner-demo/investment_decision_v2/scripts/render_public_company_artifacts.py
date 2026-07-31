@@ -641,17 +641,26 @@ def probability_governance_html(contract: dict[str, Any], *, compact: bool = Fal
     probability = contract.get("probability_validation", {})
     status = str(probability.get("status") or "NOT_PROVIDED")
     approval = probability.get("approval", {})
-    formal_allowed = bool(probability.get("weighted_return_allowed"))
+    formal_status = probability.get(
+        "formal_probability_weighted_expected_return_status"
+    )
+    formal_allowed = (
+        formal_status == "VALIDATED"
+        if formal_status is not None
+        else bool(probability.get("weighted_return_allowed"))
+    )
     tone = "" if formal_allowed else " warning"
     result = "VALIDATED" if formal_allowed else "NOT_EVALUATED"
     details = (
-        f"Method / 方法: {probability.get('method_type') or 'Not provided'}; "
-        f"Freshness / 时效: {probability.get('freshness_status') or 'NOT_APPLICABLE'}; "
-        f"Approval / 审批: {approval.get('status') or 'NOT_APPROVED'}; "
+        f"Method / 方法: {valuation_governance_label(probability.get('method_type') or 'NOT_PROVIDED')}; "
+        f"Freshness / 时效: {valuation_governance_label(probability.get('freshness_status') or 'NOT_APPLICABLE')}; "
+        f"Approval / 审批: {valuation_governance_label(approval.get('status') or 'NOT_APPROVED')}; "
+        f"Independent review / 独立复核: "
+        f"{'Yes' if approval.get('independent_research_review') else 'No'}; "
         f"Formal probability-weighted outcome / 正式概率加权结果: {result}."
     )
     if compact:
-        return f'<div class="answer-box{tone}"><strong>Probability governance / 概率治理: {esc(status)}</strong> {esc(details)}</div>'
+        return f'<div class="answer-box{tone}"><strong>Probability governance / 概率治理: {esc(valuation_governance_label(status))}</strong> {esc(details)}</div>'
     methodology = probability.get("methodology") or "No controlled methodology provided. / 未提供受控方法。"
     limitations = probability.get("limitations", [])
     sensitivity = probability.get("sensitivity_table", [])
@@ -671,10 +680,12 @@ def probability_governance_html(contract: dict[str, Any], *, compact: bool = Fal
             f'</tr></thead><tbody>{sensitivity_rows}</tbody></table>'
         )
     return (
-        f'<div class="answer-box{tone}"><strong>Probability governance / 概率治理: {esc(status)}</strong>'
+        f'<div class="answer-box{tone}"><strong>Probability governance / 概率治理: {esc(valuation_governance_label(status))}</strong>'
         f"<p>{esc(details)}</p><p><b>Methodology / 方法说明:</b> {esc(methodology)}</p>"
         f"<p><b>As of / 截止:</b> {esc(probability.get('as_of_date') or 'n/a')} | "
-        f"<b>Review by / 复核期限:</b> {esc(probability.get('expiration_review_date') or 'n/a')}</p>"
+        f"<b>Review by / 复核期限:</b> {esc(probability.get('expiration_review_date') or 'n/a')} | "
+        f"<b>Owner / 模型负责人:</b> {esc(probability.get('reviewed_by') or 'n/a')} | "
+        f"<b>Independent approver / 独立审批人:</b> {esc(approval.get('approved_by') or 'n/a')}</p>"
         f"{bundle_badge(contract, 'scenario_sensitivity')}</div>"
         f"{sensitivity_html}"
         f'<div class="keep"><h3>Probability limitations / 概率限制</h3>{list_html(limitations)}</div>'
@@ -723,28 +734,197 @@ def variant_perception_html(contract: dict[str, Any]) -> str:
     )
 
 
+def valuation_governance_label(value: Any) -> str:
+    code = str(value or "NOT_PROVIDED")
+    labels = {
+        "NOT_PROVIDED": "Not provided / 未提供",
+        "NOT_APPLICABLE": "Not applicable / 不适用",
+        "INVALID": "Not validated / 未通过验证",
+        "SUPPRESSED_INCOMPARABLE": "Suppressed as incomparable / 因不可比已抑制",
+        "PARTIALLY_VALIDATED": "Partially validated / 部分通过验证",
+        "MULTI_METHOD_VALIDATED": "Multi-method validated / 多方法已验证",
+        "VALIDATED": "Validated / 已验证",
+        "AVAILABLE": "Available / 可用",
+        "SUPPRESSED_INSUFFICIENT_COMPARABLE_PEERS": "Insufficient comparable peers / 可比公司不足",
+        "SUPPRESSED_INSUFFICIENT_OR_INCOMPARABLE_HISTORY": "Insufficient comparable history / 可比历史不足",
+        "WITHIN_TOLERANCE": "Within tolerance / 差异在容许范围内",
+        "DIVERGENT": "Methods diverge / 方法结果存在分歧",
+        "NOT_EVALUATED": "Not evaluated / 未评估",
+        "ILLUSTRATIVE": "Illustrative only / 仅作示意",
+        "STALE": "Stale; review required / 已过期，需复核",
+        "CURRENT": "Current / 当前有效",
+        "EXPIRING_SOON": "Review due soon / 即将到期复核",
+        "SUPERSEDED": "Superseded by new evidence / 已被新证据取代",
+        "APPROVED": "Approved / 已审批",
+        "NOT_APPROVED": "Not approved / 未审批",
+        "SUPPORTED": "Supported by controlled context / 有受控背景支持",
+        "NOT_SUPPORTED": "Not supported by controlled context / 缺少受控背景支持",
+        "COMPARABLE": "Comparable / 可比",
+        "LIMITED": "Limited comparability / 可比性有限",
+        "NOT_COMPARABLE": "Not comparable / 不可比",
+        "HISTORICAL_FREQUENCY": "Historical frequency / 历史频率",
+        "MANAGEMENT_GUIDANCE_CONFIDENCE": "Management-guidance confidence / 管理层指引可信度",
+        "SCENARIO_JUDGMENT": "Scenario judgment / 情景判断",
+        "MONTE_CARLO": "Monte Carlo / 蒙特卡洛模拟",
+        "BASE_RATE_ANALYSIS": "Base-rate analysis / 基准率分析",
+        "EQUITY_FCF_MULTIPLE": "Equity FCF multiple / 股权FCF倍数",
+        "EQUITY_EARNINGS_MULTIPLE": "Equity earnings multiple / 股权盈利倍数",
+        "ENTERPRISE_VALUE_EBITDA_MULTIPLE": "Enterprise-value EBITDA multiple / 企业价值EBITDA倍数",
+        "ENTERPRISE_VALUE_REVENUE_MULTIPLE": "Enterprise-value revenue multiple / 企业价值收入倍数",
+        "EQUITY_FCF_YIELD": "Equity FCF yield / 股权FCF收益率",
+        "UNLEVERED_FCFF": "Unlevered FCFF / 无杠杆企业自由现金流",
+        "WACC": "WACC / 加权平均资本成本",
+        "POINT_IN_TIME_OUTSTANDING": "Point-in-time outstanding shares / 时点流通股数",
+        "POINT_IN_TIME_DILUTED": "Point-in-time diluted shares / 时点摊薄股数",
+        "FORWARD_DILUTED": "Forward diluted shares / 前瞻摊薄股数",
+    }
+    return labels.get(code, code.replace("_", " ").title())
+
+
+def comparability_flag_label(value: Any) -> str:
+    code = str(value or "")
+    labels = {
+        "negative_ebitda": "Negative EBITDA / EBITDA为负",
+        "negative_fcf": "Negative FCF / FCF为负",
+        "negative_earnings": "Negative earnings / 盈利为负",
+        "negative_revenue": "Non-positive revenue / 收入非正",
+        "different_fiscal_period": "Fiscal-period mismatch / 财务期间不一致",
+        "different_fiscal_period_basis": "Period-basis mismatch / 期间口径不一致",
+        "currency_mismatch": "Currency mismatch / 币种不一致",
+        "accounting_definition_mismatch": "Accounting-definition mismatch / 会计定义不一致",
+        "missing_or_mismatched_evidence": "Missing or mismatched evidence / 证据缺失或不匹配",
+        "value_formula_mismatch": "Formula mismatch / 公式不一致",
+        "limited_business_model_fit": "Limited business-model fit / 商业模式可比性有限",
+        "business_model_fit_missing_or_invalid": "Business-model fit not validated / 商业模式可比性未验证",
+        "duplicate_peer_metric": "Duplicate peer metric / 同业指标重复",
+        "missing_peer_identity": "Peer identity missing / 同业身份缺失",
+        "controlled_period_bridge": "Controlled period bridge / 已验证期间桥接",
+        "controlled_currency_normalization": "Controlled currency normalization / 已验证币种转换",
+    }
+    return labels.get(code, code.replace("_", " ").title())
+
+
 def peer_valuation_html(contract: dict[str, Any]) -> str:
-    context = contract.get("peer_valuation_context", {})
+    s11 = contract.get("valuation_cross_check_contract", {})
+    context = (
+        s11.get("peer_comparison", {})
+        if isinstance(s11, dict) and s11.get("contract_version")
+        else contract.get("peer_valuation_context", {})
+    )
     rows = []
     for row in context.get("rows", []):
         metric = str(row.get("metric") or "")
-        value = fmt_multiple(row.get("value")) if "/" in metric else fmt_percent(row.get("value"))
+        value = (
+            "Suppressed / 已抑制"
+            if row.get("comparability_status") != "COMPARABLE"
+            else fmt_percent(row.get("value"))
+            if metric == "FCF_YIELD"
+            else fmt_multiple(row.get("value"))
+        )
         rows.append(
             "<tr>"
             f"<td>{esc(row.get('ticker'))}</td><td>{esc(metric)}</td><td class=\"num\">{value}</td>"
-            f"<td>{esc(row.get('comparability_status'))}</td>"
-            f"<td>{esc(', '.join(row.get('comparability_flags', [])) or 'None')}</td>"
+            f"<td>{esc(valuation_governance_label(row.get('comparability_status')))}</td>"
+            f"<td>{esc('; '.join(comparability_flag_label(flag) for flag in row.get('comparability_flags', [])) or 'None / 无')}</td>"
             f"<td>{esc('Yes' if row.get('auto_rank_allowed') else 'No')}</td></tr>"
         )
     if not rows:
         return '<div class="answer-box warning"><strong>Peer valuation / 同业估值:</strong> Unavailable. No peer-derived ranking or fair-value conclusion is permitted. / 不可用；不得生成同业排名或公允价值结论。</div>'
     return (
-        f'<p><b>Status / 状态:</b> {esc(context.get("status"))}. {esc(context.get("interpretation"))}</p>'
+        f'<p><b>Status / 状态:</b> {esc(valuation_governance_label(context.get("status")))}. '
+        f'{esc(context.get("interpretation") or context.get("selection_rationale"))}</p>'
         '<table><thead><tr><th>Peer</th><th>Metric</th><th class="num">Value</th>'
         '<th>Comparability / 可比性</th><th>Flags / 标记</th><th>Auto rank</th></tr></thead>'
         f'<tbody>{"".join(rows)}</tbody></table>'
         '<p class="small muted">Rows with negative EBITDA/FCF, period mismatch, currency mismatch or accounting-definition mismatch '
         'are display-only and cannot enter automatic rankings. / EBITDA或FCF为负、期间、币种或会计定义不一致的行仅供展示，不得参与自动排名。</p>'
+    )
+
+
+def valuation_cross_checks_html(
+    contract: dict[str, Any],
+    *,
+    compact: bool = False,
+) -> str:
+    cross_checks = contract.get("valuation_cross_check_contract", {})
+    if not isinstance(cross_checks, dict) or not cross_checks.get("contract_version"):
+        return (
+            '<div class="answer-box warning"><strong>Valuation cross-checks / '
+            "估值交叉验证: Not provided / 未提供</strong></div>"
+        )
+    status = str(cross_checks.get("status") or "NOT_PROVIDED")
+    components = cross_checks.get("components", {})
+    agreement = cross_checks.get("method_agreement", {})
+    if compact:
+        return (
+            f'<p><b>Valuation cross-checks / 估值交叉验证:</b> '
+            f'{esc(valuation_governance_label(status))}; '
+            f'<b>method agreement / 方法一致性:</b> '
+            f'{esc(valuation_governance_label(agreement.get("status") or "NOT_EVALUATED"))}.</p>'
+        )
+    component_rows = "".join(
+        f"<tr><td>{esc(name.replace('_', ' ').title())}</td>"
+        f"<td>{esc(valuation_governance_label(component_status))}</td></tr>"
+        for name, component_status in components.items()
+    )
+    historical = cross_checks.get("historical_valuation", {})
+    historical_summary = historical.get("summary", {})
+    reverse = cross_checks.get("reverse_valuation", {})
+    independent = cross_checks.get("independent_cross_check", {})
+    independent_share_basis = independent.get("share_basis", {})
+    price_range = independent.get("implied_price_range", {})
+    peer_summaries = cross_checks.get("peer_comparison", {}).get(
+        "metric_summaries",
+        [],
+    )
+    peer_rows = "".join(
+        "<tr>"
+        f"<td>{esc(row.get('metric'))}</td>"
+        f"<td class=\"num\">{esc(row.get('comparable_peer_count'))}</td>"
+        f"<td class=\"num\">"
+        f"{fmt_percent(row.get('median')) if row.get('metric') == 'FCF_YIELD' else fmt_multiple(row.get('median'))}</td>"
+        f"<td>{esc(valuation_governance_label(row.get('ranking_status')))}</td></tr>"
+        for row in peer_summaries
+    )
+    peer_table = (
+        '<h3>Controlled peer summary / 受控同业摘要</h3>'
+        '<table><thead><tr><th>Metric</th><th class="num">Comparable peers</th>'
+        '<th class="num">Median</th><th>Status</th></tr></thead>'
+        f"<tbody>{peer_rows}</tbody></table>"
+        if peer_rows
+        else ""
+    )
+    return (
+        f'<div class="answer-box"><strong>Valuation Cross-Checks / '
+        f'估值交叉验证: {esc(valuation_governance_label(status))}</strong>'
+        f'<p><b>Method agreement / 方法一致性:</b> '
+        f'{esc(valuation_governance_label(agreement.get("status") or "NOT_EVALUATED"))}. '
+        f'{esc(agreement.get("interpretation"))}</p></div>'
+        '<table><thead><tr><th>Component / 组件</th><th>Status / 状态</th>'
+        f'</tr></thead><tbody>{component_rows}</tbody></table>'
+        f"{peer_table}"
+        '<div class="two-col"><section><h3>Historical valuation / 历史估值</h3>'
+        f'<p>Status: {esc(valuation_governance_label(historical.get("status")))}; metric: '
+        f'{esc(historical.get("metric"))}; median: '
+        f'{fmt_percent(historical_summary.get("median")) if historical.get("metric") == "FCF_YIELD" else fmt_multiple(historical_summary.get("median"))}; current percentile: '
+        f'{fmt_percent(historical_summary.get("current_percentile"))}.</p></section>'
+        '<section><h3>Reverse valuation / 反向估值</h3>'
+        f'<p>Status: {esc(valuation_governance_label(reverse.get("status")))}; method: '
+        f'{esc(valuation_governance_label(reverse.get("method")))}; required metric: '
+        f'{fmt_money(reverse.get("required_metric_value"))}; reference support: '
+        f'{esc(valuation_governance_label(reverse.get("reference_support", {}).get("status")))}.</p></section></div>'
+        '<h3>Independent DCF range / 独立DCF区间</h3>'
+        f'<p>Status: {esc(valuation_governance_label(independent.get("status")))}; '
+        f'basis: {esc(valuation_governance_label(independent.get("cash_flow_basis")))}; '
+        f'discount rate: {esc(valuation_governance_label(independent.get("discount_rate_basis")))}; '
+        f'shares: {esc(valuation_governance_label(independent_share_basis.get("basis_type")))} '
+        f'as of {esc(independent_share_basis.get("basis_date"))}; '
+        f'minimum {fmt_price(price_range.get("minimum"))}, '
+        f'central {fmt_price(price_range.get("central"))}, '
+        f'maximum {fmt_price(price_range.get("maximum"))}. '
+        "This is a cross-check range, not a target price. / "
+        "这是交叉验证区间，不是目标价。</p>"
+        f'{list_html(cross_checks.get("limitations", []), limit=2)}'
     )
 
 
@@ -1132,6 +1312,7 @@ def one_page_html(contract: dict[str, Any]) -> str:
     body += "".join(debate_html(debate, compact=True) for debate in contract.get("key_debates", []))
     body += f'{bundle_badge(contract, "key_debates")}</section><section><h2>Decision Boundaries / 决策边界</h2>'
     body += valuation_status_html(contract, compact=True)
+    body += valuation_cross_checks_html(contract, compact=True)
     weighted_status = (
         contract.get("valuation_contract", {})
         .get("outputs", {})
@@ -1168,7 +1349,13 @@ def full_report_html(contract: dict[str, Any]) -> str:
     question = contract.get("investment_question", {})
     expectations = contract.get("market_expectations", {})
     framework = contract.get("valuation_framework", {})
-    reverse = framework.get("reverse_valuation", {})
+    s11_contract = contract.get("valuation_cross_check_contract", {})
+    reverse = (
+        s11_contract.get("reverse_valuation", {})
+        if isinstance(s11_contract, dict)
+        and s11_contract.get("contract_version")
+        else framework.get("reverse_valuation", {})
+    )
     rules = contract.get("decision_rules", {})
     body = report_header(contract, "IC Pre-Read Full Report / 投委会预读完整报告")
     body += decision_strip(contract)
@@ -1312,12 +1499,23 @@ def full_report_html(contract: dict[str, Any]) -> str:
 
     body += '<section class="page-break"><h2>6. What Is Priced In and Valuation Scope / 市场隐含要求与估值范围</h2>'
     body += valuation_status_html(contract)
+    body += valuation_cross_checks_html(contract)
     body += forward_operating_bridge_html(contract)
     body += what_is_priced_in_html(contract)
     body += (
-        '<p class="section-intro">The selected multiple is an analyst-owned reverse-valuation reference, '
-        "not a peer-derived fair-value claim. All displayed prices come directly from the validated contract. / "
-        "选定倍数是分析师设定的反向估值参考，并非同业推导的公允价值；所有展示价格均直接来自已验证 contract。</p>"
+        '<p class="section-intro">A selected multiple or yield remains a controlled sensitivity reference. '
+        "Peer and historical support can contextualize it but cannot turn it into a fair-value fact. / "
+        "选定倍数或收益率仍是受控敏感性参考；同业和历史支持可以提供背景，但不能将其变成公允价值事实。</p>"
+    )
+    selected_reference = (
+        reverse.get("selected_reference", {}).get("value")
+        if isinstance(reverse.get("selected_reference"), dict)
+        else reverse.get("selected_multiple")
+    )
+    required_metric = (
+        reverse.get("required_metric_value")
+        if reverse.get("required_metric_value") is not None
+        else reverse.get("required_fcf")
     )
     reverse_rows = [
         (
@@ -1332,12 +1530,12 @@ def full_report_html(contract: dict[str, Any]) -> str:
         ),
         (
             "Selected multiple / 选定倍数",
-            fmt_multiple(reverse.get("selected_multiple")),
+            fmt_multiple(selected_reference),
             record_badge(by_metric.get("reverse_valuation_selected_multiple")),
         ),
         (
-            "Required FCF at selected reference / 选定参考倍数所需FCF",
-            fmt_money(reverse.get("required_metric_value")),
+            "Required metric at selected reference / 选定参考所需指标",
+            fmt_money(required_metric),
             record_badge(by_metric.get("reverse_valuation_required_metric_value")),
         ),
         (
@@ -1361,8 +1559,8 @@ def full_report_html(contract: dict[str, Any]) -> str:
         + "</tbody></table>"
     )
     body += "<h3>Implied share-price sensitivity / 隐含股价敏感性</h3>" + sensitivity_table(contract)
-    body += "<h3>Reverse-valuation assumptions / 反向估值假设</h3>" + list_html(
-        reverse.get("assumptions", [])
+    body += "<h3>Reverse-valuation limitations / 反向估值限制</h3>" + list_html(
+        reverse.get("limitations", reverse.get("assumptions", []))
     )
     body += "<h3>Peer valuation context / 同业估值背景</h3>" + peer_valuation_html(contract)
     body += bundle_badge(contract, "valuation_market")

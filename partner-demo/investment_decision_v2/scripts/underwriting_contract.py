@@ -22,6 +22,11 @@ from equity_valuation_contract import (
     validate_shared_valuation_contract,
 )
 from forward_operating_model import validate_forward_valuation_contract
+from valuation_cross_checks import (
+    build_valuation_cross_check_contract,
+    validate_probability_governance,
+    validate_valuation_cross_check_contract,
+)
 
 SCHEMA_VERSION = "5.1.0"
 SUPPORTED_UNIVERSE_VERSION = "1.0.0"
@@ -1112,6 +1117,132 @@ def suppress_disallowed_outputs(contract: dict[str, Any]) -> dict[str, Any]:
             scenario["price_change_vs_current"] = None
             scenario.pop("target_price", None)
             scenario.pop("total_return", None)
+        s11 = contract.get("valuation_cross_check_contract", {})
+        suppressed_s11_ids = {
+            str(value)
+            for value in (
+                s11.get("calculation_evidence_ids", [])
+                if isinstance(s11, dict)
+                else []
+            )
+            if value
+        }
+        for record in contract.get("evidence_records", []):
+            if (
+                str(record.get("metric_name") or "").startswith("s11_")
+                or record.get("source_id") == "SRC-S11-SHARED-CALC"
+            ):
+                evidence_id = str(record.get("evidence_id") or "")
+                if evidence_id:
+                    suppressed_s11_ids.add(evidence_id)
+        if suppressed_s11_ids:
+            retained_records = [
+                record
+                for record in contract.get("evidence_records", [])
+                if str(record.get("evidence_id") or "")
+                not in suppressed_s11_ids
+            ]
+            contract["evidence_records"] = retained_records
+            retained_by_id = {
+                str(record.get("evidence_id")): record
+                for record in retained_records
+                if record.get("evidence_id")
+            }
+            retained_display = [
+                row
+                for row in contract.get("evidence_display_index", [])
+                if str(row.get("evidence_id") or "") in retained_by_id
+            ]
+            contract["evidence_display_index"] = retained_display
+            display_by_id = {
+                str(row.get("evidence_id")): row.get("display_id")
+                for row in retained_display
+            }
+            retained_bundles: list[dict[str, Any]] = []
+            for bundle in contract.get("evidence_bundles", []):
+                evidence_ids = [
+                    str(evidence_id)
+                    for evidence_id in bundle.get("evidence_ids", [])
+                    if str(evidence_id) in retained_by_id
+                ]
+                if not evidence_ids:
+                    continue
+                updated = dict(bundle)
+                updated["evidence_ids"] = evidence_ids
+                updated["display_ids"] = [
+                    display_by_id[evidence_id]
+                    for evidence_id in evidence_ids
+                    if display_by_id.get(evidence_id)
+                ]
+                updated["source_ids"] = sorted(
+                    {
+                        str(retained_by_id[evidence_id].get("source_id"))
+                        for evidence_id in evidence_ids
+                        if retained_by_id[evidence_id].get("source_id")
+                    }
+                )
+                updated["record_count"] = len(evidence_ids)
+                retained_bundles.append(updated)
+            contract["evidence_bundles"] = retained_bundles
+            for evidence_list_field in (
+                "known_facts",
+                "calculated_metrics",
+            ):
+                if isinstance(contract.get(evidence_list_field), list):
+                    contract[evidence_list_field] = [
+                        evidence_id
+                        for evidence_id in contract[evidence_list_field]
+                        if str(evidence_id) not in suppressed_s11_ids
+                    ]
+            if not any(
+                record.get("source_id") == "SRC-S11-SHARED-CALC"
+                for record in retained_records
+            ):
+                contract["source_registry"] = [
+                    source
+                    for source in contract.get("source_registry", [])
+                    if source.get("source_id") != "SRC-S11-SHARED-CALC"
+                ]
+                if isinstance(contract.get("source_log_references"), list):
+                    contract["source_log_references"] = [
+                        source_id
+                        for source_id in contract["source_log_references"]
+                        if source_id != "SRC-S11-SHARED-CALC"
+                    ]
+        contract["valuation_cross_check_contract"] = (
+            build_valuation_cross_check_contract(contract, {})
+        )
+        contract["what_is_priced_in"] = {
+            "status": "NOT_VALIDATED",
+            "selected_reference": None,
+            "required_metric_value": None,
+            "comparison_metric_value": None,
+            "conditional_conclusion": "Not Evaluated",
+            "evidence_ids": [],
+        }
+        contract["peer_valuation_context"] = {
+            "status": "UNAVAILABLE",
+            "rows": [],
+            "metric_summaries": [],
+            "interpretation": (
+                "Peer valuation is suppressed below Gate 3."
+            ),
+        }
+        contract["valuation_framework"] = {
+            "status": "NOT_VALIDATED",
+            "reverse_valuation": {"status": "NOT_VALIDATED"},
+            "sensitivity_completed": False,
+            "sensitivity_table": [],
+            "reviewed_by": None,
+        }
+        valuation_status = contract.get("valuation_status")
+        if isinstance(valuation_status, dict):
+            valuation_status["status"] = "RANGE_ONLY"
+            valuation_status["valuation_cross_check_contract_status"] = (
+                "NOT_PROVIDED"
+            )
+            for component in valuation_status.get("components", {}):
+                valuation_status["components"][component] = "NOT_COMPLETED"
         contract["final_investment_action"] = "Not Evaluated"
     if probability_status != "VALIDATED" or not return_language_allowed:
         contract["probability_weighted_expected_return"] = None
@@ -1173,6 +1304,7 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
         )
     if schema_version != "5.0.0":
         required.add("valuation_contract")
+        required.add("valuation_cross_check_contract")
     missing = sorted(required - set(contract))
     if missing:
         errors.append("Missing required output-contract fields: " + ", ".join(missing))
@@ -1297,6 +1429,20 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
         )
     ):
         errors.append("MULTI_METHOD_VALIDATED requires all valuation components to be completed.")
+    if "reverse_valuation" in valuation_status.get("components", {}):
+        if (
+            valuation_status.get("components", {}).get("reverse_valuation")
+            not in VALUATION_COMPONENT_STATUSES
+        ):
+            errors.append("Invalid valuation component status for reverse_valuation.")
+        if (
+            valuation_status.get("status") == "MULTI_METHOD_VALIDATED"
+            and valuation_status.get("components", {}).get("reverse_valuation")
+            != "COMPLETED"
+        ):
+            errors.append(
+                "S11 MULTI_METHOD_VALIDATED requires completed reverse valuation."
+            )
 
     share_basis = contract.get("share_count_basis", {})
     if gate_level >= 3 and share_basis.get("point_in_time_or_forward") not in SHARE_COUNT_BASIS_TYPES:
@@ -1321,7 +1467,10 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
     priced_in = contract.get("what_is_priced_in", {})
     if gate_level >= 3 and (priced_in.get("status") != "VALIDATED" or not priced_in.get("conditional_conclusion")):
         errors.append("What Is Priced In must be validated, conditional, and reproducible.")
-    if gate_level >= 3 and priced_in.get("multiple_status") != "ANALYST_OWNED_REFERENCE":
+    if gate_level >= 3 and priced_in.get("multiple_status") not in {
+        "ANALYST_OWNED_REFERENCE",
+        "ANALYST_OWNED_REFERENCE_WITH_VALIDATED_CONTEXT",
+    }:
         errors.append("What Is Priced In must identify the selected multiple as analyst-owned.")
 
     confidence = contract.get("decision_confidence", {})
@@ -1364,15 +1513,44 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
         ]
         if leaked:
             errors.append("Scenario price-sensitivity evidence must be absent below Gate 3: " + ", ".join(leaked))
+        s11 = contract.get("valuation_cross_check_contract", {})
+        if (
+            not isinstance(s11, dict)
+            or s11.get("status") != "NOT_PROVIDED"
+            or s11.get("calculation_evidence_ids")
+        ):
+            errors.append(
+                "S11 valuation cross-check outputs and calculation evidence "
+                "must be suppressed below Gate 3."
+            )
+        leaked_s11_evidence = [
+            str(row.get("evidence_id") or "")
+            for row in contract.get("evidence_records", [])
+            if (
+                str(row.get("metric_name") or "").startswith("s11_")
+                or row.get("source_id") == "SRC-S11-SHARED-CALC"
+            )
+        ]
+        if leaked_s11_evidence:
+            errors.append(
+                "S11 calculation evidence must be absent below Gate 3: "
+                + ", ".join(leaked_s11_evidence)
+            )
     if gate_level < 4 and contract.get("position_sizing") is not None:
         errors.append("Position sizing must be suppressed below Gate 4.")
     if schema_version == "5.0.0" and "forward_valuation_contract" in contract:
         errors.append(
             "S10 forward_valuation_contract is not supported by frozen schema 5.0.0."
         )
+    if schema_version == "5.0.0" and "valuation_cross_check_contract" in contract:
+        errors.append(
+            "S11 valuation_cross_check_contract is not supported by frozen schema 5.0.0."
+        )
     if schema_version != "5.0.0":
         errors.extend(validate_shared_valuation_contract(contract))
         errors.extend(validate_forward_valuation_contract(contract))
+        errors.extend(validate_valuation_cross_check_contract(contract))
+        errors.extend(validate_probability_governance(contract))
         expected_return_context = legacy_return_context(contract.get("valuation_contract", {}))
         if contract.get("return_context") != expected_return_context:
             errors.append(
@@ -1462,6 +1640,15 @@ def finalize_output_contract(contract: dict[str, Any]) -> dict[str, Any]:
     contract["schema_version"] = SCHEMA_VERSION
     if not isinstance(contract.get("valuation_contract"), dict):
         contract["valuation_contract"] = build_shared_valuation_contract(contract, {})
+    if (
+        not isinstance(contract.get("valuation_cross_check_contract"), dict)
+        or not contract.get("valuation_cross_check_contract", {}).get(
+            "contract_version"
+        )
+    ):
+        contract["valuation_cross_check_contract"] = (
+            build_valuation_cross_check_contract(contract, {})
+        )
     contract["return_context"] = legacy_return_context(contract["valuation_contract"])
     contract = suppress_disallowed_outputs(contract)
     contract["contract_hash"] = hashlib.sha256(

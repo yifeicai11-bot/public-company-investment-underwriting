@@ -120,6 +120,14 @@ S09 and S10 as two unrelated objects is insufficient.
 Read `forward_operating_bridges.md` for the controlled module, line-level
 evidence, sign, and safe-failure rules.
 
+S11 is a separate `valuation_cross_check_contract`. It may validate peer and
+historical context for an analyst-owned exit reference, reproduce reverse
+valuation, and provide an independent DCF range. It must not rewrite S09
+scenario prices, horizon fields, dividends, or share basis. A validated S11
+method does not unlock Base-Case Return unless S09 validates, and it does not
+unlock Probability-Weighted Return unless the separate probability governance
+contract also validates.
+
 ## Compatibility
 
 `return_context` is a read-only compatibility projection of `valuation_contract`; it is not a second source of calculations.

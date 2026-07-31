@@ -746,6 +746,7 @@ class GateAndScenarioTests(unittest.TestCase):
                 "metric_name": "probability_basis",
                 "source_level": 2,
                 "publication_date": "2026-05-01",
+                "validation_status": "PASS",
             }
         ]
 
@@ -770,7 +771,13 @@ class GateAndScenarioTests(unittest.TestCase):
                 "probability_expiration_review_date": "2026-10-01",
                 "review_triggers": ["NEW_EARNINGS_OR_GUIDANCE"],
                 "reviewed_by": "Analyst",
-                "approval": {"status": "APPROVED", "approved_by": "Investment Committee", "approval_date": "2026-07-02"},
+                "approval": {
+                    "status": "APPROVED",
+                    "approved_by": "Investment Committee",
+                    "approval_date": "2026-07-02",
+                    "approval_scope": "PROBABILITY_METHODOLOGY_AND_WEIGHTS",
+                    "independent_research_review": True,
+                },
                 "sensitivity_cases": [
                     {"label": "Downside weighted", "probabilities": {"Bear": 0.50, "Base": 0.35, "Bull": 0.15}},
                     {"label": "Central", "probabilities": {"Bear": 0.25, "Base": 0.50, "Bull": 0.25}},
@@ -798,6 +805,94 @@ class GateAndScenarioTests(unittest.TestCase):
         self.assertIsNone(final["target_price"])
         self.assertIsNone(final["position_sizing"])
         self.assertEqual(final["portfolio_action"], "Not Evaluated")
+        self.assertEqual(final["contract_validation"]["status"], "PASS")
+
+    def test_gate_below_three_removes_injected_s11_outputs_and_evidence(
+        self,
+    ) -> None:
+        gate = determine_data_gate(
+            issues=[],
+            core_data_validated=True,
+            issuer_underwriting_complete=False,
+            valuation_validated=False,
+            scenarios_validated=False,
+            portfolio_inputs_validated=False,
+            human_approval=False,
+        )
+        contract = minimal_contract(gate)
+        contract["valuation_cross_check_contract"] = {
+            "contract_version": "1.0.0",
+            "status": "MULTI_METHOD_VALIDATED",
+            "calculation_evidence_ids": ["EV-S11-LEAK"],
+        }
+        contract["evidence_records"].append(
+            {
+                "evidence_id": "EV-S11-LEAK",
+                "metric_name": "s11_independent_dcf_central_price",
+                "value": 42.0,
+                "unit": "USD/SHARE",
+                "currency": "USD",
+                "period_start": "",
+                "period_end": "2026-07-01",
+                "as_of_date": "2026-07-01",
+                "evidence_class": "CALC",
+                "source_id": "SRC-S11-SHARED-CALC",
+                "source_level": 0,
+                "source_locator": "injected",
+                "publication_date": "2026-07-01",
+                "retrieval_date": "2026-07-01",
+                "formula": "injected",
+                "input_evidence_ids": ["EV-1"],
+            }
+        )
+        contract["evidence_display_index"].append(
+            {"display_id": "E002", "evidence_id": "EV-S11-LEAK"}
+        )
+        contract["evidence_bundles"].append(
+            {
+                "bundle_id": "B5",
+                "section_key": "valuation_market",
+                "label": "Valuation / 估值",
+                "evidence_ids": ["EV-S11-LEAK"],
+                "display_ids": ["E002"],
+                "source_ids": ["SRC-S11-SHARED-CALC"],
+                "record_count": 1,
+            }
+        )
+        contract["source_registry"].append(
+            {
+                "source_id": "SRC-S11-SHARED-CALC",
+                "source_level": 0,
+                "source_name": "Injected S11 calculation",
+                "retrieval_date": "2026-07-01",
+            }
+        )
+
+        final = finalize_output_contract(contract)
+
+        self.assertEqual(
+            final["valuation_cross_check_contract"]["status"],
+            "NOT_PROVIDED",
+        )
+        self.assertFalse(
+            final["valuation_cross_check_contract"][
+                "calculation_evidence_ids"
+            ]
+        )
+        self.assertNotIn(
+            "EV-S11-LEAK",
+            {
+                row["evidence_id"]
+                for row in final["evidence_records"]
+            },
+        )
+        self.assertNotIn(
+            "SRC-S11-SHARED-CALC",
+            {
+                row["source_id"]
+                for row in final["source_registry"]
+            },
+        )
         self.assertEqual(final["contract_validation"]["status"], "PASS")
 
 
