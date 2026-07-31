@@ -20,6 +20,7 @@ import statistics
 import sys
 import urllib.parse
 import urllib.request
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -53,6 +54,13 @@ from equity_valuation_contract import (  # noqa: E402
     build_shared_valuation_contract,
     legacy_return_context,
     normalize_valuation_period,
+)
+from forward_operating_model import (  # noqa: E402
+    CASH_FLOW_MEASUREMENT_BASES,
+    FORWARD_FCF_BASIS,
+    build_forward_valuation_contract,
+    driver_module_catalog,
+    forward_share_basis_input,
 )
 from underwriting_contract import (  # noqa: E402
     FCF_NORMALIZATION_STATUSES,
@@ -940,6 +948,7 @@ def scenario_set(
     market_expectations: dict[str, Any],
     research_input: dict[str, Any] | None = None,
     share_count_basis: dict[str, Any] | None = None,
+    forward_valuation_contract: dict[str, Any] | None = None,
 ) -> tuple[list[Scenario], str]:
     """Build scenarios only from validated, analyst-owned assumptions.
 
@@ -953,13 +962,32 @@ def scenario_set(
     model = research_input.get("scenario_model", {})
     price = safe_float(valuation.get("price"))
     price_currency = str(valuation.get("price_currency") or "").upper()
-    metric = str(model.get("metric") or "Normalized FCF").strip()
+    forward_valuation_contract = (
+        forward_valuation_contract
+        if isinstance(forward_valuation_contract, dict)
+        else {}
+    )
+    use_forward_model = (
+        forward_valuation_contract.get("status") == "VALIDATED"
+        and forward_valuation_contract.get("driver_model_status") == "VALIDATED"
+    )
+    supplied_metric = str(model.get("metric") or "Normalized FCF").strip()
+    if supplied_metric.upper() == "FORWARD FCF" and not use_forward_model:
+        return [], "blocked_forward_driver_model_not_validated"
+    if use_forward_model and supplied_metric.upper() not in {
+        "FORWARD FCF",
+        "NORMALIZED FCF",
+        "PUBLIC-DATA FCF UNDERWRITING BASE",
+    }:
+        return [], "blocked_forward_model_scenario_metric_conflict"
+    metric = "Forward FCF" if use_forward_model else supplied_metric
     metric_key = metric.upper()
     fcf_metric = metric_key in {
         "NORMALIZED FCF",
         "PUBLIC-DATA FCF UNDERWRITING BASE",
+        "FORWARD FCF",
     }
-    if fcf_metric:
+    if fcf_metric and not use_forward_model:
         normalized_fcf = research_input.get("normalized_fcf", {})
         if normalized_fcf.get("status") != "VALIDATED":
             return [], "blocked_normalized_fcf_not_validated"
@@ -967,7 +995,30 @@ def scenario_set(
         return [], "blocked_scenario_assumptions_not_analyst_validated"
     if not metric:
         return [], "blocked_scenario_metric_not_defined"
-    if fcf_metric:
+    normalized_fcf = research_input.get("normalized_fcf", {})
+    if use_forward_model:
+        forward_rows = {
+            str(row.get("name") or ""): row
+            for row in forward_valuation_contract.get("scenarios", [])
+        }
+        if (
+            len(forward_rows) != 3
+            or set(forward_rows) != {"Bear", "Base", "Bull"}
+            or not forward_valuation_contract.get(
+                "scenario_metric_eligibility", {}
+            ).get("positive_fcf_multiple_allowed")
+        ):
+            return [], "blocked_forward_fcf_not_eligible_for_positive_multiple"
+        base_metric_value = safe_float(normalized_fcf.get("value"))
+        base_metric_reviewer = (
+            normalized_fcf.get("reviewed_by")
+            or forward_valuation_contract.get("reviewed_by")
+        )
+        metric_currency = str(
+            forward_valuation_contract.get("currency") or ""
+        ).upper()
+        metric_unit = str(forward_valuation_contract.get("unit") or "").strip()
+    elif fcf_metric:
         base_metric_value = safe_float(normalized_fcf.get("value"))
         base_metric_reviewer = normalized_fcf.get("reviewed_by")
         metric_currency = str(model.get("metric_currency") or price_currency).upper()
@@ -993,8 +1044,7 @@ def scenario_set(
             metric_basis.get("unit") or model.get("metric_unit") or ""
         ).strip()
     if (
-        base_metric_value is None
-        or base_metric_value <= 0
+        (not use_forward_model and (base_metric_value is None or base_metric_value <= 0))
         or not base_metric_reviewer
     ):
         return [], "blocked_scenario_metric_basis_missing_or_nonpositive"
@@ -1003,6 +1053,7 @@ def scenario_set(
         or not metric_currency
         or metric_currency != price_currency
         or not metric_unit
+        or (use_forward_model and metric_unit.upper() != metric_currency)
     ):
         return [], "blocked_scenario_metric_unit_or_currency_mismatch"
 
@@ -1023,11 +1074,15 @@ def scenario_set(
     valuation_contract_input = research_input.get("valuation_contract", {})
     if not isinstance(valuation_contract_input, dict):
         valuation_contract_input = {}
-    forecast_period = normalize_valuation_period(
-        valuation_contract_input.get("forecast_period")
+    forecast_period = (
+        deepcopy(forward_valuation_contract.get("forecast_period", {}))
+        if use_forward_model
+        else normalize_valuation_period(valuation_contract_input.get("forecast_period"))
     )
-    metric_period = normalize_valuation_period(
-        valuation_contract_input.get("metric_period")
+    metric_period = (
+        deepcopy(forward_valuation_contract.get("metric_period", {}))
+        if use_forward_model
+        else normalize_valuation_period(valuation_contract_input.get("metric_period"))
     )
     assumptions = model.get("scenarios", [])
     if price is None or shares in (None, 0):
@@ -1045,21 +1100,49 @@ def scenario_set(
     for row in assumptions:
         name = str(row.get("name"))
         probability = safe_float(row.get("probability"))
-        metric_value_total = safe_float(row.get("metric_value_total"))
-        growth_assumption = safe_float(row.get("growth_assumption"))
+        if use_forward_model:
+            forward_row = forward_rows.get(name, {})
+            metric_value_total = safe_float(forward_row.get("forward_fcf"))
+            supplied_metric_value = safe_float(row.get("metric_value_total"))
+            if (
+                supplied_metric_value is not None
+                and metric_value_total is not None
+                and abs(supplied_metric_value - metric_value_total)
+                > max(1.0, abs(metric_value_total) * 1e-9)
+            ):
+                return [], f"blocked_{name.lower()}_manual_metric_conflicts_with_forward_model"
+            calculated_growth = (
+                metric_value_total / base_metric_value - 1.0
+                if metric_value_total is not None
+                and base_metric_value not in (None, 0)
+                else None
+            )
+            supplied_growth = safe_float(row.get("growth_assumption"))
+            if (
+                supplied_growth is not None
+                and calculated_growth is not None
+                and abs(supplied_growth - calculated_growth) > 1e-9
+            ):
+                return [], f"blocked_{name.lower()}_growth_conflicts_with_forward_model"
+            growth_assumption = calculated_growth
+        else:
+            forward_row = {}
+            metric_value_total = safe_float(row.get("metric_value_total"))
+            growth_assumption = safe_float(row.get("growth_assumption"))
         exit_multiple = safe_float(row.get("exit_multiple"))
         if metric_value_total is None or metric_value_total <= 0 or exit_multiple is None or exit_multiple <= 0:
             return [], f"blocked_invalid_{name.lower()}_metric_or_multiple"
-        if growth_assumption is None:
+        if growth_assumption is None and not use_forward_model:
             return [], f"blocked_missing_{name.lower()}_growth_assumption"
         if not row.get("key_driver") or not row.get("falsification_trigger"):
             return [], f"blocked_missing_{name.lower()}_driver_or_falsification_trigger"
-        expected_metric_value = base_metric_value * (1 + growth_assumption)
-        if abs(metric_value_total - expected_metric_value) > max(
-            1.0,
-            abs(metric_value_total) * 1e-9,
-        ):
-            return [], f"blocked_{name.lower()}_metric_growth_bridge_does_not_reconcile"
+        if not use_forward_model:
+            expected_metric_value = base_metric_value * (1 + growth_assumption)
+            if abs(metric_value_total - expected_metric_value) > max(
+                1.0,
+                abs(metric_value_total) * 1e-9,
+            ):
+                return [], f"blocked_{name.lower()}_metric_growth_bridge_does_not_reconcile"
         metric_per_share = metric_value_total / shares
         target_price = metric_per_share * exit_multiple
         total_return = target_price / price - 1
@@ -1075,13 +1158,18 @@ def scenario_set(
                 exit_multiple=exit_multiple,
                 target_price=target_price,
                 total_return=total_return,
-                evidence_type="JUDGMENT",
+                evidence_type="CALC" if use_forward_model else "JUDGMENT",
                 assumption_status="ANALYST_VALIDATED",
                 confidence=str(row.get("confidence") or "Medium"),
                 key_driver=str(row.get("key_driver") or "MISSING"),
                 falsification_trigger=str(row.get("falsification_trigger") or "MISSING"),
                 notes=str(row.get("notes") or ""),
-                assumption_sources=[str(value) for value in row.get("assumption_sources", []) if value],
+                assumption_sources=_unique_text(
+                    [
+                        *row.get("assumption_sources", []),
+                        *forward_row.get("evidence_ids", []),
+                    ]
+                ),
                 probability_rationale=str(row.get("probability_rationale") or ""),
                 share_count_basis_value=shares,
                 share_count_basis_date=shares_date,
@@ -2022,11 +2110,18 @@ def _migrate_friday_v1_evidence_semantics(contract: dict[str, Any]) -> None:
 def build_share_count_basis(
     contract: dict[str, Any],
     research_input: dict[str, Any],
+    forward_valuation_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     valuation = contract.get("valuation", {})
-    supplied = research_input.get("share_count_basis", {})
-    if not isinstance(supplied, dict):
-        supplied = {}
+    generated_forward_input = forward_share_basis_input(
+        forward_valuation_contract
+    )
+    supplied = (
+        generated_forward_input
+        if generated_forward_input is not None
+        else research_input.get("share_count_basis", {})
+    )
+    supplied = supplied if isinstance(supplied, dict) else {}
     reported_value = safe_float(valuation.get("shares"))
     reported_date = str(valuation.get("shares_as_of_date") or "")
     price_date = str(valuation.get("price_date") or contract.get("report_dates", {}).get("market_price_date") or "")
@@ -2188,19 +2283,30 @@ def build_valuation_scope_status(
     research_input: dict[str, Any],
     share_count_basis: dict[str, Any],
     return_context: dict[str, Any],
+    forward_valuation_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     supplied = research_input.get("valuation_completion", {})
     if not isinstance(supplied, dict):
         supplied = {}
     peer_status = "COMPLETED" if contract.get("peer_valuation_context", {}).get("status") == "VALIDATED" else "NOT_COMPLETED"
     historical_raw = contract.get("peer_valuation_context", {}).get("historical_context", {}).get("status")
+    forward_valuation_contract = (
+        forward_valuation_contract
+        if isinstance(forward_valuation_contract, dict)
+        else {}
+    )
+    forward_status = forward_valuation_contract.get("status")
     components = {
         "peer_valuation": peer_status,
         "historical_valuation": "COMPLETED" if historical_raw == "VALIDATED" else "NOT_COMPLETED",
         "dcf_cross_check": str(supplied.get("dcf_cross_check") or "NOT_COMPLETED").upper(),
-        "driver_based_forward_forecast": str(
-            supplied.get("driver_based_forward_forecast") or "NOT_COMPLETED"
-        ).upper(),
+        "driver_based_forward_forecast": (
+            "COMPLETED"
+            if forward_status == "VALIDATED"
+            else "PROVISIONAL"
+            if forward_status == "PARTIALLY_VALIDATED"
+            else "NOT_COMPLETED"
+        ),
         "forward_share_count_bridge": share_count_basis.get("forward_share_count_bridge_status", "NOT_COMPLETED"),
     }
     allowed_components = {"MISSING", "NOT_COMPLETED", "PROVISIONAL", "COMPLETED"}
@@ -2238,6 +2344,9 @@ def build_valuation_scope_status(
             "Independent peer, historical, DCF, driver-based forecast, and forward share-count support remain incomplete where marked NOT_COMPLETED. / "
             "标记为NOT_COMPLETED的同业、历史估值、DCF、驱动型预测及前瞻股数支持尚未完成。"
         ],
+        "forward_valuation_contract_status": (
+            forward_status or "DRIVER_MODEL_NOT_AVAILABLE"
+        ),
     }
 
 
@@ -2440,7 +2549,12 @@ def apply_friday_v1_contract_semantics(
     else:
         workflow_status = "Underwriting In Progress"
 
-    share_basis = build_share_count_basis(contract, research_input)
+    forward_valuation_contract = contract.get("forward_valuation_contract", {})
+    share_basis = build_share_count_basis(
+        contract,
+        research_input,
+        forward_valuation_contract,
+    )
     contract["share_count_basis"] = share_basis
     valuation_contract = build_shared_valuation_contract(
         contract,
@@ -2471,7 +2585,13 @@ def apply_friday_v1_contract_semantics(
         ):
             if field in contract:
                 contract[field] = _rewrite_incomplete_fcf_language(contract[field])
-    valuation_status = build_valuation_scope_status(contract, research_input, share_basis, return_context)
+    valuation_status = build_valuation_scope_status(
+        contract,
+        research_input,
+        share_basis,
+        return_context,
+        forward_valuation_contract,
+    )
     priced_in = build_what_is_priced_in(contract, research_input, fcf_base)
 
     probability = contract.get("probability_validation", {})
@@ -2870,6 +2990,98 @@ def build_issuer_underwriting(
     }
 
 
+def _forward_assumption_template(
+    *,
+    unit: str = "",
+    currency: str = "",
+) -> dict[str, Any]:
+    return {
+        "value": None,
+        "evidence_class": "MISSING",
+        "evidence_ids": [],
+        "reviewed_by": "",
+        "rationale": "",
+        "formula": "",
+        "unit": unit,
+        "currency": currency,
+    }
+
+
+def _forward_valuation_input_template() -> dict[str, Any]:
+    cash_flow_driver = {
+        field: {
+            **_forward_assumption_template(
+                unit="RATIO" if field == "operating_margin" else ""
+            ),
+            "measurement_basis": CASH_FLOW_MEASUREMENT_BASES[field],
+        }
+        for field in (
+            "operating_margin",
+            "cash_interest",
+            "cash_taxes",
+            "depreciation_and_amortization",
+            "stock_based_compensation",
+            "other_non_cash_items",
+            "working_capital_investment",
+            "capex",
+            "restructuring_cash",
+            "acquisition_integration_cash",
+            "other_cash_adjustments",
+        )
+    }
+    return {
+        "status": "NOT_VALIDATED",
+        "driver_module": "",
+        "module_selection": {
+            "status": "NOT_VALIDATED",
+            "rationale": "",
+            "evidence_ids": [],
+            "reviewed_by": "",
+        },
+        "currency": "",
+        "unit": "",
+        "amount_scale": 1.0,
+        "unit_policy": (
+            "Use unscaled atomic currency units matching price currency "
+            "(for example USD, not USD_MILLIONS)."
+        ),
+        "fcf_basis": FORWARD_FCF_BASIS,
+        "reviewed_by": "",
+        "scenarios": [
+            {
+                "name": name,
+                "scenario_rationale": "",
+                "revenue_driver": {},
+                "cash_flow_driver": deepcopy(cash_flow_driver),
+                "reviewed_by": "",
+            }
+            for name in ("Bear", "Base", "Bull")
+        ],
+        "share_count_bridge": {
+            "status": "NOT_VALIDATED",
+            "target_date": "",
+            "known_subsequent_event_status": "NOT_REVIEWED",
+            "known_subsequent_event_note": "",
+            "reviewed_by": "",
+            "changes": {
+                field: _forward_assumption_template(
+                    unit="SHARES",
+                    currency="SHARES",
+                )
+                for field in (
+                    "repurchases",
+                    "stock_based_compensation_issuance",
+                    "employee_plan_issuance",
+                    "convertible_dilution",
+                    "acquisition_share_issuance",
+                    "other_net_change",
+                )
+            },
+        },
+        "module_catalog": driver_module_catalog(),
+    }
+
+
 def analyst_input_template(company: dict[str, Any], evidence_records: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     evidence_records = evidence_records or []
     reported_fcf_id = next(
@@ -2973,6 +3185,7 @@ def analyst_input_template(company: dict[str, Any], evidence_records: list[dict[
             "confidence": "Low",
             "reviewed_by": "",
         },
+        "forward_valuation": _forward_valuation_input_template(),
         "market_data_approval": {
             "status": "NOT_APPROVED",
             "provider": "Yahoo Finance chart endpoint",
@@ -3581,6 +3794,7 @@ def build_analysis_evidence(
     probability_validation: dict[str, Any],
     research_input: dict[str, Any],
     additional_records: list[dict[str, Any]] | None = None,
+    forward_valuation_contract: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Create evidence records for market, LTM, valuation, and scenario outputs."""
 
@@ -4056,9 +4270,166 @@ def build_analysis_evidence(
             )
             scenario_metric_basis_ids = [normalized_evidence_id]
 
+    forward_valuation_contract = (
+        forward_valuation_contract
+        if isinstance(forward_valuation_contract, dict)
+        else {}
+    )
+    forward_model_active = forward_valuation_contract.get("status") == "VALIDATED"
+    forward_scenario_metric_ids: dict[str, str] = {}
+    forward_share_basis_id = ""
+    if forward_model_active:
+        for forward_scenario in forward_valuation_contract.get("scenarios", []):
+            scenario_name = str(forward_scenario.get("name") or "")
+            revenue_bridge = forward_scenario.get("revenue_bridge", {})
+            revenue_line = revenue_bridge.get("forward_revenue", {})
+            revenue_input_ids = _unique_text(
+                [
+                    evidence_id
+                    for line in revenue_bridge.get("input_lines", [])
+                    for evidence_id in line.get("evidence_ids", [])
+                ]
+            )
+            revenue_id = add(
+                f"forward_{scenario_name.lower()}_revenue",
+                revenue_line.get("value"),
+                unit=str(forward_valuation_contract.get("unit") or ""),
+                currency=str(forward_valuation_contract.get("currency") or ""),
+                period_start=str(
+                    forward_valuation_contract.get("forecast_period", {}).get(
+                        "start_date"
+                    )
+                    or ""
+                ),
+                period_end=str(
+                    forward_valuation_contract.get("forecast_period", {}).get(
+                        "end_date"
+                    )
+                    or ""
+                ),
+                period_type="forecast",
+                measurement_basis=(
+                    f"{forward_valuation_contract.get('driver_module')} "
+                    "business-model revenue bridge"
+                ),
+                source_level=0,
+                source_type="calculation_from_analyst_input",
+                source_name="Shared S10 forward valuation engine",
+                source_url="",
+                source_locator=(
+                    f"forward_valuation_contract.scenarios.{scenario_name}."
+                    "revenue_bridge.forward_revenue"
+                ),
+                source_tag="calculation",
+                evidence_class="CALC",
+                formula=str(revenue_line.get("formula") or ""),
+                input_ids=revenue_input_ids,
+                confidence="Medium",
+            )
+            fcf_line = forward_scenario.get("cash_flow_bridge", {}).get(
+                "forward_fcf", {}
+            )
+            fcf_input_ids = _unique_text(
+                [
+                    revenue_id,
+                    *[
+                        evidence_id
+                        for line in forward_scenario.get(
+                            "cash_flow_bridge", {}
+                        ).get("input_lines", [])
+                        for evidence_id in line.get("evidence_ids", [])
+                    ],
+                ]
+            )
+            fcf_id = add(
+                f"forward_{scenario_name.lower()}_fcf",
+                forward_scenario.get("forward_fcf"),
+                unit=str(forward_valuation_contract.get("unit") or ""),
+                currency=str(forward_valuation_contract.get("currency") or ""),
+                period_start=str(
+                    forward_valuation_contract.get("metric_period", {}).get(
+                        "start_date"
+                    )
+                    or ""
+                ),
+                period_end=str(
+                    forward_valuation_contract.get("metric_period", {}).get(
+                        "end_date"
+                    )
+                    or ""
+                ),
+                period_type="forecast",
+                measurement_basis=forward_valuation_contract.get("fcf_basis"),
+                source_level=0,
+                source_type="calculation_from_analyst_input",
+                source_name="Shared S10 forward valuation engine",
+                source_url="",
+                source_locator=(
+                    f"forward_valuation_contract.scenarios.{scenario_name}."
+                    "cash_flow_bridge.forward_fcf"
+                ),
+                source_tag="calculation",
+                evidence_class="CALC",
+                formula=str(fcf_line.get("formula") or ""),
+                input_ids=fcf_input_ids,
+                confidence="Medium",
+            )
+            forward_scenario_metric_ids[scenario_name] = fcf_id
+            forward_scenario["calculation_evidence_ids"] = [
+                revenue_id,
+                fcf_id,
+            ]
+            forward_scenario["evidence_ids"] = _unique_text(
+                [*forward_scenario.get("evidence_ids", []), revenue_id, fcf_id]
+            )
+            known_ids.update({revenue_id, fcf_id})
+        share_bridge = forward_valuation_contract.get(
+            "forward_share_count_bridge", {}
+        )
+        if share_bridge.get("status") == "VALIDATED":
+            forward_share_input_ids = _unique_text(
+                [
+                    shares_id,
+                    *[
+                        evidence_id
+                        for line in share_bridge.get("change_lines", [])
+                        for evidence_id in line.get("evidence_ids", [])
+                    ],
+                ]
+            )
+            forward_share_basis_id = add(
+                "forward_share_count_basis",
+                share_bridge.get("forward_diluted_shares"),
+                unit="shares",
+                period_end=str(share_bridge.get("target_date") or ""),
+                as_of_date=str(share_bridge.get("target_date") or ""),
+                measurement_basis="S10 reviewed forward share-count bridge",
+                source_level=0,
+                source_type="calculation_from_analyst_input",
+                source_name="Shared S10 forward valuation engine",
+                source_url="",
+                source_locator=(
+                    "forward_valuation_contract.forward_share_count_bridge."
+                    "forward_diluted_shares"
+                ),
+                source_tag="calculation",
+                evidence_class="CALC",
+                formula=str(share_bridge.get("formula") or ""),
+                input_ids=forward_share_input_ids,
+                confidence="Medium",
+            )
+            share_bridge["calculation_evidence_id"] = forward_share_basis_id
+            share_bridge["evidence_ids"] = _unique_text(
+                [
+                    *share_bridge.get("evidence_ids", []),
+                    forward_share_basis_id,
+                ]
+            )
+            known_ids.add(forward_share_basis_id)
+
     scenario_model_input = research_input.get("scenario_model", {})
     scenario_metric_name = str(scenario_model_input.get("metric") or "").upper()
-    if scenarios and scenario_metric_name not in {
+    if scenarios and not forward_model_active and scenario_metric_name not in {
         "NORMALIZED FCF",
         "PUBLIC-DATA FCF UNDERWRITING BASE",
     }:
@@ -4109,8 +4480,13 @@ def build_analysis_evidence(
             scenario_metric_basis_ids = []
 
     for scenario in scenarios:
+        basis_ids = (
+            [forward_scenario_metric_ids[scenario.name]]
+            if scenario.name in forward_scenario_metric_ids
+            else scenario_metric_basis_ids
+        )
         scenario.evidence_ids = _unique_text(
-            [price_id, shares_id, *scenario_metric_basis_ids]
+            [price_id, shares_id, *basis_ids]
         )
 
     valuation_input = research_input.get("valuation_framework", {})
@@ -4291,7 +4667,7 @@ def build_analysis_evidence(
                 "scope": "shared_investment_analysis_engine",
             }
         )
-    elif scenarios and scenario_metric_basis_ids and valuation_input_is_structurally_complete(research_input) and not any(
+    elif scenarios and (scenario_metric_basis_ids or forward_scenario_metric_ids) and valuation_input_is_structurally_complete(research_input) and not any(
         issue.get("issue_class") == "HARD_STOP" for issue in issues
     ):
         scenario_rows = {row.get("name"): row for row in scenario_model.get("scenarios", [])}
@@ -4300,42 +4676,42 @@ def build_analysis_evidence(
             if isinstance(research_input.get("share_count_basis"), dict)
             else {}
         )
-        forward_share_basis_id = ""
-        forward_share_evidence_ids = [
-            str(value)
-            for value in share_input.get("forward_share_count_evidence_ids", [])
-            if value
-        ]
-        if (
-            share_input.get("forward_share_count_bridge_status") == "COMPLETED"
-            and forward_share_evidence_ids
-            and scenarios
-            and all(
-                safe_float(row.share_count_basis_value)
-                == safe_float(share_input.get("forward_share_count_value"))
-                and row.share_count_basis_date
-                == str(share_input.get("forward_share_count_date") or "")
-                for row in scenarios
-            )
-        ):
-            forward_share_basis_id = add(
-                "forward_share_count_basis",
-                share_input.get("forward_share_count_value"),
-                unit="shares",
-                period_end=str(share_input.get("forward_share_count_date") or ""),
-                as_of_date=str(share_input.get("forward_share_count_date") or ""),
-                measurement_basis="reviewed forward share-count bridge",
-                source_level=0,
-                source_type="analyst_owned_calculation",
-                source_name=share_input.get("reviewed_by"),
-                source_url="",
-                source_locator="research_input.share_count_basis.forward_share_count_value",
-                source_tag="analyst_input",
-                evidence_class="CALC",
-                formula="reviewed forward share-count bridge output",
-                input_ids=forward_share_evidence_ids,
-                confidence="Medium",
-            )
+        if not forward_share_basis_id:
+            forward_share_evidence_ids = [
+                str(value)
+                for value in share_input.get("forward_share_count_evidence_ids", [])
+                if value
+            ]
+            if (
+                share_input.get("forward_share_count_bridge_status") == "COMPLETED"
+                and forward_share_evidence_ids
+                and scenarios
+                and all(
+                    safe_float(row.share_count_basis_value)
+                    == safe_float(share_input.get("forward_share_count_value"))
+                    and row.share_count_basis_date
+                    == str(share_input.get("forward_share_count_date") or "")
+                    for row in scenarios
+                )
+            ):
+                forward_share_basis_id = add(
+                    "forward_share_count_basis",
+                    share_input.get("forward_share_count_value"),
+                    unit="shares",
+                    period_end=str(share_input.get("forward_share_count_date") or ""),
+                    as_of_date=str(share_input.get("forward_share_count_date") or ""),
+                    measurement_basis="reviewed forward share-count bridge",
+                    source_level=0,
+                    source_type="analyst_owned_calculation",
+                    source_name=share_input.get("reviewed_by"),
+                    source_url="",
+                    source_locator="research_input.share_count_basis.forward_share_count_value",
+                    source_tag="analyst_input",
+                    evidence_class="CALC",
+                    formula="reviewed forward share-count bridge output",
+                    input_ids=forward_share_evidence_ids,
+                    confidence="Medium",
+                )
         weighted_probability_ids: list[str] = []
         weighted_price_ids: list[str] = []
         valuation_contract_input = (
@@ -4375,23 +4751,25 @@ def build_analysis_evidence(
                     notes=probability_validation.get("scenario_rationales", {}).get(scenario.name, "Probability rationale not validated."),
                 )
                 weighted_probability_ids.append(probability_id)
-            metric_id = add(
-                f"scenario_{scenario.name.lower()}_metric_value",
-                inputs.get("metric_value_total"),
-                unit=scenario.metric_unit,
-                currency=scenario.metric_currency,
-                period_end=metric_period_end,
-                as_of_date=scenario_output_date,
-                measurement_basis="analyst-owned scenario",
-                source_level=0,
-                source_type="analyst_owned_input",
-                source_name=scenario_model.get("reviewed_by"),
-                source_url="",
-                source_locator=f"research_input.scenario_model.{scenario.name}.metric_value_total",
-                source_tag="analyst_input",
-                evidence_class="JUDGMENT",
-                input_ids=scenario_metric_basis_ids,
-            )
+            metric_id = forward_scenario_metric_ids.get(scenario.name, "")
+            if not metric_id:
+                metric_id = add(
+                    f"scenario_{scenario.name.lower()}_metric_value",
+                    inputs.get("metric_value_total"),
+                    unit=scenario.metric_unit,
+                    currency=scenario.metric_currency,
+                    period_end=metric_period_end,
+                    as_of_date=scenario_output_date,
+                    measurement_basis="analyst-owned scenario",
+                    source_level=0,
+                    source_type="analyst_owned_input",
+                    source_name=scenario_model.get("reviewed_by"),
+                    source_url="",
+                    source_locator=f"research_input.scenario_model.{scenario.name}.metric_value_total",
+                    source_tag="analyst_input",
+                    evidence_class="JUDGMENT",
+                    input_ids=scenario_metric_basis_ids,
+                )
             scenario_multiple_id = add(
                 f"scenario_{scenario.name.lower()}_exit_multiple",
                 scenario.exit_multiple,
@@ -5415,28 +5793,7 @@ def build_investment_layer(
         foundational_records,
     )
     investment_question = build_investment_question(research_input)
-    preliminary_share_basis = build_share_count_basis(
-        {
-            "valuation": valuation,
-            "report_dates": {"market_price_date": valuation.get("price_date")},
-            "evidence_records": foundational_records,
-        },
-        research_input,
-    )
-    scenarios, scenario_status = scenario_set(
-        valuation,
-        drivers,
-        preliminary_market_expectations,
-        research_input,
-        preliminary_share_basis,
-    )
-    preliminary_probability_validation = build_probability_validation(
-        research_input,
-        scenarios,
-        foundational_records,
-        str(valuation.get("price_date") or datetime.now(UTC).date().isoformat()),
-    )
-    preliminary_analysis_records, _, _ = build_analysis_evidence(
+    bootstrap_analysis_records, _, _ = build_analysis_evidence(
         company,
         step2,
         market_snapshot,
@@ -5444,18 +5801,40 @@ def build_investment_layer(
         valuation,
         opportunity,
         preliminary_market_expectations,
-        scenarios,
-        preliminary_probability_validation,
+        [],
+        {"status": "NOT_PROVIDED"},
         research_input,
         external_records,
     )
-    resolution_records = foundational_records + preliminary_analysis_records
+    resolution_records = foundational_records + bootstrap_analysis_records
     market_expectations = build_market_expectations(
         valuation,
         market_snapshot,
         opportunity,
         research_input,
         resolution_records,
+    )
+    forward_parent = {
+        "valuation": valuation,
+        "report_dates": {"market_price_date": valuation.get("price_date")},
+        "evidence_records": resolution_records,
+    }
+    forward_valuation_contract = build_forward_valuation_contract(
+        forward_parent,
+        research_input,
+    )
+    preliminary_share_basis = build_share_count_basis(
+        forward_parent,
+        research_input,
+        forward_valuation_contract,
+    )
+    scenarios, scenario_status = scenario_set(
+        valuation,
+        drivers,
+        market_expectations,
+        research_input,
+        preliminary_share_basis,
+        forward_valuation_contract,
     )
     probability_validation = build_probability_validation(
         research_input,
@@ -5475,6 +5854,7 @@ def build_investment_layer(
         probability_validation,
         research_input,
         external_records,
+        forward_valuation_contract,
     )
     all_supplemental_records = external_records + analysis_records
     all_analysis_records = list(step2.get("evidence_records", step2.get("data_points", []))) + all_supplemental_records
@@ -5522,6 +5902,7 @@ def build_investment_layer(
         + peer_valuation_context.get("validation_issues", [])
         + fcf_quality_assessment.get("validation_issues", [])
         + investment_decision_summary.get("validation_issues", [])
+        + forward_valuation_contract.get("validation_issues", [])
         + external_evidence_issues
         + analysis_evidence_issues
     )
@@ -5814,6 +6195,7 @@ def build_investment_layer(
         "benchmark_snapshot": {k: v for k, v in benchmark_snapshot.items() if k != "history"},
         "valuation": valuation,
         "valuation_framework": validated_valuation_framework,
+        "forward_valuation_contract": forward_valuation_contract,
         "peer_valuation_context": peer_valuation_context,
         "public_data_drivers": drivers,
         "market_expectations": market_expectations,

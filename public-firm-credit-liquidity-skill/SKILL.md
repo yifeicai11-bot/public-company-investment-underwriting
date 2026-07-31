@@ -55,6 +55,8 @@ Read `references/probability_and_peer_governance.md` whenever scenarios, probabi
 
 Read `references/shared_valuation_contract.md` whenever producing, validating, or rendering equity price sensitivities or returns. Its dated-horizon fields, four-output separation, formulas, forward-share requirement, and private Gate 4 boundary are binding.
 
+Read `references/forward_operating_bridges.md` whenever creating, validating, or consuming a forward revenue, forward FCF, or forward share-count bridge. Use only a controlled business-model module and the shared output contract. If no module fits, return `DRIVER_MODEL_NOT_AVAILABLE`; do not generate a generic forward forecast. Treat S10 revenue and FCF as dated flow metrics, require unscaled atomic currency/share units, and bind every FACT/CALC input to a matching validated evidence record. A manual `Forward FCF` total cannot replace a missing S10 driver model.
+
 When the user or partner wants the memo to help make an investment decision, read `references/investment_committee_layer.md` after the investment decision upgrade rules. Use it to structure bull/bear debate, risk review, portfolio fit, and final action view without replacing validation or valuation evidence.
 
 When using any third-party library, GitHub skill, MCP server, market-data source, or hosted API to support the review, read `references/external_tool_policy.md`. External tools may accelerate data extraction, market data retrieval, note reading, or portfolio analytics, but they must not bypass source logging, period validation, provider labeling, or investment-gate limits.
@@ -105,6 +107,8 @@ When the user wants Step 3 investment decision support, run the generic investme
 This rebuilds the data/evidence pack, adds dated public market observations, trailing valuation observations, issuer-underwriting status, Investment Question, Key Debates, Decision Confidence, partner input templates, and the shared versioned output contract.
 
 In public-data-only mode, do not auto-create scenario probabilities, exit multiples, formal targets, or expected returns from historical growth, trailing multiples, leverage, price momentum, or 52-week range position. Without validated analyst inputs for the Public-Data FCF Underwriting Base, valuation, and scenarios, stop at Gate 1 or Gate 2.5. Validated scenario implied prices may reach Gate 3 without probabilities. Without a complete valuation horizon, forecast period, metric period, explicit dividend, forward share basis, and exit basis, label percentages `Price Change vs Current Price`; Base-Case Return and Probability-Weighted Return remain `NOT_EVALUATED`.
+
+For a driver-based forward FCF, complete `forward_valuation` in the generated analyst input. Select one of the controlled `RETAIL`, `CONSUMER_BRAND`, `SUBSCRIPTION_SOFTWARE`, `INDUSTRIAL`, `ACQUISITION_HEAVY`, or `DISTRIBUTION` modules using evidence and reviewer ownership. Complete every Bear/Base/Bull revenue and common cash-flow line plus the target-date share bridge. Do not enter CFO or another embedded subtotal into the common bridge. A missing line is not zero, and a negative calculated FCF must remain visible but ineligible for a positive FCF multiple.
 
 To supply analyst-owned assumptions, use:
 
@@ -252,4 +256,5 @@ Use confidence levels:
 - Do not deduct cash interest, cash taxes, working-capital movements, or operating lease cash flows a second time from CFO-based FCF unless an explicit sourced reversal rebuilds CFO.
 - Do not let a renderer contain company facts, investment assumptions, or calculations. One-Page and Full Report must render the same validated output contract.
 - Do not use expected return, total return, annualized return, twelve-month return, or target price as formal labels without a complete validated return context.
+- Do not project forward FCF from historical growth, a trailing margin, or one generic driver template. Use the S10 shared engine and a controlled business-model module, or return `DRIVER_MODEL_NOT_AVAILABLE`.
 - Do not show raw `EV-...` identifiers in the One-Page or Full Report. Preserve them in the machine-readable contract and Evidence Audit Appendix.

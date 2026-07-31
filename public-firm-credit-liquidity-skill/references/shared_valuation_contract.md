@@ -105,6 +105,21 @@ Current market capitalization must continue to use the latest reported point-in-
 
 The scenario engine is metric-agnostic at the shared-contract level. `Normalized FCF` may use the validated FCF bridge. Another positive multiple-based metric, such as earnings or EBITDA, requires its own positive, dated, currency-matched, evidence-linked, reviewer-owned `metric_basis`. Missing or negative denominators must not be forced through a multiple valuation. Business-model driver generation remains S10 scope.
 
+When S10 is present, consume only a `VALIDATED`
+`forward_valuation_contract`. Its calculated scenario FCF and target-date
+forward diluted shares replace manually entered scenario totals and share
+denominators. A manually entered value that conflicts with the S10 bridge must
+fail validation. `PARTIALLY_VALIDATED`, `INVALID`, and
+`DRIVER_MODEL_NOT_AVAILABLE` S10 outputs cannot unlock formal S09 returns.
+In particular, a manually supplied scenario metric named `Forward FCF` must be
+blocked unless the shared S10 contract is `VALIDATED`. S10 forward revenue and
+FCF must use a forward flow period; the broader S09 point-in-time metric option
+does not apply to these flow metrics. Persisted S09 Forward FCF scenario values
+must reconcile to S10 forward FCF and its target-date share bridge; validating
+S09 and S10 as two unrelated objects is insufficient.
+Read `forward_operating_bridges.md` for the controlled module, line-level
+evidence, sign, and safe-failure rules.
+
 ## Compatibility
 
 `return_context` is a read-only compatibility projection of `valuation_contract`; it is not a second source of calculations.

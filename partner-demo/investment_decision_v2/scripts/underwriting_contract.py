@@ -21,6 +21,7 @@ from equity_valuation_contract import (
     suppress_shared_valuation_outputs,
     validate_shared_valuation_contract,
 )
+from forward_operating_model import validate_forward_valuation_contract
 
 SCHEMA_VERSION = "5.1.0"
 SUPPORTED_UNIVERSE_VERSION = "1.0.0"
@@ -1365,8 +1366,13 @@ def validate_output_contract(contract: dict[str, Any]) -> list[str]:
             errors.append("Scenario price-sensitivity evidence must be absent below Gate 3: " + ", ".join(leaked))
     if gate_level < 4 and contract.get("position_sizing") is not None:
         errors.append("Position sizing must be suppressed below Gate 4.")
+    if schema_version == "5.0.0" and "forward_valuation_contract" in contract:
+        errors.append(
+            "S10 forward_valuation_contract is not supported by frozen schema 5.0.0."
+        )
     if schema_version != "5.0.0":
         errors.extend(validate_shared_valuation_contract(contract))
+        errors.extend(validate_forward_valuation_contract(contract))
         expected_return_context = legacy_return_context(contract.get("valuation_contract", {}))
         if contract.get("return_context") != expected_return_context:
             errors.append(

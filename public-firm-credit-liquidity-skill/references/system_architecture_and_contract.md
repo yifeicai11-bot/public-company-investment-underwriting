@@ -61,6 +61,8 @@ but it must not contain ticker branches, company values, or investment views.
 - Public-Data FCF Underwriting Base, source/calculation validation, and FCF Normalization Status.
 - Market-expectation status.
 - Reverse valuation and scenario status.
+- The S10 modular forward valuation contract: business-model revenue drivers,
+  common FCF bridge, target-date share bridge, and safe module fallback.
 - The shared valuation contract: dated horizon, forecast and metric periods, dividend, current and forward share bases, exit basis, and separately governed price-sensitivity/base-return/probability-weighted-return outputs.
 - Upgrade, downgrade, and thesis-invalidation rules.
 - Data Gate determination and output suppression.
@@ -288,6 +290,9 @@ One-Page and Full Report must consume the same versioned object. Required fields
 - issuer-underwriting modules
 - facts, calculations, inferences, judgments, and missing information
 - liquidity, credit constraint, FCF underwriting base/normalization, valuation scope, share-count basis, probability, and scenario status
+- the versioned S10 forward valuation contract, when evaluated, including the
+  selected controlled module, Bear/Base/Bull operating bridges, line-level
+  evidence classes, calculated forward FCF, and forward diluted-share bridge
 - the versioned shared valuation contract, including valuation as-of date, target date, holding period, forecast period, metric period, dividend assumption, share basis, exit basis, and four separated valuation outputs
 - catalysts, thesis breaks, decision rules
 - evidence records, source registry, Hard Stops, and Warnings

@@ -123,6 +123,11 @@ def fmt_money(value: Any, *, decimals: int = 1) -> str:
     return f"{sign}$" + f"{absolute:,.{decimals}f}"
 
 
+def fmt_number(value: Any, *, decimals: int = 1) -> str:
+    number = safe_float(value)
+    return "n/a" if number is None else f"{number:,.{decimals}f}"
+
+
 def fmt_price(value: Any) -> str:
     number = safe_float(value)
     return "n/a" if number is None else "$" + f"{number:,.2f}"
@@ -986,10 +991,21 @@ def what_is_priced_in_html(contract: dict[str, Any], *, compact: bool = False) -
 def valuation_status_html(contract: dict[str, Any], *, compact: bool = False) -> str:
     valuation_status = contract.get("valuation_status", {})
     components = valuation_status.get("components", {})
+    forward_contract = contract.get("forward_valuation_contract", {})
+    forward_status = forward_contract.get(
+        "status",
+        valuation_status.get(
+            "forward_valuation_contract_status",
+            "DRIVER_MODEL_NOT_AVAILABLE",
+        ),
+    )
+    forward_module = forward_contract.get("driver_module") or "Not selected"
     if compact:
         incomplete = [name for name, status in components.items() if status != "COMPLETED"]
         return (
             f'<p><b>Valuation Status / 估值状态:</b> {esc(valuation_status.get("status"))}; '
+            f'<b>forward model / 前瞻模型:</b> {esc(forward_status)} '
+            f'({esc(forward_module)}); '
             f'<b>not completed / 未完成:</b> {esc(", ".join(incomplete) or "None")}.</p>'
         )
     rows = "".join(
@@ -1002,6 +1018,64 @@ def valuation_status_html(contract: dict[str, Any], *, compact: bool = False) ->
         '<table><thead><tr><th>Component / 组件</th><th>Status / 状态</th></tr></thead>'
         f'<tbody>{rows}</tbody></table>'
         f'{list_html(valuation_status.get("limitations", []))}'
+    )
+
+
+def forward_operating_bridge_html(contract: dict[str, Any]) -> str:
+    forward = contract.get("forward_valuation_contract", {})
+    status = forward.get("status") or "DRIVER_MODEL_NOT_AVAILABLE"
+    module = forward.get("driver_module") or "Not selected"
+    if status == "DRIVER_MODEL_NOT_AVAILABLE":
+        return (
+            '<div class="answer-box warning"><strong>Forward Operating Model / '
+            "前瞻经营模型: DRIVER_MODEL_NOT_AVAILABLE</strong>"
+            "<p>No controlled business-model driver was validated, so no unsupported "
+            "forward FCF forecast was generated. / 尚无适配且通过验证的业务驱动模块，"
+            "因此未生成缺乏支持的前瞻FCF预测。</p></div>"
+        )
+    if (
+        status not in {"PARTIALLY_VALIDATED", "VALIDATED"}
+        or forward.get("driver_model_status") != "VALIDATED"
+    ):
+        return (
+            '<div class="answer-box warning"><strong>Forward Operating Model / '
+            f'前瞻经营模型: {esc(status)}</strong>'
+            "<p>Unvalidated forward revenue, FCF, share-count, and per-share values "
+            "are suppressed. Review the Validation Report before further valuation work. / "
+            "未验证的前瞻收入、FCF、股数及每股数值均已抑制；继续估值前请先复核Validation Report。"
+            "</p></div>"
+        )
+    unit = str(forward.get("unit") or forward.get("currency") or "")
+    def forward_amount(value: Any) -> str:
+        formatted = fmt_number(value)
+        return formatted if formatted == "n/a" or not unit else f"{formatted} {esc(unit)}"
+
+    rows = "".join(
+        "<tr>"
+        f"<td>{esc(row.get('name'))}</td>"
+        f"<td>{esc(row.get('status'))}</td>"
+        f'<td class="num">{forward_amount(row.get("revenue_bridge", {}).get("forward_revenue", {}).get("value"))}</td>'
+        f'<td class="num">{forward_amount(row.get("forward_fcf"))}</td>'
+        "</tr>"
+        for row in forward.get("scenarios", [])
+    )
+    share = forward.get("forward_share_count_bridge", {})
+    share_value = (
+        fmt_number(share.get("forward_diluted_shares"))
+        if share.get("status") == "VALIDATED"
+        else "n/a"
+    )
+    return (
+        f'<div class="answer-box"><strong>Forward Operating Model / 前瞻经营模型: '
+        f'{esc(status)}</strong><p><b>Module / 模块:</b> {esc(module)}; '
+        f'<b>FCF basis / FCF口径:</b> {esc(forward.get("fcf_basis"))}; '
+        f'<b>Forward shares / 前瞻股数:</b> '
+        f'{share_value} '
+        f'as of {esc(share.get("target_date"))} ({esc(share.get("status"))}).</p></div>'
+        '<table><thead><tr><th>Scenario / 情景</th><th>Status / 状态</th>'
+        '<th class="num">Forward revenue / 前瞻收入</th>'
+        '<th class="num">Forward FCF / 前瞻FCF</th></tr></thead>'
+        f'<tbody>{rows}</tbody></table>'
     )
 
 
@@ -1238,6 +1312,7 @@ def full_report_html(contract: dict[str, Any]) -> str:
 
     body += '<section class="page-break"><h2>6. What Is Priced In and Valuation Scope / 市场隐含要求与估值范围</h2>'
     body += valuation_status_html(contract)
+    body += forward_operating_bridge_html(contract)
     body += what_is_priced_in_html(contract)
     body += (
         '<p class="section-intro">The selected multiple is an analyst-owned reverse-valuation reference, '
