@@ -196,6 +196,32 @@ The four bilingual PDFs are generated from one validated synthetic assessment
 contract. They are interface demonstrations, not real portfolio facts or an
 approved position.
 
+## S15 Monitoring and Update Mode
+
+S15 compares two immutable, validated issuer contracts for the same SEC CIK.
+It records changes in facts, calculations, judgments, evidence, Warnings, Hard
+Stops, reviewer-approved KPIs, scenario sensitivities, and probability review
+dates. The system thesis assessment is provisional; formal thesis status stays
+`PENDING_HUMAN_REVIEW`, and trade execution stays disabled.
+
+Start from:
+
+`partner-demo/investment_decision_v2/monitoring/templates/monitoring_policy.template.yaml`
+
+Then run:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_monitoring_update.py \
+  --previous /path/to/prior/underwriting_output_contract.json \
+  --current /path/to/current/underwriting_output_contract.json \
+  --policy /path/to/monitoring_policy.yaml \
+  --as-of-date YYYY-MM-DD \
+  --output-dir /path/to/local/monitoring-output
+```
+
+The engine never infers KPI thresholds from free text. Missing, expired,
+dimensionally inconsistent, or negative-denominator comparisons fail safely.
+
 Enable the repository privacy hook once per clone:
 
 ```bash
@@ -285,7 +311,9 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 342 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- 365 shared accounting, evidence, market-data, gate, scenario, valuation,
+  rendering, Gate 4, monitoring, cross-industry, and privacy-boundary tests
+  passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
 - The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.

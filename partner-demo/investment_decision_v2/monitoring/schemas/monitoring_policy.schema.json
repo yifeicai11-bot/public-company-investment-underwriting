@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/monitoring/monitoring_policy.schema.json",
+  "title": "S15 Monitoring Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "monitoring_policy_version",
+    "policy_id",
+    "issuer_identifier",
+    "effective_date",
+    "expiration_date",
+    "review_status",
+    "reviewed_by",
+    "probability_review_warning_days",
+    "scenario_materiality_threshold_pct",
+    "scenario_changes_affect_system_assessment",
+    "kpi_rules"
+  ],
+  "properties": {
+    "monitoring_policy_version": {"const": "1.0.0"},
+    "policy_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "issuer_identifier": {"type": "string", "minLength": 1, "maxLength": 128},
+    "effective_date": {"type": "string", "format": "date"},
+    "expiration_date": {"type": "string", "format": "date"},
+    "review_status": {"const": "APPROVED"},
+    "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+    "probability_review_warning_days": {"type": "integer", "minimum": 0, "maximum": 365},
+    "scenario_materiality_threshold_pct": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "scenario_changes_affect_system_assessment": {"type": "boolean"},
+    "kpi_rules": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/kpiRule"}
+    }
+  },
+  "$defs": {
+    "kpiRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kpi_id",
+        "metric_name",
+        "evidence_class",
+        "comparison_basis",
+        "operator",
+        "threshold",
+        "unit",
+        "currency",
+        "trigger_type",
+        "effective_date",
+        "expiration_date",
+        "rationale",
+        "reviewed_by",
+        "review_status"
+      ],
+      "properties": {
+        "kpi_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "metric_name": {"type": "string", "minLength": 1, "maxLength": 256},
+        "evidence_class": {"enum": ["FACT", "CALC", "INFERENCE", "JUDGMENT"]},
+        "comparison_basis": {"enum": ["CURRENT_VALUE", "ABSOLUTE_CHANGE", "PERCENT_CHANGE"]},
+        "operator": {"enum": ["LT", "LTE", "GT", "GTE", "EQ", "NEQ"]},
+        "threshold": {"type": "number"},
+        "unit": {"type": "string"},
+        "currency": {"type": "string"},
+        "trigger_type": {"enum": ["UPGRADE", "DOWNGRADE", "THESIS_BREAK", "MONITOR"]},
+        "effective_date": {"type": "string", "format": "date"},
+        "expiration_date": {"type": "string", "format": "date"},
+        "rationale": {"type": "string", "minLength": 1},
+        "reviewed_by": {"type": "string", "minLength": 2, "maxLength": 256},
+        "review_status": {"const": "APPROVED"}
+      }
+    }
+  }
+}

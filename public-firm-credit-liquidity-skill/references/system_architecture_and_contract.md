@@ -87,6 +87,20 @@ It must not fetch data, hard-code facts, calculate ratios, select scenarios, or 
 
 `build_crox_partner_ready_artifacts.py` is only a thin regression wrapper.
 
+### Monitoring Engine
+
+`monitoring_engine.py` owns:
+
+- immutable prior/current contract comparison;
+- FACT, CALC, INFERENCE, JUDGMENT, evidence, Warning, and Hard Stop changes;
+- reviewer-approved KPI evaluation;
+- scenario-sensitivity impact and probability-expiration checks; and
+- provisional system thesis assessment.
+
+It must not fetch or rebuild issuer data, parse thresholds from narrative
+decision rules, change the formal thesis status, recommend a position, or
+execute a trade. The formal thesis status remains human-owned.
+
 ## Evidence Record
 
 Every material number must store:

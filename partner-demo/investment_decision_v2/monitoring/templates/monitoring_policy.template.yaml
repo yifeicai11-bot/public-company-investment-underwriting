@@ -1,0 +1,25 @@
+monitoring_policy_version: 1.0.0
+policy_id: REPLACE_WITH_POLICY_ID
+issuer_identifier: REPLACE_WITH_SEC_CIK
+effective_date: YYYY-MM-DD
+expiration_date: YYYY-MM-DD
+review_status: APPROVED
+reviewed_by: REPLACE_WITH_NAMED_REVIEWER
+probability_review_warning_days: 30
+scenario_materiality_threshold_pct: 0.10
+scenario_changes_affect_system_assessment: false
+kpi_rules:
+  - kpi_id: REPLACE_WITH_STABLE_KPI_ID
+    metric_name: REPLACE_WITH_EXACT_EVIDENCE_METRIC_NAME
+    evidence_class: FACT
+    comparison_basis: CURRENT_VALUE
+    operator: LT
+    threshold: 0
+    unit: REPLACE_WITH_EXACT_UNIT
+    currency: REPLACE_WITH_EXACT_CURRENCY_OR_EMPTY
+    trigger_type: DOWNGRADE
+    effective_date: YYYY-MM-DD
+    expiration_date: YYYY-MM-DD
+    rationale: REPLACE_WITH_DECISION_RELEVANCE_AND_THRESHOLD_BASIS
+    reviewed_by: REPLACE_WITH_NAMED_REVIEWER
+    review_status: APPROVED

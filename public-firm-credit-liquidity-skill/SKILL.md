@@ -72,6 +72,13 @@ Before handling any fund policy, holdings, opportunity-set, approval, or portfol
 
 After S13 produces a validated constraint result, read `references/gate4_assessment_and_approval.md` before issuing a System Portfolio Assessment, recording a Partner decision, or rendering Gate 4 reports. Its five-state assessment priority, assessment-hash binding, Partner approval rules, report contract, and constraint-ceiling language are binding.
 
+Read `references/monitoring_and_update_mode.md` before comparing two issuer
+contracts or updating a thesis. S15 may compare only immutable validated
+contracts for the same SEC CIK. KPI thresholds require a dated, reviewer-owned
+machine-readable policy; do not extract them from narrative decision rules.
+Keep the system thesis assessment provisional and the formal thesis status
+`PENDING_HUMAN_REVIEW`.
+
 Do not directly wrap automated ratios as an investment report. Use the layered structure:
 
 1. Data Integrity
@@ -102,6 +109,8 @@ If valuation, consensus, the Public-Data FCF Underwriting Base, or scenario pric
 16. State Data Gate and Decision Confidence separately. The gate controls which outputs are allowed; confidence describes reliability within those allowed outputs.
 17. For investment-support memos, run the Investment Committee Layer only after valuation/scenario work and before a human-owned action view.
 18. End with measurable upgrade, downgrade, and thesis-invalidation conditions. Mark them `MISSING` when the analyst has not defined them.
+19. For an update, compare the prior and current validated contracts through
+    S15 before rewriting the memo or carrying a thesis status forward.
 
 When working with SEC-reporting companies, use the generic decision-support builder when available:
 
@@ -161,6 +170,15 @@ For S14 assessment, approval validation, and the four bilingual local reports,
 run:
 
 `partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
+
+For S15 ongoing monitoring, use two exact issuer contracts plus an approved
+monitoring policy and explicit as-of date:
+
+`partner-demo/investment_decision_v2/scripts/run_monitoring_update.py --previous "<prior contract>" --current "<current contract>" --policy "<monitoring policy yaml>" --as-of-date "YYYY-MM-DD" --output-dir "<local output directory>"`
+
+S15 records FACT, CALC, JUDGMENT, evidence, Warning, Hard Stop, KPI, scenario,
+and probability-freshness changes. It does not rebuild either issuer analysis,
+select a formal thesis status, recommend a position, or place a trade.
 
 Gate 4 accepts only the immutable shared `underwriting_output_contract.json`; ticker-only input and legacy `step3_data.json` are prohibited because Gate 4 must not rebuild or overwrite issuer analysis. Before any portfolio calculation, validate the contract version and hash, Data Gate, report/financial/market dates, latest filing, subsequent-event review, probability freshness, valuation eligibility, Hard Stops, and unresolved issuer warnings. Age limits, eligible valuation statuses, probability requirements, and warning-escalation rules must be supplied explicitly; do not invent defaults.
 
