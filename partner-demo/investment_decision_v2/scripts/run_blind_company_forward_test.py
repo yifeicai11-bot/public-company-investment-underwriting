@@ -78,8 +78,8 @@ def git_text(*args: str) -> str:
 def verify_manifest_and_freeze(manifest: dict[str, Any]) -> dict[str, Any]:
     if manifest.get("status") != "SELECTED_NOT_RUN":
         raise BlindTestProtocolError("The immutable manifest is not in pre-run status.")
-    if manifest.get("session") not in {"S05", "S08"}:
-        raise BlindTestProtocolError("This runner accepts only Phase B S05 or S08 manifests.")
+    if manifest.get("session") not in {"S05", "S08", "S17"}:
+        raise BlindTestProtocolError("This runner accepts only S05, S08, or S17 manifests.")
 
     reproduced = reproduce_selection(manifest)
     method = manifest.get("selection_method", {})
@@ -224,7 +224,9 @@ def summarize_first_run(
     output_root: Path,
     return_code: int,
     timed_out: bool,
+    allowed_return_codes: set[int] | None = None,
 ) -> dict[str, Any]:
+    allowed_return_codes = allowed_return_codes or {0}
     contracts = sorted(output_root.rglob("underwriting_output_contract.json"))
     contract: dict[str, Any] | None = None
     contract_path: Path | None = None
@@ -260,11 +262,22 @@ def summarize_first_run(
         if isinstance(contract, dict)
         else "NOT_AVAILABLE"
     )
+    pipeline_manifests = sorted(output_root.rglob("pipeline_manifest.json"))
+    pipeline_manifest: dict[str, Any] | None = None
+    pipeline_manifest_path: Path | None = None
+    if len(pipeline_manifests) == 1:
+        pipeline_manifest_path = pipeline_manifests[0]
+        try:
+            pipeline_manifest = json.loads(
+                pipeline_manifest_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError):
+            pipeline_manifest = None
     execution_errors: list[str] = []
     if timed_out:
         execution_errors.append("The first run exceeded the configured timeout.")
-    if return_code != 0:
-        execution_errors.append("The public-only builder returned a nonzero exit code.")
+    if return_code not in allowed_return_codes:
+        execution_errors.append("The public-only command returned an unsupported exit code.")
     if contract_error:
         execution_errors.append(contract_error)
 
@@ -275,6 +288,7 @@ def summarize_first_run(
             else "FIRST_RUN_DIAGNOSTIC_REQUIRED"
         ),
         "return_code": return_code,
+        "allowed_return_codes": sorted(allowed_return_codes),
         "timed_out": timed_out,
         "contract_relative_path": (
             str(contract_path.relative_to(output_root))
@@ -282,6 +296,16 @@ def summarize_first_run(
             else None
         ),
         "contract_validation_status": contract_status,
+        "pipeline_manifest_relative_path": (
+            str(pipeline_manifest_path.relative_to(output_root))
+            if pipeline_manifest_path is not None
+            else None
+        ),
+        "pipeline_status": (
+            pipeline_manifest.get("status")
+            if isinstance(pipeline_manifest, dict)
+            else None
+        ),
         "report_id": contract.get("report_id") if isinstance(contract, dict) else None,
         "contract_hash": contract.get("contract_hash") if isinstance(contract, dict) else None,
         "supported_universe": (
@@ -312,6 +336,56 @@ def summarize_first_run(
     }
 
 
+def command_for_manifest(
+    manifest: dict[str, Any],
+    *,
+    output_root: Path,
+) -> tuple[list[str], list[str], set[int]]:
+    builder = manifest.get("first_run_protocol", {}).get("builder")
+    ticker = selected_ticker(manifest)
+    if builder == "underwrite.py":
+        try:
+            portable_output = output_root.resolve().relative_to(REPO_ROOT.resolve())
+        except ValueError as exc:
+            raise BlindTestProtocolError(
+                "The S17 unified-entry output must remain inside the repository test directory."
+            ) from exc
+        actual = [
+            sys.executable,
+            str(REPO_ROOT / "underwrite.py"),
+            "analyze",
+            ticker,
+            "--output-root",
+            str(portable_output),
+        ]
+        recorded = [
+            "<PYTHON_EXECUTABLE>",
+            "underwrite.py",
+            "analyze",
+            ticker,
+            "--output-root",
+            str(portable_output),
+        ]
+        return actual, recorded, {0, 3}
+    if builder != "build_public_company_investment_layer.py":
+        raise BlindTestProtocolError("The blind-test builder is unsupported.")
+    actual = [
+        sys.executable,
+        str(BUILDER),
+        ticker,
+        "--out-root",
+        str(output_root),
+    ]
+    recorded = [
+        "<PYTHON_EXECUTABLE>",
+        str(BUILDER.relative_to(REPO_ROOT)),
+        ticker,
+        "--out-root",
+        str(output_root),
+    ]
+    return actual, recorded, {0}
+
+
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False, default=str) + "\n",
@@ -334,17 +408,14 @@ def run_first_test(
         )
     first_run_dir.mkdir(parents=True)
     builder_output = first_run_dir / "builder_output"
-    command = [
-        sys.executable,
-        str(BUILDER),
-        selected_ticker(manifest),
-        "--out-root",
-        str(builder_output),
-    ]
+    command, recorded_command, allowed_return_codes = command_for_manifest(
+        manifest,
+        output_root=builder_output,
+    )
     runtime = {
         "started_at": utc_now(),
         "python_version": platform.python_version(),
-        "python_executable": sys.executable,
+        "python_executable": "<PYTHON_EXECUTABLE>",
         "platform": platform.platform(),
         "timezone": list(__import__("time").tzname),
         "current_commit": git_text("rev-parse", "HEAD"),
@@ -352,7 +423,8 @@ def run_first_test(
         "selection_integrity": integrity,
         "network_scope": "PUBLIC_DATA_ONLY",
         "research_input": None,
-        "command": command,
+        "command": recorded_command,
+        "allowed_return_codes": sorted(allowed_return_codes),
     }
     write_json(first_run_dir / "execution_context.json", runtime)
 
@@ -384,6 +456,7 @@ def run_first_test(
         output_root=builder_output,
         return_code=return_code,
         timed_out=timed_out,
+        allowed_return_codes=allowed_return_codes,
     )
     diagnostic["completed_at"] = utc_now()
     write_json(first_run_dir / "first_run_diagnostic.json", diagnostic)
@@ -460,17 +533,14 @@ def run_post_fix_test(
         )
     post_fix_dir.mkdir(parents=True)
     builder_output = post_fix_dir / "builder_output"
-    command = [
-        sys.executable,
-        str(BUILDER),
-        selected_ticker(manifest),
-        "--out-root",
-        str(builder_output),
-    ]
+    command, recorded_command, allowed_return_codes = command_for_manifest(
+        manifest,
+        output_root=builder_output,
+    )
     runtime = {
         "started_at": utc_now(),
         "python_version": platform.python_version(),
-        "python_executable": sys.executable,
+        "python_executable": "<PYTHON_EXECUTABLE>",
         "platform": platform.platform(),
         "timezone": list(__import__("time").tzname),
         "current_commit": git_text("rev-parse", "HEAD"),
@@ -478,7 +548,8 @@ def run_post_fix_test(
         "post_fix_prerequisites": prerequisites,
         "network_scope": "PUBLIC_DATA_ONLY",
         "research_input": None,
-        "command": command,
+        "command": recorded_command,
+        "allowed_return_codes": sorted(allowed_return_codes),
     }
     write_json(post_fix_dir / "execution_context.json", runtime)
 
@@ -510,6 +581,7 @@ def run_post_fix_test(
         output_root=builder_output,
         return_code=return_code,
         timed_out=timed_out,
+        allowed_return_codes=allowed_return_codes,
     )
     diagnostic["status"] = (
         "POST_FIX_COMPLETED"
