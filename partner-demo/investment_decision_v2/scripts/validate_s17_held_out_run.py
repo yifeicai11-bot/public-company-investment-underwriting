@@ -113,6 +113,50 @@ def contract_boundary_errors(contract: dict[str, Any], run_dir: Path) -> list[st
         errors.append("DUPLICATE_EVIDENCE_ID")
     if not contract.get("source_registry"):
         errors.append("SOURCE_REGISTRY_MISSING")
+
+    evidence_records = contract.get("evidence_records", [])
+    metric_names = {
+        str(row.get("metric_name"))
+        for row in evidence_records
+        if row.get("metric_name")
+    }
+    if metric_names & {
+        "latest_ytd_fcf",
+        "latest_annual_fcf",
+        "latest_quarter_fcf",
+        "derived_latest_quarter_fcf",
+    }:
+        capex_checks = [
+            row
+            for row in contract.get("validation_issues", [])
+            if row.get("check_id") == "P0-cash-capex-component-coverage"
+        ]
+        if len(capex_checks) != 1 or capex_checks[0].get("status") != "PASS":
+            errors.append("FCF_CAPEX_COMPONENT_COVERAGE_NOT_VALIDATED")
+        capex_rows = [
+            row
+            for row in evidence_records
+            if row.get("metric_name")
+            in {
+                "latest_ytd_capex",
+                "latest_annual_capex",
+                "latest_quarter_capex",
+                "derived_latest_quarter_capex",
+            }
+        ]
+        if not capex_rows:
+            errors.append("FCF_CAPEX_PARENT_ROW_MISSING")
+        elif any(
+            row.get("reported_or_calculated") == "calculated"
+            and (not row.get("formula") or not row.get("input_evidence_ids"))
+            for row in capex_rows
+        ):
+            errors.append("FCF_CAPEX_COMPONENT_LINEAGE_MISSING")
+        if any(
+            "CapitalExpendituresIncurredButNotYetPaid" in str(row.get("source_tag"))
+            for row in capex_rows
+        ):
+            errors.append("NONCASH_CAPEX_USED_IN_CFO_BASED_FCF")
     return sorted(set(errors))
 
 

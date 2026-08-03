@@ -14,6 +14,8 @@ if str(SCRIPT_DIR) not in sys.path:
 from build_public_company_decision_pack import (  # noqa: E402
     DataPoint,
     build_ltm_metric,
+    cash_capex_data_points,
+    choose_cash_capex,
     choose_duration,
     choose_instant,
     comparable_ytd_periods,
@@ -21,6 +23,7 @@ from build_public_company_decision_pack import (  # noqa: E402
     controlled_ratio,
     fact_context_kind,
     fiscal_calendar_profile,
+    enrich_data_points,
     is_annual_flow,
     is_quarter_flow,
     is_ytd_flow,
@@ -47,6 +50,19 @@ def companyfacts(
                 tag: {
                     "units": units,
                 }
+            }
+        }
+    }
+
+
+def multi_companyfacts(
+    values_by_tag: dict[str, list[dict[str, object]]],
+) -> dict[str, object]:
+    return {
+        "facts": {
+            "us-gaap": {
+                tag: {"units": {"USD": values}}
+                for tag, values in values_by_tag.items()
             }
         }
     }
@@ -453,6 +469,166 @@ class S06DenominatorAndMissingTagTests(unittest.TestCase):
         self.assertIsNone(selected)
         self.assertEqual(audit[-1]["status"], "MISSING_XBRL_TAG")
         self.assertFalse(audit[-1]["missing_value_assumed_zero"])
+
+
+class S06CashCapexCompositionTests(unittest.TestCase):
+    @staticmethod
+    def point(value: float, *, start: str = "2026-01-01") -> dict[str, object]:
+        return {
+            "start": start,
+            "end": "2026-06-30",
+            "val": value,
+            "form": "10-Q",
+            "filed": "2026-07-31",
+            "accn": "q2",
+            "fy": 2026,
+            "fp": "Q2",
+        }
+
+    def test_period_matched_ppe_and_software_are_summed_with_lineage(self) -> None:
+        facts = multi_companyfacts(
+            {
+                "PaymentsToAcquirePropertyPlantAndEquipment": [self.point(7_610_000)],
+                "PaymentsForSoftware": [self.point(25_642_000)],
+                "CapitalExpendituresIncurredButNotYetPaid": [self.point(99_000_000)],
+            }
+        )
+        audit: list[dict[str, object]] = []
+        selection = choose_cash_capex(
+            facts,
+            "2026-06-30",
+            form="10-Q",
+            accn="q2",
+            prefer="ytd",
+            metric_name="latest_ytd_capex",
+            audit_log=audit,
+        )
+        self.assertEqual(selection["status"], "PASS")
+        self.assertEqual(selection["basis"], "COMPONENT_SUM")
+        self.assertEqual(selection["fact"]["val"], 33_252_000)
+        self.assertEqual(
+            set(selection["components"]),
+            {"property_plant_equipment", "software"},
+        )
+        self.assertEqual(audit[-1]["status"], "SELECTED_COMPOSITE")
+
+        rows = cash_capex_data_points(
+            "latest_ytd_capex",
+            selection,
+            "https://www.sec.gov/test",
+            "YTD",
+        )
+        enrich_data_points(
+            {"ticker": "TEST", "name": "Test", "cik": "0000000001"},
+            rows,
+        )
+        parent = next(row for row in rows if row.metric_name == "latest_ytd_capex")
+        self.assertEqual(parent.reported_or_calculated, "calculated")
+        self.assertEqual(len(parent.input_evidence_ids or []), 2)
+        self.assertNotIn("CapitalExpendituresIncurredButNotYetPaid", parent.formula)
+
+    def test_reported_aggregate_prevents_component_double_counting(self) -> None:
+        facts = multi_companyfacts(
+            {
+                "PaymentsToAcquireProductiveAssets": [self.point(40_000_000)],
+                "PaymentsToAcquirePropertyPlantAndEquipment": [self.point(15_000_000)],
+                "PaymentsForSoftware": [self.point(25_000_000)],
+            }
+        )
+        selection = choose_cash_capex(
+            facts,
+            "2026-06-30",
+            form="10-Q",
+            accn="q2",
+            prefer="ytd",
+            metric_name="latest_ytd_capex",
+        )
+        self.assertEqual(selection["basis"], "REPORTED_AGGREGATE")
+        self.assertEqual(selection["fact"]["val"], 40_000_000)
+        self.assertEqual(selection["components"], {})
+
+    def test_non_cash_capex_signal_is_never_used_as_cash_capex(self) -> None:
+        facts = multi_companyfacts(
+            {"CapitalExpendituresIncurredButNotYetPaid": [self.point(12_000_000)]}
+        )
+        selection = choose_cash_capex(
+            facts,
+            "2026-06-30",
+            form="10-Q",
+            accn="q2",
+            prefer="ytd",
+            metric_name="latest_ytd_capex",
+        )
+        self.assertEqual(selection["status"], "MISSING_XBRL_TAG")
+        self.assertIsNone(selection["fact"])
+
+    def test_incompatible_component_period_blocks_composite_capex(self) -> None:
+        facts = multi_companyfacts(
+            {
+                "PaymentsToAcquirePropertyPlantAndEquipment": [self.point(7_610_000)],
+                "PaymentsForSoftware": [self.point(20_000_000, start="2026-04-01")],
+            }
+        )
+        selection = choose_cash_capex(
+            facts,
+            "2026-06-30",
+            form="10-Q",
+            accn="q2",
+            prefer="ytd",
+            metric_name="latest_ytd_capex",
+        )
+        self.assertEqual(selection["status"], "INCOMPATIBLE_COMPONENT_CONTEXT")
+        self.assertIsNone(selection["fact"])
+        self.assertIn("software", selection["unresolved_component_groups"])
+
+    def test_ltm_capex_sums_each_components_validated_period_chain(self) -> None:
+        def chain(annual: float, current: float, prior: float) -> list[dict[str, object]]:
+            return [
+                {
+                    "start": "2025-01-01",
+                    "end": "2025-12-31",
+                    "val": annual,
+                    "form": "10-K",
+                    "filed": "2026-02-15",
+                    "accn": "k",
+                    "fy": 2025,
+                    "fp": "FY",
+                },
+                {
+                    "start": "2026-01-01",
+                    "end": "2026-06-30",
+                    "val": current,
+                    "form": "10-Q",
+                    "filed": "2026-07-31",
+                    "accn": "q2",
+                    "fy": 2026,
+                    "fp": "Q2",
+                },
+                {
+                    "start": "2025-01-01",
+                    "end": "2025-06-30",
+                    "val": prior,
+                    "form": "10-Q",
+                    "filed": "2025-07-31",
+                    "accn": "prior-q2",
+                    "fy": 2025,
+                    "fp": "Q2",
+                },
+            ]
+
+        facts = multi_companyfacts(
+            {
+                "PaymentsToAcquirePropertyPlantAndEquipment": chain(100, 30, 40),
+                "PaymentsForSoftware": chain(50, 20, 10),
+            }
+        )
+        result = build_ltm_metric(facts, "capex", "2026-06-30", "2025-12-31")
+        self.assertEqual(result["validation_status"], "PASS")
+        self.assertEqual(result["period_type"], "LTM")
+        self.assertEqual(result["value"], 150)
+        self.assertEqual(result["period_end"], "2026-06-30")
+        self.assertEqual(len(result["components"]), 6)
+        self.assertNotIn("CapitalExpendituresIncurredButNotYetPaid", result["formula"])
 
 
 class S06CrossFiscalPatternTests(unittest.TestCase):

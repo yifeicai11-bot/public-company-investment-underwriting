@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_manual_held_out_adjudication",
+  "adjudicated_at": "2026-08-03T10:16:00Z",
+  "attempt": "SECONDARY",
+  "ticker": "CHRW",
+  "status": "S17_SHARED_FIX_REQUIRED",
+  "automatic_result_superseded": "S17_HELD_OUT_ACCEPTED",
+  "finding": {
+    "code": "CASH_CAPEX_COMPONENT_OMISSION",
+    "scope": "shared_data_and_evidence_engine",
+    "description": "The shared selector used only PaymentsToAcquirePropertyPlantAndEquipment and omitted separately reported PaymentsForSoftware from CFO-based FCF.",
+    "ticker_specific_patch": false
+  },
+  "primary_source": {
+    "form": "10-Q",
+    "period_end": "2026-06-30",
+    "filed": "2026-07-31",
+    "accession": "0001043277-26-000031",
+    "url": "https://www.sec.gov/Archives/edgar/data/1043277/000104327726000031/chrw-20260630.htm"
+  },
+  "first_run_values_usd": {
+    "ytd_cfo": 104497000,
+    "selected_ytd_capex": 7610000,
+    "selected_ytd_raw_fcf": 96887000
+  },
+  "source_reconciled_values_usd": {
+    "ytd_property_plant_equipment": 7610000,
+    "ytd_software": 25642000,
+    "ytd_cash_capex": 33252000,
+    "ytd_raw_fcf": 71245000
+  },
+  "required_shared_remediation": [
+    "Use a reported aggregate cash-capex concept when available without adding its components again.",
+    "Otherwise sum only period-, unit-, currency-, form-, and accession-matched cash-capex components.",
+    "Exclude CapitalExpendituresIncurredButNotYetPaid from CFO-based cash FCF.",
+    "Require auditable component lineage and a passing capex-coverage control whenever raw FCF is emitted.",
+    "After the shared fix, freeze again and use a completely new issuer for final S17 acceptance."
+  ],
+  "first_run_artifacts_modified": false,
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}

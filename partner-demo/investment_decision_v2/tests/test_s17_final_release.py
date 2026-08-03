@@ -42,6 +42,18 @@ from run_blind_company_forward_test import (  # noqa: E402
 from validate_s17_held_out_run import contract_boundary_errors  # noqa: E402
 
 
+def with_validated_capex_control(contract: dict[str, object]) -> dict[str, object]:
+    validated = deepcopy(contract)
+    validation_issues = validated.setdefault("validation_issues", [])
+    validation_issues.append(
+        {
+            "check_id": "P0-cash-capex-component-coverage",
+            "status": "PASS",
+        }
+    )
+    return validated
+
+
 class S17FinalReleaseProtocolTests(unittest.TestCase):
     def test_candidate_pool_is_predeclared_diverse_and_excludes_prior_issuers(self) -> None:
         excluded = {row["ticker"] for row in EXCLUDED_PRIOR_ISSUERS}
@@ -109,6 +121,10 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         self.assertEqual(manifest["selected_issuer"]["ticker"], selected)
         self.assertEqual(manifest["first_run_protocol"]["builder"], "underwrite.py")
 
+    def test_schema_allows_a_new_final_attempt_after_a_shared_fix(self) -> None:
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        self.assertIn("FINAL_AFTER_FIX", schema["properties"]["attempt"]["enum"])
+
     def test_s17_command_uses_unified_entry_and_portable_record(self) -> None:
         manifest = {
             "selected_issuer": {"ticker": "TEST"},
@@ -147,13 +163,23 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         self.assertEqual(result["pipeline_status"], "RESEARCH_INPUT_REQUIRED")
 
     def test_s17_adjudicator_accepts_existing_validated_gate3_contract(self) -> None:
-        contract = json.loads(CROX_CONTRACT.read_text(encoding="utf-8"))
+        contract = with_validated_capex_control(
+            json.loads(CROX_CONTRACT.read_text(encoding="utf-8"))
+        )
         with tempfile.TemporaryDirectory() as temporary:
             errors = contract_boundary_errors(contract, Path(temporary))
         self.assertEqual(errors, [])
 
-    def test_s17_adjudicator_detects_unsafe_output_leakage(self) -> None:
+    def test_s17_adjudicator_rejects_fcf_without_capex_coverage_control(self) -> None:
         contract = json.loads(CROX_CONTRACT.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as temporary:
+            errors = contract_boundary_errors(contract, Path(temporary))
+        self.assertIn("FCF_CAPEX_COMPONENT_COVERAGE_NOT_VALIDATED", errors)
+
+    def test_s17_adjudicator_detects_unsafe_output_leakage(self) -> None:
+        contract = with_validated_capex_control(
+            json.loads(CROX_CONTRACT.read_text(encoding="utf-8"))
+        )
         unsafe = deepcopy(contract)
         unsafe["data_gate"]["level"] = 2.5
         unsafe["target_price"] = 123.45
@@ -167,7 +193,9 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         primary = INVESTMENT_ROOT / "blind_tests" / "s17_primary"
         self.assertFalse((primary / "manifest.json").exists())
         self.assertFalse((primary / "first_run").exists())
-        self.assertFalse((INVESTMENT_ROOT / "blind_tests" / "s17_secondary").exists())
+        secondary = INVESTMENT_ROOT / "blind_tests" / "s17_secondary"
+        self.assertTrue((secondary / "manifest.json").is_file())
+        self.assertTrue((secondary / "first_run" / "artifact_hashes.json").is_file())
 
 
 if __name__ == "__main__":

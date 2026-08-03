@@ -4122,6 +4122,11 @@ def build_analysis_evidence(
         for component_name, component in result.get("components", {}).items():
             if not component:
                 continue
+            component_period_type = (
+                "annual"
+                if component_name == "annual" or component_name.endswith("_annual")
+                else "YTD"
+            )
             component_ids.append(
                 add(
                     f"{metric}_{component_name}_component",
@@ -4130,7 +4135,7 @@ def build_analysis_evidence(
                     currency="USD" if "USD" in str(component.get("unit", "")) else "",
                     period_start=component.get("start", ""),
                     period_end=component.get("end", ""),
-                    period_type="annual" if component_name == "annual" else "YTD",
+                    period_type=component_period_type,
                     source_level=1,
                     source_type="regulatory_filing",
                     source_name="U.S. Securities and Exchange Commission",
@@ -4141,8 +4146,21 @@ def build_analysis_evidence(
                 )
             )
         result_period_end = (
-            result.get("components", {}).get("current_ytd", {}).get("end")
+            result.get("period_end")
+            or result.get("components", {}).get("current_ytd", {}).get("end")
             or result.get("components", {}).get("annual", {}).get("end")
+            or next(
+                (
+                    component.get("end")
+                    for component_name, component in result.get("components", {}).items()
+                    if component
+                    and (
+                        component_name.endswith("_current_ytd")
+                        or component_name.endswith("_annual")
+                    )
+                ),
+                "",
+            )
             or ""
         )
         ltm_period_ends[metric] = result_period_end
@@ -4163,7 +4181,12 @@ def build_analysis_evidence(
             source_locator=result.get("method", "missing"),
             source_tag="calculation" if evidence_class == "CALC" else "annual_fallback",
             evidence_class=evidence_class,
-            formula="annual + current YTD - prior comparable YTD" if evidence_class == "CALC" else "",
+            formula=(
+                result.get("formula")
+                or "annual + current YTD - prior comparable YTD"
+                if evidence_class == "CALC"
+                else ""
+            ),
             input_ids=component_ids,
             confidence=result.get("confidence", "Low"),
             validation_status="PASS" if result.get("value") is not None else "MISSING",

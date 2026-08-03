@@ -75,6 +75,8 @@ FROZEN_SHARED_LOGIC = [
     "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py",
     "partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py",
     "partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py",
+    "partner-demo/investment_decision_v2/scripts/validate_s17_held_out_run.py",
+    "partner-demo/investment_decision_v2/blind_tests/blind_test_manifest.schema.json",
 ]
 
 
@@ -277,7 +279,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--freeze-commit", required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--attempt", choices=("PRIMARY", "SECONDARY"), default="PRIMARY")
+    parser.add_argument(
+        "--attempt",
+        choices=("PRIMARY", "SECONDARY", "FINAL_AFTER_FIX"),
+        default="PRIMARY",
+    )
     parser.add_argument("--selection-date", default=date.today().isoformat())
     parser.add_argument("--exclude-ticker", action="append", default=[])
     args = parser.parse_args()

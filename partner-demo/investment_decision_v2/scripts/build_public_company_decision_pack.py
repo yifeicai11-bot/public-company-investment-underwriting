@@ -126,6 +126,27 @@ INSTANT_TAGS: dict[str, tuple[str, ...]] = {
 }
 
 
+CAPEX_AGGREGATE_CASH_TAGS: tuple[str, ...] = (
+    "PaymentsToAcquireProductiveAssets",
+    "PaymentsForProceedsFromProductiveAssets",
+)
+
+
+CAPEX_COMPONENT_CASH_TAGS: dict[str, tuple[str, ...]] = {
+    "property_plant_equipment": (
+        "PaymentsToAcquirePropertyPlantAndEquipment",
+    ),
+    "software": (
+        "PaymentsForSoftware",
+    ),
+}
+
+
+CAPEX_NONCASH_SIGNAL_TAGS: tuple[str, ...] = (
+    "CapitalExpendituresIncurredButNotYetPaid",
+)
+
+
 FLOW_TAGS: dict[str, tuple[str, ...]] = {
     "revenue": (
         "RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -147,10 +168,11 @@ FLOW_TAGS: dict[str, tuple[str, ...]] = {
         "NetCashProvidedByUsedInOperatingActivities",
         "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
     ),
-    "capex": (
-        "PaymentsToAcquirePropertyPlantAndEquipment",
-        "PaymentsToAcquireProductiveAssets",
-        "CapitalExpendituresIncurredButNotYetPaid",
+    "capex": CAPEX_AGGREGATE_CASH_TAGS
+    + tuple(
+        tag
+        for component_tags in CAPEX_COMPONENT_CASH_TAGS.values()
+        for tag in component_tags
     ),
     "interest_paid": ("InterestPaidNet", "InterestPaid", "InterestPaidOperatingActivities"),
     "interest_expense": ("InterestExpenseNonOperating", "InterestExpense", "InterestExpenseDebt"),
@@ -253,7 +275,7 @@ class DataPoint:
     subsequent_event_status: str = "NOT_REVIEWED"
 
 
-S06_DATA_CONTROL_VERSION = "1.0.0"
+S06_DATA_CONTROL_VERSION = "1.1.0"
 SEC_FINANCIAL_FORMS = {"10-Q", "10-K", "10-Q/A", "10-K/A"}
 QUARTER_MIN_DAYS = 70
 QUARTER_MAX_DAYS = 105
@@ -669,29 +691,18 @@ def select_prior_comparable_ytd_from_points(
     return candidates[-1]
 
 
-def build_ltm_metric(
+def _build_ltm_metric_from_tags(
     companyfacts: dict[str, Any],
     metric: str,
+    tags: tuple[str, ...],
     latest_q_period: str | None,
     annual_period: str | None,
 ) -> dict[str, Any]:
     """Build LTM from one concept and comparable fiscal contexts, or fall back safely."""
 
-    if metric not in FLOW_TAGS:
-        return {
-            "metric": metric,
-            "value": None,
-            "method": "missing",
-            "period_type": "missing",
-            "confidence": "Low",
-            "evidence_type": "MISSING",
-            "validation_status": "MISSING_XBRL_TAG",
-            "components": {},
-        }
-
     first_annual_fallback: dict[str, Any] | None = None
     rejected_reasons: list[str] = []
-    for tag in FLOW_TAGS[metric]:
+    for tag in tags:
         points = flow_points_for_tags(companyfacts, (tag,))
         if not points:
             continue
@@ -793,6 +804,190 @@ def build_ltm_metric(
         "components": {},
         "rejected_reasons": sorted(set(rejected_reasons)),
     }
+
+
+def build_ltm_capex_metric(
+    companyfacts: dict[str, Any],
+    latest_q_period: str | None,
+    annual_period: str | None,
+) -> dict[str, Any]:
+    """Build capex LTM from one aggregate concept or compatible components."""
+
+    aggregate = _build_ltm_metric_from_tags(
+        companyfacts,
+        "capex",
+        CAPEX_AGGREGATE_CASH_TAGS,
+        latest_q_period,
+        annual_period,
+    )
+    if aggregate.get("period_type") == "LTM" and aggregate.get("validation_status") == "PASS":
+        aggregate["capex_basis"] = "REPORTED_AGGREGATE"
+        aggregate["noncash_tags_excluded"] = list(CAPEX_NONCASH_SIGNAL_TAGS)
+        return aggregate
+
+    component_results = {
+        component_name: _build_ltm_metric_from_tags(
+            companyfacts,
+            f"capex_component_{component_name}",
+            tags,
+            latest_q_period,
+            annual_period,
+        )
+        for component_name, tags in CAPEX_COMPONENT_CASH_TAGS.items()
+    }
+    relevant_period_ends = {
+        period for period in (latest_q_period, annual_period) if period
+    }
+    relevant_components = {
+        component_name
+        for component_name, tags in CAPEX_COMPONENT_CASH_TAGS.items()
+        if any(
+            point.get("end") in relevant_period_ends
+            for point in flow_points_for_tags(companyfacts, tags)
+        )
+    }
+    missing_relevant = sorted(
+        component_name
+        for component_name in relevant_components
+        if component_results[component_name].get("value") is None
+    )
+    if missing_relevant:
+        return {
+            "metric": "capex",
+            "value": None,
+            "method": "missing; at least one observed cash-capex component lacks a comparable LTM or annual chain",
+            "period_type": "missing",
+            "confidence": "Low",
+            "evidence_type": "MISSING",
+            "validation_status": "CAPEX_COMPONENT_INCOMPLETE",
+            "components": {},
+            "capex_component_results": component_results,
+            "capex_basis": "COMPONENT_SUM_BLOCKED",
+            "missing_components": missing_relevant,
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    available = {
+        component_name: result
+        for component_name, result in component_results.items()
+        if result.get("value") is not None
+    }
+    if available:
+        period_types = {result.get("period_type") for result in available.values()}
+        units = {result.get("unit") for result in available.values()}
+        currencies = {result.get("currency") for result in available.values()}
+        period_ends = {
+            (
+                result.get("components", {}).get("current_ytd", {}).get("end")
+                or result.get("components", {}).get("annual", {}).get("end")
+            )
+            for result in available.values()
+        }
+        if (
+            len(period_types) == 1
+            and len(units) == 1
+            and len(currencies) == 1
+            and len(period_ends) == 1
+            and None not in period_ends
+        ):
+            period_type = next(iter(period_types))
+            is_ltm = period_type == "LTM" and all(
+                result.get("validation_status") == "PASS"
+                for result in available.values()
+            )
+            source_components = {
+                f"{component_name}_{source_name}": source_fact
+                for component_name, result in available.items()
+                for source_name, source_fact in result.get("components", {}).items()
+                if source_fact
+            }
+            return {
+                "metric": "capex",
+                "value": sum(float(result["value"]) for result in available.values()),
+                "method": (
+                    "sum of independently validated cash-capex component LTMs"
+                    if is_ltm
+                    else "sum of latest annual cash-capex component fallbacks; LTM unavailable"
+                ),
+                "period_type": period_type,
+                "confidence": "High" if is_ltm else "Medium",
+                "evidence_type": "CALC",
+                "validation_status": "PASS" if is_ltm else "LTM_NOT_AVAILABLE",
+                "unit": next(iter(units)),
+                "currency": next(iter(currencies)),
+                "components": source_components,
+                "capex_component_results": available,
+                "capex_basis": "COMPONENT_SUM",
+                "period_end": next(iter(period_ends)),
+                "formula": (
+                    "sum(component annual + component current YTD - component prior-year comparable YTD)"
+                    if is_ltm
+                    else "sum(component latest annual fallback)"
+                ),
+                "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+            }
+        return {
+            "metric": "capex",
+            "value": None,
+            "method": "missing; capex components have incompatible period types, units, or currencies",
+            "period_type": "missing",
+            "confidence": "Low",
+            "evidence_type": "MISSING",
+            "validation_status": "CAPEX_COMPONENT_INCOMPATIBLE",
+            "components": {},
+            "capex_component_results": available,
+            "capex_basis": "COMPONENT_SUM_BLOCKED",
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    if aggregate.get("value") is not None:
+        aggregate["capex_basis"] = "REPORTED_AGGREGATE"
+        aggregate["noncash_tags_excluded"] = list(CAPEX_NONCASH_SIGNAL_TAGS)
+        return aggregate
+    return {
+        "metric": "capex",
+        "value": None,
+        "method": "missing",
+        "period_type": "missing",
+        "confidence": "Low",
+        "evidence_type": "MISSING",
+        "validation_status": "MISSING_XBRL_TAG",
+        "components": {},
+        "capex_basis": "MISSING",
+        "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+    }
+
+
+def build_ltm_metric(
+    companyfacts: dict[str, Any],
+    metric: str,
+    latest_q_period: str | None,
+    annual_period: str | None,
+) -> dict[str, Any]:
+    if metric not in FLOW_TAGS:
+        return {
+            "metric": metric,
+            "value": None,
+            "method": "missing",
+            "period_type": "missing",
+            "confidence": "Low",
+            "evidence_type": "MISSING",
+            "validation_status": "MISSING_XBRL_TAG",
+            "components": {},
+        }
+    if metric == "capex":
+        return build_ltm_capex_metric(
+            companyfacts,
+            latest_q_period,
+            annual_period,
+        )
+    return _build_ltm_metric_from_tags(
+        companyfacts,
+        metric,
+        FLOW_TAGS[metric],
+        latest_q_period,
+        annual_period,
+    )
 
 
 def fetch_json(url: str) -> Any:
@@ -1127,6 +1322,176 @@ def choose_duration(
     return None
 
 
+def choose_cash_capex(
+    companyfacts: dict[str, Any],
+    end: str,
+    *,
+    form: str | None = None,
+    accn: str | None = None,
+    prefer: str = "quarter",
+    metric_name: str = "",
+    audit_log: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Select cash capex without omitting or double-counting known components."""
+
+    aggregate = choose_duration(
+        companyfacts,
+        CAPEX_AGGREGATE_CASH_TAGS,
+        end,
+        form=form,
+        accn=accn,
+        prefer=prefer,
+        metric_name=metric_name,
+        audit_log=audit_log,
+    )
+    if aggregate:
+        return {
+            "status": "PASS",
+            "basis": "REPORTED_AGGREGATE",
+            "fact": aggregate,
+            "components": {},
+            "unresolved_component_groups": [],
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    components: dict[str, dict[str, Any]] = {}
+    unresolved_component_groups: list[str] = []
+    rejected_reasons: list[str] = []
+    for component_name, tags in CAPEX_COMPONENT_CASH_TAGS.items():
+        component = choose_duration(
+            companyfacts,
+            tags,
+            end,
+            form=form,
+            accn=accn,
+            prefer=prefer,
+            metric_name=f"{metric_name}_component_{component_name}",
+            audit_log=audit_log,
+        )
+        if component:
+            components[component_name] = component
+            continue
+
+        relevant_signals = [
+            point
+            for tag in tags
+            for point in fact_points(companyfacts, tag)
+            if point.get("end") == end
+            and (form is None or point.get("form") == form)
+            and (accn is None or point.get("accn") == accn)
+        ]
+        if relevant_signals:
+            unresolved_component_groups.append(component_name)
+            rejected_reasons.append(
+                f"{component_name}: a cash-capex component signal exists but has no compatible {prefer} context."
+            )
+
+    if unresolved_component_groups:
+        _record_selection(
+            audit_log,
+            metric_name=metric_name,
+            requested_period=end,
+            expected_context="FLOW",
+            expected_period_type=prefer.upper(),
+            tags=FLOW_TAGS["capex"],
+            status="INCOMPATIBLE_COMPONENT_CONTEXT",
+            chosen=None,
+            rejected_reasons=rejected_reasons,
+        )
+        return {
+            "status": "INCOMPATIBLE_COMPONENT_CONTEXT",
+            "basis": "MISSING",
+            "fact": None,
+            "components": components,
+            "unresolved_component_groups": unresolved_component_groups,
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    if not components:
+        _record_selection(
+            audit_log,
+            metric_name=metric_name,
+            requested_period=end,
+            expected_context="FLOW",
+            expected_period_type=prefer.upper(),
+            tags=FLOW_TAGS["capex"],
+            status="MISSING_XBRL_TAG",
+            chosen=None,
+            rejected_reasons=["No compatible aggregate or component cash-capex fact was found."],
+        )
+        return {
+            "status": "MISSING_XBRL_TAG",
+            "basis": "MISSING",
+            "fact": None,
+            "components": {},
+            "unresolved_component_groups": [],
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    context_keys = {
+        (
+            point.get("start"),
+            point.get("end"),
+            point.get("unit"),
+            point.get("form"),
+            point.get("accn"),
+        )
+        for point in components.values()
+    }
+    component_values = [safe_float(point.get("val")) for point in components.values()]
+    if len(context_keys) != 1 or any(value is None for value in component_values):
+        _record_selection(
+            audit_log,
+            metric_name=metric_name,
+            requested_period=end,
+            expected_context="FLOW",
+            expected_period_type=prefer.upper(),
+            tags=FLOW_TAGS["capex"],
+            status="INCOMPATIBLE_COMPONENT_CONTEXT",
+            chosen=None,
+            rejected_reasons=[
+                "Cash-capex components do not share one start date, end date, unit, form, and accession."
+            ],
+        )
+        return {
+            "status": "INCOMPATIBLE_COMPONENT_CONTEXT",
+            "basis": "MISSING",
+            "fact": None,
+            "components": components,
+            "unresolved_component_groups": sorted(components),
+            "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+        }
+
+    first = next(iter(components.values()))
+    synthetic = dict(first)
+    synthetic.update(
+        {
+            "val": sum(value for value in component_values if value is not None),
+            "tag": "CashCapexComponentSum",
+            "taxonomy": "calculation",
+        }
+    )
+    _record_selection(
+        audit_log,
+        metric_name=metric_name,
+        requested_period=end,
+        expected_context="FLOW",
+        expected_period_type=prefer.upper(),
+        tags=FLOW_TAGS["capex"],
+        status="SELECTED_COMPOSITE",
+        chosen=synthetic,
+        rejected_reasons=[],
+    )
+    return {
+        "status": "PASS",
+        "basis": "COMPONENT_SUM",
+        "fact": synthetic,
+        "components": components,
+        "unresolved_component_groups": [],
+        "noncash_tags_excluded": list(CAPEX_NONCASH_SIGNAL_TAGS),
+    }
+
+
 def dp_from_fact(metric_name: str, fact: dict[str, Any], source_url: str, source_location: str, period_type: str, notes: str = "") -> DataPoint:
     start = fact.get("start", "")
     end = fact.get("end", "")
@@ -1197,6 +1562,80 @@ def manual_dp(
         validation_status=validation_status,
         notes=notes,
     )
+
+
+def cash_capex_data_points(
+    metric_name: str,
+    selection: dict[str, Any],
+    source_url: str,
+    period_type: str,
+) -> list[DataPoint]:
+    """Create an auditable parent capex row and its reported component evidence."""
+
+    fact = selection.get("fact")
+    if selection.get("status") != "PASS" or not fact:
+        return []
+    if selection.get("basis") == "REPORTED_AGGREGATE":
+        return [
+            dp_from_fact(
+                metric_name,
+                fact,
+                source_url,
+                "Cash-flow statement / aggregate cash-capex fact",
+                period_type,
+                notes=(
+                    "Reported aggregate cash-capex concept selected; component facts are not added again. "
+                    "Noncash capital expenditures incurred but unpaid are excluded."
+                ),
+            )
+        ]
+
+    component_rows: list[DataPoint] = []
+    component_names: list[str] = []
+    for component_name, component_fact in selection.get("components", {}).items():
+        child_name = f"{metric_name}_component_{component_name}"
+        component_names.append(child_name)
+        component_rows.append(
+            dp_from_fact(
+                child_name,
+                component_fact,
+                source_url,
+                f"Cash-flow statement / cash-capex component: {component_name}",
+                period_type,
+                notes="Reported cash-capex component retained separately for component-sum auditability.",
+            )
+        )
+
+    parent = manual_dp(
+        metric_name,
+        fact.get("val"),
+        unit=fact.get("unit", ""),
+        currency=unit_profile(fact.get("unit"))["currency"],
+        period_start=fact.get("start", ""),
+        period_end=fact.get("end", ""),
+        period_type=period_type,
+        duration_days_value=(
+            days_between(fact.get("start"), fact.get("end"))
+            if fact.get("start")
+            else ""
+        ),
+        fiscal_period=f"FY{fact.get('fy', '')} {fact.get('fp', '')}".strip(),
+        filing_type=fact.get("form", ""),
+        filing_date=fact.get("filed", ""),
+        source_location="Sum of compatible reported cash-capex components",
+        source_tag="calculation:CashCapexComponentSum",
+        source_url=source_url,
+        evidence_type="CALC",
+        reported_or_calculated="calculated",
+        confidence="High",
+        validation_status="auto-checked",
+        notes=(
+            "Components share one period, unit, currency, filing, and accession. "
+            "A reported aggregate tag was unavailable; noncash capital expenditures incurred but unpaid are excluded."
+        ),
+    )
+    parent.formula = " + ".join(component_names)
+    return component_rows + [parent]
 
 
 def html_to_text(raw: str) -> str:
@@ -1774,6 +2213,17 @@ def enrich_data_points(company: dict[str, Any], rows: list[DataPoint]) -> None:
             )
             input_names = ("available_liquidity_before_facility_notes", facility_input)
             row.formula = " + ".join(input_names)
+        elif row.metric_name in {
+            "latest_quarter_capex",
+            "latest_ytd_capex",
+            "prior_same_fiscal_year_ytd_capex",
+            "latest_annual_capex",
+        } and row.source_tag == "calculation:CashCapexComponentSum":
+            component_prefix = f"{row.metric_name}_component_"
+            input_names = tuple(
+                sorted(name for name in by_name if name.startswith(component_prefix))
+            )
+            row.formula = " + ".join(input_names)
         if row.metric_name.startswith("derived_latest_quarter_") and row.metric_name != "derived_latest_quarter_fcf":
             base_metric = row.metric_name.removeprefix("derived_latest_quarter_")
             input_names = (f"latest_ytd_{base_metric}", f"prior_same_fiscal_year_ytd_{base_metric}")
@@ -2095,6 +2545,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     validations: list[dict[str, Any]] = []
     xbrl_selection_log: list[dict[str, Any]] = []
     denominator_control_log: list[dict[str, Any]] = []
+    capex_control_results: dict[str, dict[str, Any]] = {}
 
     if support_assessment["status"] != "SUPPORTED_CORE":
         add_validation(
@@ -2252,58 +2703,138 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     # Flow metrics.
     if latest_q:
         for metric, tags in FLOW_TAGS.items():
-            quarter = choose_duration(
-                facts,
-                tags,
-                latest_q.period,
-                form="10-Q",
-                accn=latest_q.accession,
-                prefer="quarter",
-                metric_name=f"latest_quarter_{metric}",
-                audit_log=xbrl_selection_log,
-            )
-            ytd = choose_duration(
-                facts,
-                tags,
-                latest_q.period,
-                form="10-Q",
-                accn=latest_q.accession,
-                prefer="ytd",
-                metric_name=f"latest_ytd_{metric}",
-                audit_log=xbrl_selection_log,
-            )
-            if quarter:
-                rows.append(dp_from_fact(f"latest_quarter_{metric}", quarter, latest_q.url, "Income statement / flow fact", "quarter"))
-            if ytd and (not quarter or ytd.get("start") != quarter.get("start")):
-                rows.append(dp_from_fact(f"latest_ytd_{metric}", ytd, latest_q.url, "Cash flow or income statement / flow fact", "YTD"))
+            quarter_selection: dict[str, Any] | None = None
+            ytd_selection: dict[str, Any] | None = None
+            if metric == "capex":
+                quarter_selection = choose_cash_capex(
+                    facts,
+                    latest_q.period,
+                    form="10-Q",
+                    accn=latest_q.accession,
+                    prefer="quarter",
+                    metric_name="latest_quarter_capex",
+                    audit_log=xbrl_selection_log,
+                )
+                ytd_selection = choose_cash_capex(
+                    facts,
+                    latest_q.period,
+                    form="10-Q",
+                    accn=latest_q.accession,
+                    prefer="ytd",
+                    metric_name="latest_ytd_capex",
+                    audit_log=xbrl_selection_log,
+                )
+                capex_control_results["latest_quarter_capex"] = quarter_selection
+                capex_control_results["latest_ytd_capex"] = ytd_selection
+                quarter = quarter_selection.get("fact")
+                ytd = ytd_selection.get("fact")
+                rows.extend(
+                    cash_capex_data_points(
+                        "latest_quarter_capex",
+                        quarter_selection,
+                        latest_q.url,
+                        "quarter",
+                    )
+                )
+                if ytd and (not quarter or ytd.get("start") != quarter.get("start")):
+                    rows.extend(
+                        cash_capex_data_points(
+                            "latest_ytd_capex",
+                            ytd_selection,
+                            latest_q.url,
+                            "YTD",
+                        )
+                    )
+            else:
+                quarter = choose_duration(
+                    facts,
+                    tags,
+                    latest_q.period,
+                    form="10-Q",
+                    accn=latest_q.accession,
+                    prefer="quarter",
+                    metric_name=f"latest_quarter_{metric}",
+                    audit_log=xbrl_selection_log,
+                )
+                ytd = choose_duration(
+                    facts,
+                    tags,
+                    latest_q.period,
+                    form="10-Q",
+                    accn=latest_q.accession,
+                    prefer="ytd",
+                    metric_name=f"latest_ytd_{metric}",
+                    audit_log=xbrl_selection_log,
+                )
+                if quarter:
+                    rows.append(dp_from_fact(f"latest_quarter_{metric}", quarter, latest_q.url, "Income statement / flow fact", "quarter"))
+                if ytd and (not quarter or ytd.get("start") != quarter.get("start")):
+                    rows.append(dp_from_fact(f"latest_ytd_{metric}", ytd, latest_q.url, "Cash flow or income statement / flow fact", "YTD"))
 
             # Derive standalone quarter from YTD when useful and prior YTD exists.
             if ytd and prior_q:
-                prior_ytd = choose_duration(
-                    facts,
-                    tags,
-                    prior_q.period,
-                    form="10-Q",
-                    accn=prior_q.accession,
-                    prefer="ytd",
-                    metric_name=f"prior_same_fiscal_year_ytd_{metric}",
-                    audit_log=xbrl_selection_log,
+                prior_ytd_selection: dict[str, Any] | None = None
+                if metric == "capex":
+                    prior_ytd_selection = choose_cash_capex(
+                        facts,
+                        prior_q.period,
+                        form="10-Q",
+                        accn=prior_q.accession,
+                        prefer="ytd",
+                        metric_name="prior_same_fiscal_year_ytd_capex",
+                        audit_log=xbrl_selection_log,
+                    )
+                    capex_control_results[
+                        "prior_same_fiscal_year_ytd_capex"
+                    ] = prior_ytd_selection
+                    prior_ytd = prior_ytd_selection.get("fact")
+                else:
+                    prior_ytd = choose_duration(
+                        facts,
+                        tags,
+                        prior_q.period,
+                        form="10-Q",
+                        accn=prior_q.accession,
+                        prefer="ytd",
+                        metric_name=f"prior_same_fiscal_year_ytd_{metric}",
+                        audit_log=xbrl_selection_log,
+                    )
+                capex_component_sets_match = bool(
+                    metric != "capex"
+                    or (
+                        ytd_selection
+                        and prior_ytd_selection
+                        and ytd_selection.get("basis") == prior_ytd_selection.get("basis")
+                        and set(ytd_selection.get("components", {}))
+                        == set(prior_ytd_selection.get("components", {}))
+                    )
                 )
                 same_concept_and_unit = (
                     prior_ytd
                     and prior_ytd.get("tag") == ytd.get("tag")
                     and prior_ytd.get("unit") == ytd.get("unit")
+                    and capex_component_sets_match
                 )
                 if prior_ytd and prior_ytd.get("start") == ytd.get("start") and prior_ytd.get("end") != ytd.get("end") and same_concept_and_unit:
-                    rows.append(
-                        dp_from_fact(
-                            f"prior_same_fiscal_year_ytd_{metric}",
-                            prior_ytd,
-                            prior_q.url,
-                            "Prior same-fiscal-year YTD input for standalone-quarter derivation",
-                            "YTD",
+                    if metric == "capex" and prior_ytd_selection:
+                        rows.extend(
+                            cash_capex_data_points(
+                                "prior_same_fiscal_year_ytd_capex",
+                                prior_ytd_selection,
+                                prior_q.url,
+                                "YTD",
+                            )
                         )
-                    )
+                    else:
+                        rows.append(
+                            dp_from_fact(
+                                f"prior_same_fiscal_year_ytd_{metric}",
+                                prior_ytd,
+                                prior_q.url,
+                                "Prior same-fiscal-year YTD input for standalone-quarter derivation",
+                                "YTD",
+                            )
+                        )
                     latest_val = safe_float(ytd.get("val"))
                     prior_val = safe_float(prior_ytd.get("val"))
                     if latest_val is not None and prior_val is not None:
@@ -2359,18 +2890,38 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                     )
     elif latest_k:
         for metric, tags in FLOW_TAGS.items():
-            annual = choose_duration(
-                facts,
-                tags,
-                latest_k.period,
-                form="10-K",
-                accn=latest_k.accession,
-                prefer="annual",
-                metric_name=f"latest_annual_{metric}",
-                audit_log=xbrl_selection_log,
-            )
-            if annual:
-                rows.append(dp_from_fact(f"latest_annual_{metric}", annual, latest_k.url, "Annual statement / flow fact", "annual"))
+            if metric == "capex":
+                annual_selection = choose_cash_capex(
+                    facts,
+                    latest_k.period,
+                    form="10-K",
+                    accn=latest_k.accession,
+                    prefer="annual",
+                    metric_name="latest_annual_capex",
+                    audit_log=xbrl_selection_log,
+                )
+                capex_control_results["latest_annual_capex"] = annual_selection
+                rows.extend(
+                    cash_capex_data_points(
+                        "latest_annual_capex",
+                        annual_selection,
+                        latest_k.url,
+                        "annual",
+                    )
+                )
+            else:
+                annual = choose_duration(
+                    facts,
+                    tags,
+                    latest_k.period,
+                    form="10-K",
+                    accn=latest_k.accession,
+                    prefer="annual",
+                    metric_name=f"latest_annual_{metric}",
+                    audit_log=xbrl_selection_log,
+                )
+                if annual:
+                    rows.append(dp_from_fact(f"latest_annual_{metric}", annual, latest_k.url, "Annual statement / flow fact", "annual"))
 
     annual_anchor: dict[str, Any] | None = None
     if latest_k:
@@ -3072,6 +3623,57 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             issue_class="WARNING",
         )
 
+    primary_capex_metric = "latest_ytd_capex" if latest_q else "latest_annual_capex"
+    primary_fcf_metric = "latest_ytd_fcf" if latest_q else "latest_annual_fcf"
+    primary_capex_control = capex_control_results.get(primary_capex_metric, {})
+    if primary_capex_metric in m and primary_capex_control.get("status") == "PASS":
+        component_labels = sorted(primary_capex_control.get("components", {}))
+        basis_description = (
+            "a reported aggregate cash-capex concept"
+            if primary_capex_control.get("basis") == "REPORTED_AGGREGATE"
+            else "compatible reported components: " + ", ".join(component_labels)
+        )
+        add_validation(
+            validations,
+            "P0-cash-capex-component-coverage",
+            "PASS",
+            "Critical",
+            (
+                f"{primary_capex_metric} uses {basis_description}; "
+                "aggregate and component paths are mutually exclusive, and noncash incurred-but-unpaid capex is excluded."
+            ),
+            "CFO-based FCF uses an auditable cash-capex basis without known component omission or double counting.",
+            "Re-run component selection after every new filing and preserve every selected component as evidence.",
+            category="accounting_logic",
+        )
+    elif primary_fcf_metric in m:
+        add_validation(
+            validations,
+            "P0-cash-capex-component-coverage",
+            "FAIL",
+            "Critical",
+            "FCF exists without a validated aggregate or component-sum cash-capex basis.",
+            "FCF may omit cash-capex components, include noncash capex, or double count an aggregate and its components.",
+            "Suppress FCF until the shared cash-capex selector validates the complete period-matched basis.",
+            category="accounting_logic",
+            issue_class="HARD_STOP",
+        )
+    else:
+        add_validation(
+            validations,
+            "P0-cash-capex-component-coverage",
+            "MISSING",
+            "High",
+            (
+                f"{primary_capex_metric} has no validated aggregate or compatible component-sum basis; "
+                "no missing amount was assumed to be zero."
+            ),
+            "CFO-based FCF remains unavailable rather than understating cash reinvestment.",
+            "Inspect the cash-flow statement and company-extension tags, then map only cash capex components.",
+            category="accounting_logic",
+            issue_class="WARNING",
+        )
+
     ltm_pass = [
         metric
         for metric, result in ltm_control_results.items()
@@ -3128,7 +3730,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     selected_names = {
         item["metric_name"]
         for item in xbrl_selection_log
-        if item["status"] == "SELECTED"
+        if item["status"] in {"SELECTED", "SELECTED_COMPOSITE"}
     }
     unresolved_required = sorted(required_selection_names - selected_names)
     unsafe_missing_defaults = [
@@ -3511,6 +4113,18 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     )
 
     enrich_data_points(company, rows)
+    capex_evidence_ids = [
+        row.evidence_id
+        for row in rows
+        if row.evidence_id
+        and (
+            row.metric_name == primary_capex_metric
+            or row.metric_name.startswith(f"{primary_capex_metric}_component_")
+        )
+    ]
+    for validation in validations:
+        if validation.get("check_id") == "P0-cash-capex-component-coverage":
+            validation["evidence_ids"] = capex_evidence_ids
     link_assessment_evidence(
         notes_and_events_assessment,
         {row.metric_name: row.evidence_id for row in rows if row.evidence_id},
@@ -3693,6 +4307,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         "as_of_registry": as_of_registry,
         "fiscal_calendar_profile": fiscal_profile,
         "xbrl_selection_log": xbrl_selection_log,
+        "capex_control_results": capex_control_results,
         "ltm_control_results": ltm_control_results,
         "share_count_control": {
             key: value
