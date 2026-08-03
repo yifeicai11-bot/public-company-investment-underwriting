@@ -1,0 +1,30 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 24,
+  "artifacts": {
+    "builder_output/chrw_c_h_robinson_worldwide_inc/data/data_evidence_pack.json": "e5735509fc7d28b682863bcc2817041d9ccc545004cd6b532510b15b32b8a889",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/data/normalized_data.csv": "8b72afd01194e6152110282ee15dbcb6639a53cba68e79dcad5d4ff80c058ebd",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/data/normalized_data.json": "e5735509fc7d28b682863bcc2817041d9ccc545004cd6b532510b15b32b8a889",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/delivery/pipeline_diagnostic.json": "ae110ff7c9e121d5120e4ffdac807ea276b9b8d853d5ecc375e2bba1d8e4a0ba",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/delivery/pipeline_manifest.json": "1e2071da950d4d0507a362eee19d1e31adb79ee41d05545a95469718af013ffc",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/investment_data_pack.md": "89a9bfc8594a6844c0723c252f65f629ee467d54a25e4cb479ed4f33bad51d7d",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/analyst_input_template.json": "80d12f63716fd2611aed700439efa9b5e0679c101905c08239721d030c6453b2",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/committee_snapshot.csv": "0597f727ab99e8b6ecb52a6629d702f72473f9c14b03ea8329c1191d94ebdfef",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/investment_layer.json": "7b6eb910f340b78d1be2ef12190406f0133e648f58066892768b51357424c2ec",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/investment_layer.md": "1ab69b263af95d3b94a28763a8a9d6635b28a55289e4155977d3f7a36bb706e5",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/market_expectations.csv": "fdf89ea6797eb2eb0e0116e515decfe3c450b47964028737deef7f8deba4b973",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/partner_overlay_template.md": "16c854cf31e88ed30361319bec907ce974864abef586eb2c5fa2072ad36ca2e0",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/public_data_drivers.csv": "f7c480278462dc9dca37460d42e1a0304dd25b98c2b09fa83b738ec74f900988",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/step3_data.json": "7b6eb910f340b78d1be2ef12190406f0133e648f58066892768b51357424c2ec",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/step3_validation_report.md": "95dc3112d01538efc8d0db54296fa40d1b7930b3753455ef8f619609144be206",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/underwriting_output_contract.json": "7b6eb910f340b78d1be2ef12190406f0133e648f58066892768b51357424c2ec",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/step3/valuation_metrics.csv": "bde23d9ed90f7839484c1e811ecaec457aae74c8b1ed699202f94163620a18f3",
+    "builder_output/chrw_c_h_robinson_worldwide_inc/validation/validation_report.md": "3dd71fa92d693058d061ca6de3e1feb6373d09d908e632795fbd8277f025da0c",
+    "execution_context.json": "a301d7efdbcac4674c593578a92a58bf0578243862f8ab4946df107e254166a6",
+    "first_run_diagnostic.json": "cd47e42cd4816e84854c84e9cc55b88ade6b9872a9adfa997ed2a058e5a75bdf",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "1a07ad28fe9ea13f0a65e0e17283e2db77501d413a1ab646f54f0c96667dacc8"
+  }
+}

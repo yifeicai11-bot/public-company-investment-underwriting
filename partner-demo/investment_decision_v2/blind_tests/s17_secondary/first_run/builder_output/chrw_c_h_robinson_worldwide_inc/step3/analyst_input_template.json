@@ -1,0 +1,1067 @@
+{
+  "company": {
+    "cik": "0001043277",
+    "name": "C. H. ROBINSON WORLDWIDE, INC.",
+    "ticker": "CHRW",
+    "exchange": "Nasdaq"
+  },
+  "external_evidence": [
+    {
+      "status": "NOT_VALIDATED",
+      "external_key": "",
+      "metric_name": "",
+      "value": null,
+      "unit": "text, USD, shares, pure, or other explicit unit",
+      "currency": "",
+      "scale": 1.0,
+      "period_start": "",
+      "period_end": "",
+      "period_type": "instant, quarter, YTD, annual, forecast, or event",
+      "as_of_date": "",
+      "measurement_basis": "reported_or_sourced",
+      "evidence_class": "FACT",
+      "confidence": "Medium",
+      "subsequent_event_status": "NOT_APPLICABLE",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_company_material",
+        "source_name": "",
+        "source_url": "",
+        "source_locator": "page, section, table, paragraph, or dataset field",
+        "publication_date": "",
+        "retrieval_date": ""
+      },
+      "reviewed_by": "",
+      "notes": ""
+    }
+  ],
+  "investment_question": {
+    "status": "NOT_DEFINED",
+    "text": "",
+    "decision_supported": "",
+    "reviewed_by": ""
+  },
+  "key_debates": [],
+  "key_debate_schema": {
+    "title": "",
+    "market_view": "",
+    "alternative_view": "",
+    "market_evidence_ids": [],
+    "market_evidence_keys": [],
+    "market_evidence_metrics": [],
+    "alternative_evidence_ids": [],
+    "alternative_evidence_keys": [],
+    "alternative_evidence_metrics": [],
+    "missing_evidence": "",
+    "resolution_kpi_or_event": "",
+    "decision_impact": "",
+    "reviewed_by": ""
+  },
+  "issuer_underwriting": {
+    "business_and_industry": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "earnings_quality": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "working_capital_and_cash_conversion": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "liquidity_sources_and_uses": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "debt_leases_covenants_refinancing": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "capital_allocation": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "management_guidance_and_subsequent_events": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "stress_test": {
+      "status": "NOT_VALIDATED",
+      "conclusion": "",
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": [],
+      "limitations": [],
+      "reviewed_by": ""
+    }
+  },
+  "normalized_fcf": {
+    "status": "NOT_VALIDATED",
+    "value": null,
+    "period_end": "",
+    "base_evidence_id": "EV-852A190CD1D6D8",
+    "bridge_lines": [],
+    "bridge_line_schema": {
+      "label": "",
+      "amount": null,
+      "evidence_id": "",
+      "evidence_key": "",
+      "evidence_class": "JUDGMENT",
+      "embedded_in_cfo": false,
+      "separately_modeled": true,
+      "reversal_id": "",
+      "rationale": ""
+    },
+    "no_adjustments_rationale": "",
+    "confidence": "Low",
+    "reviewed_by": ""
+  },
+  "forward_valuation": {
+    "status": "NOT_VALIDATED",
+    "driver_module": "",
+    "module_selection": {
+      "status": "NOT_VALIDATED",
+      "rationale": "",
+      "evidence_ids": [],
+      "reviewed_by": ""
+    },
+    "currency": "",
+    "unit": "",
+    "amount_scale": 1.0,
+    "unit_policy": "Use unscaled atomic currency units matching price currency (for example USD, not USD_MILLIONS).",
+    "fcf_basis": "LEVERED_CFO_MINUS_CAPEX_BRIDGE",
+    "reviewed_by": "",
+    "scenarios": [
+      {
+        "name": "Bear",
+        "scenario_rationale": "",
+        "revenue_driver": {},
+        "cash_flow_driver": {
+          "operating_margin": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "RATIO",
+            "currency": "",
+            "measurement_basis": "EBIT_MARGIN_BEFORE_SEPARATELY_MODELED_RESTRUCTURING_AND_INTEGRATION_CASH_ITEMS_INCLUDING_DA_AND_SBC"
+          },
+          "cash_interest": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_INTEREST_FOR_FORECAST_PERIOD"
+          },
+          "cash_taxes": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_TAXES_FOR_FORECAST_PERIOD"
+          },
+          "depreciation_and_amortization": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_DA_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "stock_based_compensation": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_SBC_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "other_non_cash_items": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_NONCASH_ITEMS_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "working_capital_investment": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NET_CASH_WORKING_CAPITAL_INVESTMENT"
+          },
+          "capex": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_CAPITAL_EXPENDITURES"
+          },
+          "restructuring_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_RESTRUCTURING_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "acquisition_integration_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_ACQUISITION_INTEGRATION_COSTS_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "other_cash_adjustments": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_CASH_ITEMS_EXCLUDED_FROM_OPERATING_MARGIN"
+          }
+        },
+        "reviewed_by": ""
+      },
+      {
+        "name": "Base",
+        "scenario_rationale": "",
+        "revenue_driver": {},
+        "cash_flow_driver": {
+          "operating_margin": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "RATIO",
+            "currency": "",
+            "measurement_basis": "EBIT_MARGIN_BEFORE_SEPARATELY_MODELED_RESTRUCTURING_AND_INTEGRATION_CASH_ITEMS_INCLUDING_DA_AND_SBC"
+          },
+          "cash_interest": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_INTEREST_FOR_FORECAST_PERIOD"
+          },
+          "cash_taxes": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_TAXES_FOR_FORECAST_PERIOD"
+          },
+          "depreciation_and_amortization": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_DA_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "stock_based_compensation": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_SBC_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "other_non_cash_items": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_NONCASH_ITEMS_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "working_capital_investment": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NET_CASH_WORKING_CAPITAL_INVESTMENT"
+          },
+          "capex": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_CAPITAL_EXPENDITURES"
+          },
+          "restructuring_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_RESTRUCTURING_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "acquisition_integration_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_ACQUISITION_INTEGRATION_COSTS_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "other_cash_adjustments": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_CASH_ITEMS_EXCLUDED_FROM_OPERATING_MARGIN"
+          }
+        },
+        "reviewed_by": ""
+      },
+      {
+        "name": "Bull",
+        "scenario_rationale": "",
+        "revenue_driver": {},
+        "cash_flow_driver": {
+          "operating_margin": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "RATIO",
+            "currency": "",
+            "measurement_basis": "EBIT_MARGIN_BEFORE_SEPARATELY_MODELED_RESTRUCTURING_AND_INTEGRATION_CASH_ITEMS_INCLUDING_DA_AND_SBC"
+          },
+          "cash_interest": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_INTEREST_FOR_FORECAST_PERIOD"
+          },
+          "cash_taxes": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "TOTAL_CASH_TAXES_FOR_FORECAST_PERIOD"
+          },
+          "depreciation_and_amortization": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_DA_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "stock_based_compensation": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NONCASH_SBC_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "other_non_cash_items": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_NONCASH_ITEMS_INCLUDED_IN_OPERATING_MARGIN"
+          },
+          "working_capital_investment": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "NET_CASH_WORKING_CAPITAL_INVESTMENT"
+          },
+          "capex": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_CAPITAL_EXPENDITURES"
+          },
+          "restructuring_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_RESTRUCTURING_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "acquisition_integration_cash": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "CASH_ACQUISITION_INTEGRATION_COSTS_EXCLUDED_FROM_OPERATING_MARGIN"
+          },
+          "other_cash_adjustments": {
+            "value": null,
+            "evidence_class": "MISSING",
+            "evidence_ids": [],
+            "reviewed_by": "",
+            "rationale": "",
+            "formula": "",
+            "unit": "",
+            "currency": "",
+            "measurement_basis": "SIGNED_CASH_ITEMS_EXCLUDED_FROM_OPERATING_MARGIN"
+          }
+        },
+        "reviewed_by": ""
+      }
+    ],
+    "share_count_bridge": {
+      "status": "NOT_VALIDATED",
+      "target_date": "",
+      "known_subsequent_event_status": "NOT_REVIEWED",
+      "known_subsequent_event_note": "",
+      "reviewed_by": "",
+      "changes": {
+        "repurchases": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        },
+        "stock_based_compensation_issuance": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        },
+        "employee_plan_issuance": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        },
+        "convertible_dilution": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        },
+        "acquisition_share_issuance": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        },
+        "other_net_change": {
+          "value": null,
+          "evidence_class": "MISSING",
+          "evidence_ids": [],
+          "reviewed_by": "",
+          "rationale": "",
+          "formula": "",
+          "unit": "SHARES",
+          "currency": "SHARES"
+        }
+      }
+    },
+    "module_catalog": {
+      "registry_version": "1.0.0",
+      "modules": {
+        "RETAIL": {
+          "description": "Comparable sales, unit footprint, and other revenue growth.",
+          "required_revenue_fields": [
+            "base_revenue",
+            "comparable_sales_growth",
+            "net_store_growth",
+            "other_revenue_growth"
+          ]
+        },
+        "CONSUMER_BRAND": {
+          "description": "Brand or segment revenue bases and scenario growth.",
+          "required_revenue_fields": [
+            "brand_segments"
+          ]
+        },
+        "SUBSCRIPTION_SOFTWARE": {
+          "description": "Subscription and non-subscription revenue-stream bridge.",
+          "required_revenue_fields": [
+            "revenue_streams"
+          ]
+        },
+        "INDUSTRIAL": {
+          "description": "Volume, price/mix, acquisition, and divestiture revenue bridge.",
+          "required_revenue_fields": [
+            "base_revenue",
+            "volume_growth",
+            "price_mix_growth",
+            "acquisition_revenue",
+            "divestiture_revenue"
+          ]
+        },
+        "ACQUISITION_HEAVY": {
+          "description": "Organic, acquired, and divested revenue bridge.",
+          "required_revenue_fields": [
+            "base_revenue",
+            "organic_growth",
+            "acquired_revenue",
+            "divested_revenue"
+          ]
+        },
+        "DISTRIBUTION": {
+          "description": "Volume and price/mix bridge for low-margin distribution.",
+          "required_revenue_fields": [
+            "base_revenue",
+            "volume_growth",
+            "price_mix_growth"
+          ]
+        }
+      }
+    }
+  },
+  "market_data_approval": {
+    "status": "NOT_APPROVED",
+    "provider": "Yahoo Finance chart endpoint",
+    "scope": "dated close and adjusted-close return inputs",
+    "reviewed_by": ""
+  },
+  "market_expectations": {
+    "status": "NOT_SOURCED",
+    "summary": "",
+    "current_public_evidence": "",
+    "variant_question": "",
+    "variant_perception": "",
+    "potential_variant": "",
+    "disconfirming_evidence": "",
+    "market_evidence_ids": [],
+    "market_evidence_keys": [],
+    "market_evidence_metrics": [],
+    "public_evidence_ids": [],
+    "public_evidence_keys": [],
+    "public_evidence_metrics": [],
+    "variant_evidence_ids": [],
+    "variant_evidence_keys": [],
+    "variant_evidence_metrics": [],
+    "disconfirming_evidence_ids": [],
+    "disconfirming_evidence_keys": [],
+    "disconfirming_evidence_metrics": [],
+    "source": {
+      "source_level": 4,
+      "source_type": "institutional_consensus",
+      "source_name": "",
+      "source_url": "",
+      "source_locator": "",
+      "publication_date": "",
+      "retrieval_date": ""
+    },
+    "as_of_date": "",
+    "reviewed_by": ""
+  },
+  "valuation_framework": {
+    "status": "NOT_VALIDATED",
+    "method": "EQUITY_FCF_MULTIPLE or EQUITY_EARNINGS_MULTIPLE",
+    "reverse_valuation": {
+      "status": "NOT_VALIDATED",
+      "formula": "required_metric_value = market_cap / selected_multiple",
+      "selected_multiple": null,
+      "required_metric_value": null,
+      "assumptions": [],
+      "evidence_ids": [],
+      "evidence_keys": [],
+      "evidence_metrics": []
+    },
+    "sensitivity_completed": false,
+    "sensitivity_table": [
+      {
+        "metric_value": null,
+        "multiple": null,
+        "implied_price": null
+      },
+      {
+        "metric_value": null,
+        "multiple": null,
+        "implied_price": null
+      },
+      {
+        "metric_value": null,
+        "multiple": null,
+        "implied_price": null
+      }
+    ],
+    "reviewed_by": ""
+  },
+  "share_count_basis": {
+    "share_count_type": "COMMON_SHARES_OUTSTANDING",
+    "share_count_source": "",
+    "forward_share_count_bridge_status": "NOT_COMPLETED",
+    "forward_share_count_value": null,
+    "forward_share_count_date": "",
+    "forward_share_count_source": "",
+    "forward_share_count_source_detail": {},
+    "forward_share_count_evidence_ids": [],
+    "known_subsequent_event_status": "NOT_REVIEWED",
+    "known_subsequent_event_note": "",
+    "limitations": [],
+    "reviewed_by": ""
+  },
+  "valuation_contract": {
+    "status": "NOT_DEFINED",
+    "valuation_as_of_date": "",
+    "target_date": "",
+    "holding_period_days": null,
+    "forecast_period": {
+      "status": "NOT_DEFINED",
+      "start_date": "",
+      "end_date": "",
+      "label": "",
+      "period_type": "FORECAST",
+      "basis": "HOLDING_PERIOD_FORECAST",
+      "evidence_ids": []
+    },
+    "metric_period": {
+      "status": "NOT_DEFINED",
+      "start_date": "",
+      "end_date": "",
+      "label": "",
+      "period_type": "FORWARD_METRIC",
+      "basis": "FORWARD_PERIOD_ENDING_AT_TARGET",
+      "evidence_ids": []
+    },
+    "dividend_assumption": {
+      "status": "NOT_DEFINED",
+      "amount_per_share": null,
+      "currency": "",
+      "basis": "",
+      "payment_timing": "",
+      "reinvestment": false,
+      "evidence_ids": [],
+      "reviewed_by": ""
+    },
+    "exit_basis": {
+      "status": "NOT_DEFINED",
+      "method": "",
+      "metric": "",
+      "terminal_or_exit": "EXIT",
+      "evidence_ids": [],
+      "reviewed_by": ""
+    },
+    "reviewed_by": "",
+    "partner_internal_return": null
+  },
+  "scenario_model": {
+    "status": "NOT_VALIDATED",
+    "metric": "Normalized FCF",
+    "metric_unit": "",
+    "metric_currency": "",
+    "current_multiple": null,
+    "metric_basis": {
+      "status": "NOT_VALIDATED",
+      "value": null,
+      "unit": "",
+      "currency": "",
+      "period_end": "",
+      "evidence_ids": [],
+      "reviewed_by": ""
+    },
+    "reviewed_by": "",
+    "scenarios": [
+      {
+        "name": "Bear",
+        "probability": null,
+        "metric_value_total": null,
+        "growth_assumption": null,
+        "exit_multiple": null,
+        "key_driver": "",
+        "falsification_trigger": "",
+        "confidence": "Low",
+        "assumption_sources": [],
+        "probability_rationale": "",
+        "notes": ""
+      },
+      {
+        "name": "Base",
+        "probability": null,
+        "metric_value_total": null,
+        "growth_assumption": null,
+        "exit_multiple": null,
+        "key_driver": "",
+        "falsification_trigger": "",
+        "confidence": "Low",
+        "assumption_sources": [],
+        "probability_rationale": "",
+        "notes": ""
+      },
+      {
+        "name": "Bull",
+        "probability": null,
+        "metric_value_total": null,
+        "growth_assumption": null,
+        "exit_multiple": null,
+        "key_driver": "",
+        "falsification_trigger": "",
+        "confidence": "Low",
+        "assumption_sources": [],
+        "probability_rationale": "",
+        "notes": ""
+      }
+    ]
+  },
+  "probability_framework": {
+    "status": "ILLUSTRATIVE",
+    "method_type": "SCENARIO_JUDGMENT",
+    "methodology": "",
+    "method_details": {
+      "allocation_rationale": "",
+      "sensitivity_completed": false
+    },
+    "evidence_ids": [],
+    "evidence_keys": [],
+    "evidence_metrics": [],
+    "scenario_rationales": {
+      "Bear": "",
+      "Base": "",
+      "Bull": ""
+    },
+    "as_of_date": "",
+    "probability_expiration_review_date": "",
+    "review_triggers": [
+      "NEW_EARNINGS_OR_GUIDANCE"
+    ],
+    "sensitivity_cases": [],
+    "reviewed_by": "",
+    "approval": {
+      "status": "NOT_APPROVED",
+      "approved_by": "",
+      "approval_date": "",
+      "approval_scope": "PROBABILITY_METHODOLOGY_AND_WEIGHTS",
+      "independent_research_review": false
+    }
+  },
+  "valuation_cross_checks": {
+    "status": "NOT_PROVIDED",
+    "as_of_date": "",
+    "reviewed_by": "",
+    "peer_comparison": {
+      "status": "NOT_PROVIDED",
+      "as_of_date": "",
+      "selection_rationale": "",
+      "minimum_comparable_peers": 3,
+      "subject_metrics": [],
+      "peers": [],
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "historical_valuation": {
+      "status": "NOT_PROVIDED",
+      "as_of_date": "",
+      "current_observation": {},
+      "observations": [],
+      "minimum_observations": 5,
+      "minimum_span_days": 365,
+      "comparability_rationale": "",
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "reverse_valuation": {
+      "status": "NOT_PROVIDED",
+      "as_of_date": "",
+      "method": "",
+      "capital_evidence_ids": [],
+      "selected_reference": {
+        "value": null,
+        "evidence_class": "JUDGMENT",
+        "evidence_ids": [],
+        "rationale": "",
+        "reviewed_by": ""
+      },
+      "reference_basis": {
+        "metric": "",
+        "currency": "",
+        "period_basis": "NTM or FY1",
+        "accounting_definition": ""
+      },
+      "metric_period": {
+        "status": "NOT_DEFINED",
+        "period_type": "FORWARD_METRIC",
+        "start_date": "",
+        "end_date": ""
+      },
+      "comparison_metric": {
+        "value": null,
+        "metric_name": "",
+        "currency": "",
+        "period_basis": "",
+        "accounting_definition": "",
+        "evidence_ids": []
+      }
+    },
+    "independent_cross_check": {
+      "status": "NOT_PROVIDED",
+      "as_of_date": "",
+      "method": "DISCOUNTED_CASH_FLOW_GORDON_GROWTH",
+      "cash_flow_basis": "UNLEVERED_FCFF",
+      "discount_rate_basis": "WACC",
+      "forecast_cash_flows": [],
+      "discount_rate": {},
+      "terminal_growth": {},
+      "net_debt": {},
+      "non_operating_assets": {},
+      "minority_interest": {},
+      "shares": {},
+      "share_basis": {
+        "status": "NOT_VALIDATED",
+        "basis_type": "POINT_IN_TIME_OUTSTANDING, POINT_IN_TIME_DILUTED, or FORWARD_DILUTED",
+        "basis_date": "",
+        "rationale": "",
+        "reviewed_by": ""
+      },
+      "sensitivity": {
+        "discount_rate_step": null,
+        "terminal_growth_step": null,
+        "evidence_class": "JUDGMENT",
+        "evidence_ids": [],
+        "rationale": "",
+        "reviewed_by": ""
+      },
+      "limitations": [],
+      "reviewed_by": ""
+    },
+    "method_agreement": {
+      "tolerance": {
+        "value": null,
+        "unit": "RATIO",
+        "evidence_class": "JUDGMENT",
+        "evidence_ids": [],
+        "rationale": "",
+        "reviewed_by": ""
+      }
+    },
+    "limitations": []
+  },
+  "peer_valuation_context": {
+    "status": "NOT_VALIDATED",
+    "as_of_date": "",
+    "selection_rationale": "",
+    "subject": {
+      "fiscal_period_end": "",
+      "currency": "USD",
+      "metric_definitions": {
+        "EV/SALES": "GAAP_REVENUE",
+        "EV/EBITDA": "GAAP_OR_RECONCILED_EBITDA",
+        "P/FCF": "REPORTED_CFO_MINUS_CAPEX",
+        "FCF_YIELD": "REPORTED_CFO_MINUS_CAPEX",
+        "REVENUE_GROWTH": "GAAP_REVENUE_GROWTH",
+        "OPERATING_MARGIN": "GAAP_OPERATING_MARGIN",
+        "EBITDA_MARGIN": "GAAP_OR_RECONCILED_EBITDA_MARGIN"
+      }
+    },
+    "peers": [],
+    "historical_context": {
+      "status": "UNAVAILABLE"
+    },
+    "interpretation": "",
+    "limitations": [],
+    "reviewed_by": ""
+  },
+  "fcf_quality_assessment": {
+    "status": "NOT_VALIDATED",
+    "rating": "Medium",
+    "cash_conversion_confidence": "Medium",
+    "source_of_fcf": [],
+    "sustainability_assessment": "",
+    "conclusion": "",
+    "dimensions": [],
+    "evidence_ids": [],
+    "evidence_keys": [],
+    "evidence_metrics": [],
+    "limitations": [],
+    "reviewed_by": ""
+  },
+  "investment_decision_summary": {
+    "status": "NOT_VALIDATED",
+    "current_action": "Continue Research",
+    "current_view": "",
+    "what_would_make_attractive": [],
+    "what_would_invalidate": [],
+    "what_to_monitor_next": [],
+    "evidence_ids": [],
+    "evidence_keys": [],
+    "evidence_metrics": [],
+    "reviewed_by": ""
+  },
+  "decision_rules": {
+    "status": "NOT_DEFINED",
+    "upgrade_conditions": [],
+    "downgrade_conditions": [],
+    "thesis_invalidation_conditions": [],
+    "reviewed_by": ""
+  },
+  "portfolio_context": {
+    "status": "DISABLED",
+    "note": "Fund-specific inputs not provided."
+  },
+  "human_approval": {
+    "status": "NOT_REVIEWED",
+    "reviewed_by": ""
+  }
+}

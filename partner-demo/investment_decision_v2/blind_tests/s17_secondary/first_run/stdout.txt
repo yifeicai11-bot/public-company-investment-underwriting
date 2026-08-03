@@ -1,0 +1,40 @@
+{
+  "pipeline_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "generated_at": "2026-08-03T09:47:13Z",
+  "status": "RESEARCH_INPUT_REQUIRED",
+  "company_query": "CHRW",
+  "command": "python underwrite.py analyze CHRW --output-root <OUTPUT_ROOT>",
+  "public_only_boundary": "Gate 4 portfolio inputs are not accepted by this entry point.",
+  "contract_path": "chrw_c_h_robinson_worldwide_inc/step3/underwriting_output_contract.json",
+  "analyst_input_template": "chrw_c_h_robinson_worldwide_inc/step3/analyst_input_template.json",
+  "delivery_dir": "chrw_c_h_robinson_worldwide_inc/delivery",
+  "eligibility": {
+    "eligible": false,
+    "data_gate": 1.0,
+    "blockers": [
+      "data_gate=1; Gate 3 required for partner-ready formal delivery"
+    ]
+  },
+  "contract_summary": {
+    "company": {
+      "cik": "0001043277",
+      "name": "C. H. ROBINSON WORLDWIDE, INC.",
+      "ticker": "CHRW",
+      "exchange": "Nasdaq"
+    },
+    "report_id": "RPT-07FE8F06526F11",
+    "contract_hash": "16a11a6ddd031e15a30f8334ab37ab21e11c4a4351db09c312c3c36996f2f969",
+    "schema_version": "5.1.0",
+    "data_gate": 1,
+    "decision_confidence": "Low",
+    "current_action": "Underwriting In Progress",
+    "hard_stop_count": 0,
+    "warning_count": 24,
+    "contract_validation": "PASS"
+  },
+  "render_manifest": null,
+  "validation_report": null,
+  "environment_status": "PASS",
+  "manifest_path": "chrw_c_h_robinson_worldwide_inc/delivery/pipeline_manifest.json"
+}

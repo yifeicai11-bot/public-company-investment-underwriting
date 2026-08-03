@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_held_out_acceptance_result",
+  "status": "S17_HELD_OUT_ACCEPTED",
+  "attempt": "SECONDARY",
+  "selected_issuer": {
+    "ticker": "CHRW",
+    "company_name": "C. H. ROBINSON WORLDWIDE, INC.",
+    "exchange": "Nasdaq",
+    "industry": "Arrangement of  Transportation of  Freight & Cargo"
+  },
+  "pre_run_commit": "75587993311315e107b7d9b0abb587b505c67138",
+  "selection_integrity": {
+    "status": "PASS",
+    "pre_run_commit": "75587993311315e107b7d9b0abb587b505c67138",
+    "selected_ticker": "CHRW",
+    "selection_reproduced": true,
+    "stored_blob_hashes_reproduced": true,
+    "shared_logic_unchanged_before_first_run": true,
+    "ticker_absent_from_pre_run_shared_logic": true
+  },
+  "preserved_run_integrity": {
+    "status": "PASS",
+    "run_directory": "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s17_secondary/first_run",
+    "hash_method": "SHA256",
+    "artifact_count": 24,
+    "file_set_unchanged": true,
+    "artifact_hashes_unchanged": true
+  },
+  "diagnostic_summary": {
+    "return_code": 3,
+    "pipeline_status": "RESEARCH_INPUT_REQUIRED",
+    "data_gate": {
+      "level": 1,
+      "label": "Gate 1 - Core data validated",
+      "allowed_outputs": [
+        "preliminary_company_screen",
+        "basic_financial_description",
+        "major_missing_information"
+      ],
+      "prohibited_outputs": [
+        "automatic_trade",
+        "credit_constraint_conclusion",
+        "expected_return",
+        "final_investment_action",
+        "issuer_risk_judgment",
+        "portfolio_action",
+        "position_sizing",
+        "target_price"
+      ],
+      "hard_stop_ids": [],
+      "probabilities_validated": false
+    },
+    "contract_validation_status": "PASS",
+    "hard_stop_count": 0,
+    "warning_count": 24
+  },
+  "contract_summary": {
+    "report_id": "RPT-07FE8F06526F11",
+    "contract_hash": "16a11a6ddd031e15a30f8334ab37ab21e11c4a4351db09c312c3c36996f2f969",
+    "schema_version": "5.1.0",
+    "data_gate": 1,
+    "evidence_records": 96,
+    "source_records": 19,
+    "warnings": 24,
+    "hard_stops": 0
+  },
+  "errors": [],
+  "requires_second_company_after_fix": false,
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}
