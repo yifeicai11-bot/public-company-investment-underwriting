@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_selection_harness_preflight_record",
+  "status": "HARNESS_FIX_REQUIRED",
+  "attempt": "PRIMARY",
+  "selection_date": "2026-08-03",
+  "pre_run_commit": "c1a8146e2912bb1e231f5e7069e2160967fd15d5",
+  "seed_sha256": "8d53ada0a5dd1006997649b8c5171ef1ea712489ece22ba4fa9a8971357a6ad9",
+  "selected_index": 15,
+  "selected_ticker": "OSK",
+  "manifest_written": false,
+  "company_run_started": false,
+  "failure_type": "CalledProcessError",
+  "failure_detail": "The frozen shared-logic list referenced a nonexistent period_controls.py path.",
+  "underlying_fix": "Remove the nonexistent path from the common S17 freeze list and add a test requiring every frozen path to exist at HEAD.",
+  "primary_ticker_reuse_allowed": false,
+  "secondary_requirement": "After the harness fix and a new code freeze, use the SECONDARY seed and exclude OSK from the candidate pool.",
+  "automatic_trade_execution": false
+}

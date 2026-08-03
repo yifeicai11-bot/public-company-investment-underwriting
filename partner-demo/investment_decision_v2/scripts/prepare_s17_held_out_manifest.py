@@ -66,7 +66,6 @@ FROZEN_SHARED_LOGIC = [
     "underwrite.py",
     "scripts/release_doctor.py",
     "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py",
-    "partner-demo/investment_decision_v2/scripts/period_controls.py",
     "partner-demo/investment_decision_v2/scripts/notes_events_controls.py",
     "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
     "partner-demo/investment_decision_v2/scripts/underwriting_contract.py",

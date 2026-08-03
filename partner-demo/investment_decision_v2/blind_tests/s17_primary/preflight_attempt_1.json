@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_selection_source_preflight_record",
+  "status": "SOURCE_PREFLIGHT_TRANSIENT_FAILURE",
+  "attempt": "PRIMARY",
+  "selection_date": "2026-08-03",
+  "pre_run_commit": "c1a8146e2912bb1e231f5e7069e2160967fd15d5",
+  "seed_sha256": "8d53ada0a5dd1006997649b8c5171ef1ea712489ece22ba4fa9a8971357a6ad9",
+  "selected_index": 15,
+  "selected_ticker": "OSK",
+  "manifest_written": false,
+  "company_run_started": false,
+  "shared_logic_changed": false,
+  "failure_type": "S17SelectionError",
+  "failure_detail": "The SEC exchange-list response used by the failed command temporarily omitted predeclared candidate GTLS; the generator blocked before writing the manifest.",
+  "failed_source_snapshot_sha256": "NOT_CAPTURED",
+  "retry_rule": "Retry only with the same freeze commit, selection date, attempt, candidate pool, seed, selected index, and selected ticker. Do not change shared code or replace OSK.",
+  "automatic_trade_execution": false
+}

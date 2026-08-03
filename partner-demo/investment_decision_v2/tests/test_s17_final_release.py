@@ -60,6 +60,16 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 1, (ticker, path))
 
+    def test_every_frozen_shared_logic_path_exists_at_head(self) -> None:
+        for path in FROZEN_SHARED_LOGIC:
+            result = subprocess.run(
+                ["git", "cat-file", "-e", f"HEAD:{path}"],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, path)
+
     def test_s17_manifest_build_is_deterministic_and_schema_valid(self) -> None:
         freeze_commit = "a" * 40
         selection_date = "2026-08-03"
@@ -153,8 +163,10 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         self.assertIn("TARGET_PRICE_LEAKED_BELOW_GATE3", errors)
         self.assertIn("POSITION_SIZING_PRESENT_WITHOUT_GATE4", errors)
 
-    def test_no_s17_company_was_selected_before_code_freeze(self) -> None:
-        self.assertFalse((INVESTMENT_ROOT / "blind_tests" / "s17_primary").exists())
+    def test_no_company_run_exists_without_a_valid_manifest(self) -> None:
+        primary = INVESTMENT_ROOT / "blind_tests" / "s17_primary"
+        self.assertFalse((primary / "manifest.json").exists())
+        self.assertFalse((primary / "first_run").exists())
         self.assertFalse((INVESTMENT_ROOT / "blind_tests" / "s17_secondary").exists())
 
 
