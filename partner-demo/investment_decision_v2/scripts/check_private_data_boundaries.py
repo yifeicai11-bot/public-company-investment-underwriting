@@ -29,18 +29,41 @@ def staged_paths(repo_root: Path) -> list[Path]:
     ]
 
 
+def tracked_paths(repo_root: Path) -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+    )
+    return [
+        Path(value.decode("utf-8"))
+        for value in result.stdout.split(b"\0")
+        if value
+    ]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Scan staged or selected files for likely private portfolio data."
     )
-    parser.add_argument("--staged", action="store_true", help="Scan staged Git files.")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--staged", action="store_true", help="Scan staged Git files.")
+    selection.add_argument("--tracked", action="store_true", help="Scan every Git-tracked file (CI mode).")
     parser.add_argument("paths", nargs="*", type=Path)
     args = parser.parse_args()
-    if not args.staged and not args.paths:
-        parser.error("Use --staged or provide one or more paths.")
+    if not args.staged and not args.tracked and not args.paths:
+        parser.error("Use --staged, --tracked, or provide one or more paths.")
+    if (args.staged or args.tracked) and args.paths:
+        parser.error("Do not combine --staged or --tracked with explicit paths.")
 
     try:
-        paths = staged_paths(REPO_ROOT) if args.staged else args.paths
+        if args.staged:
+            paths = staged_paths(REPO_ROOT)
+        elif args.tracked:
+            paths = tracked_paths(REPO_ROOT)
+        else:
+            paths = args.paths
     except (OSError, subprocess.CalledProcessError):
         print("Gate 4 privacy scan could not inspect the staged file list.")
         return 2

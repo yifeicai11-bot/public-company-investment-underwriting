@@ -2,7 +2,7 @@
 
 An auditable, bilingual public-company issuer-underwriting skill and research-support engine. / 一套可审计、可复用、支持中英文输出的上市公司基本面与投资研究框架。
 
-- **Release:** V1
+- **Release:** `v1.1.0-rc.1` S16 candidate; S17 final acceptance pending
 - **Current scope:** SEC-reporting, US GAAP, non-financial public companies
 - **Positioning:** issuer-level research and IC pre-read support, not an automated trading system
 
@@ -45,6 +45,40 @@ python3 release-baselines/friday-v1/verify_baseline.py \
 
 See [`release-baselines/friday-v1/baseline_manifest.json`](release-baselines/friday-v1/baseline_manifest.json)
 for the authoritative baseline record.
+
+## Quick Start / 快速开始
+
+Use Python 3.11 or 3.12. Create a clean environment and install the exact release-candidate dependencies:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.lock
+python underwrite.py doctor
+```
+
+Before live public-data retrieval, set your own SEC contact identity and run the live check:
+
+```bash
+export SEC_USER_AGENT="Your Name your.email@example.com"
+python underwrite.py doctor --live
+python underwrite.py analyze AAPL --output-root outputs
+```
+
+The first run builds the Data and Evidence Layer and issuer contract. If it remains below Gate 3, the command saves `analyst_input_template.json` and `delivery/pipeline_diagnostic.json` but withholds partner-ready reports. Complete a sourced public research-input JSON, then rerun:
+
+```bash
+python underwrite.py analyze AAPL \
+  --output-root outputs \
+  --research-input /path/to/aapl_public_research_input.json \
+  --pdf
+```
+
+Formal One-Page, Full Report, Evidence Appendix, and Validation Report files are rendered only after Gate 3 eligibility and an independent validation pass. The public entry point never accepts Gate 4 portfolio data.
+
+统一入口会实际运行 shared builder、Data Gate、独立复算验证和 renderer。首次运行未达到 Gate 3 并不代表程序失败，而是说明仍需补充有来源、可审计的公开研究输入；系统不会用默认估值、概率或其他公司的假设把报告强行补完整。
+
+Exit codes are: `0` delivery or environment check passed, `1` environment command failed, `2` live environment blocked, `3` formal delivery was withheld pending research or Gate eligibility, and `4` public-input, data, or independent validation failed.
 
 ## Use with Codex / 在 Codex 中使用
 
@@ -244,6 +278,8 @@ Requirements:
 - Internet access for SEC and public market-data retrieval
 - Google Chrome or Chromium only when PDF output is requested
 
+Install the exact candidate environment with `python -m pip install -r requirements.lock`. Run `python underwrite.py doctor --live` before a live issuer build and add `--pdf` when PDF readiness is required.
+
 The SEC asks automated clients to identify themselves. Set your own contact before live retrieval:
 
 ```bash
@@ -311,7 +347,7 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 365 shared accounting, evidence, market-data, gate, scenario, valuation,
+- 374 shared accounting, evidence, market-data, gate, scenario, valuation,
   rendering, Gate 4, monitoring, cross-industry, and privacy-boundary tests
   passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
@@ -334,3 +370,11 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 The examples use cited public filings, official company materials, public market-data endpoints, and public webpages. References to third-party providers identify the source displayed by the cited webpage; this repository does not include a raw licensed database. Users remain responsible for complying with each source's terms and for independently verifying data before investment use.
 
 This project is research software and an analytical demonstration. It is not investment advice, a credit rating, an offer, or authorization to trade.
+
+## Release Documentation / 发布文档
+
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Migration to v1.1.0-rc.1](docs/MIGRATION.md)
+- [Private Data Boundary](docs/PRIVATE_DATA.md)
+- [Changelog](CHANGELOG.md)
+- [Release Candidate Notes](release-candidates/v1.1.0-rc.1/RELEASE_NOTES.md)

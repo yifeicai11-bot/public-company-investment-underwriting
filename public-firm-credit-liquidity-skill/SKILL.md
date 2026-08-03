@@ -91,6 +91,12 @@ If valuation, consensus, the Public-Data FCF Underwriting Base, or scenario pric
 
 ## Workflow
 
+For a repository checkout, prefer the supported S16 entry point:
+
+`python underwrite.py analyze "<ticker or company name>" --output-root outputs`
+
+Run `python underwrite.py doctor --live` first, and add `--pdf` to both commands when PDFs are required. The entry point may build lower-gate contracts and diagnostics, but it renders partner-ready reports only after Gate 3 and independent validation pass. Use the generated `analyst_input_template.json` for the next public-research iteration. Never pass Gate 4 portfolio inputs through this public command.
+
 1. Clarify the target company, ticker, exchange, period, and desired depth if not already provided.
 2. Gather public source documents for the latest annual period and, when available, the latest interim/quarterly period.
 3. Build a versioned evidence object for every material metric, including a stable evidence ID, value, unit, currency, period, as-of date, measurement basis, source level/type/locator, publication and retrieval dates, formula, upstream evidence IDs, confidence, validation status, and subsequent-event status.

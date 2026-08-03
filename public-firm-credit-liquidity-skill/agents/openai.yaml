@@ -1,0 +1,4 @@
+interface:
+  display_name: "Public Company Underwriting"
+  short_description: "Auditable bilingual issuer underwriting and valuation support"
+  default_prompt: "Use $public-firm-credit-liquidity to analyze a public company from public evidence and produce only Data-Gate-allowed bilingual outputs."

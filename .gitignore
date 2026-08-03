@@ -56,6 +56,7 @@ investment_private/
 **/gate4_partner_decision.json
 
 # Regenerable local outputs
+outputs/
 tmp/
 partner-demo/investment_decision_v2/generic_outputs/
 partner-demo/investment_decision_v2/final_delivery/

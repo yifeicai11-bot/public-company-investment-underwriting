@@ -1,0 +1,33 @@
+{
+  "manifest_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "release_date": "2026-08-03",
+  "status": "S16_LOCAL_RELEASE_CANDIDATE",
+  "publication_status": "UNPUBLISHED",
+  "base_commit": "4962a74cc1c41d10da41293981ea073dfe9586f0",
+  "candidate_commit_record": "partner-demo/investment_decision_v2/development_records/s16_completion_2026-08-03.json",
+  "python_versions": [
+    "3.11",
+    "3.12"
+  ],
+  "dependency_lock": "requirements.lock",
+  "entry_point": "underwrite.py",
+  "environment_diagnostic": "scripts/release_doctor.py",
+  "ci_workflow": ".github/workflows/ci.yml",
+  "privacy_boundary": "docs/PRIVATE_DATA.md",
+  "s16_scope": [
+    "ticker_to_report_guided_flow",
+    "environment_checks",
+    "exact_dependency_lock",
+    "executable_diagnostics",
+    "offline_ci_tests",
+    "troubleshooting",
+    "changelog",
+    "migration_notes",
+    "private_data_guidance",
+    "release_candidate_record"
+  ],
+  "s17_status": "NOT_STARTED",
+  "final_release_status": "BLOCKED_PENDING_S17",
+  "automatic_trade_execution": false
+}
