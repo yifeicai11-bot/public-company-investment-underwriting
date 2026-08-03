@@ -1,0 +1,31 @@
+{
+  "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
+  "automatic_trade_execution": false,
+  "company": "Crocs, Inc.",
+  "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
+  "document_type": "gate4_synthetic_delivery_manifest",
+  "file_hashes": {
+    "CROX_SYNTHETIC_Gate4_Assessment_Contract.json": "b48e31d2e63e573849da88c1ce8ef5d3595d1b58743bf98caacda3cd6a1dc206",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.html": "abd91d13b4c2ffa6eaff3735312e361a48d25f384fe2c8a64f66b46582523d28",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.pdf": "f7cf07bc4c273cca82ff5b574fc9849868ec20e75b87ce09e7d4a5a7f45ee545",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.html": "f23a048c5f7ebfe2653379a44de0df0091f72320e54093fbb6dbb3ceac5c7402",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.pdf": "fd3b15fe9f45421e6716feb8f85c9d7c35ea794288270d2a6f2f9eff4f4b3426",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.html": "2bde3b177735af7c09fca7233dd5e919562d8ee4053f39fd404fe3047336de9f",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.pdf": "f94cce1f727c79444c13c6a6cde8f95b7aa84c8a418486fbe24020117fa3d170",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.html": "ed810f78b5823b4ba758c1e716e3825f38d492647b4975b0cf33bd466587b552",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.pdf": "7f31e2eec8f506d4b829eaee54d48cd511cf1b25d7d739aaa37e10956c07ef4e"
+  },
+  "public_files": [
+    "CROX_SYNTHETIC_Gate4_Assessment_Contract.json",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.html",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.pdf",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.html",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.pdf",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.html",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.pdf",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.html",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.pdf"
+  ],
+  "schema_version": "1.0.0",
+  "ticker": "CROX"
+}

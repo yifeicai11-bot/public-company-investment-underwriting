@@ -156,6 +156,28 @@ XMP, rejects attachments and document-level active actions, verifies page
 count, reopens the file, and writes mode `0600`. Its terminal diagnostic does
 not print private paths. Sanitization does not authorize transmission.
 
-The system never automatically places a trade. S13 may calculate a
-constraint-based maximum, but S14 and the Partner remain responsible for the
-assessment, final decision, and approved range.
+## S14 Assessment and Approval
+
+After a complete S13 result, run:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+The system assessment uses `ELIGIBLE`, `ELIGIBLE_WITH_ESCALATION`,
+`REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or `NOT_EVALUATED`. The Partner decision is
+separate and uses `PENDING`, `APPROVED`, `MODIFIED`, `REJECTED`, or `DEFERRED`.
+An approval or modification must reference the current assessment hash, use a
+total-issuer gross-long basis, remain within the constraint ceiling, and
+acknowledge every active escalation ID.
+
+The local runner writes one S14 JSON contract plus bilingual One-Page, Full
+Report, Evidence Appendix, and Validation Report Markdown files. These files
+contain private values and remain local. Direct private PDF writes remain
+prohibited; use the sanitizer workflow.
+
+The system never automatically places a trade. S13 calculates a constraint
+ceiling, S14 classifies eligibility, and only the named Partner owns a completed
+decision and approved range.

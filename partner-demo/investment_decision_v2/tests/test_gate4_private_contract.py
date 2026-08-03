@@ -443,11 +443,14 @@ class Gate4PrivateContractTests(unittest.TestCase):
             approval = yaml.safe_load(approval_path.read_text(encoding="utf-8"))
             approval["partner_decision"] = {
                 "status": "APPROVED",
+                "assessment_hash": "a" * 64,
                 "approved_by": "Synthetic Partner",
                 "approved_at": "2026-07-17T08:00:00Z",
                 "decision_rationale": "Synthetic approval record for boundary testing.",
+                "approved_position_basis": "TOTAL_ISSUER_GROSS_LONG_WEIGHT",
                 "approved_position_min": 0.01,
                 "approved_position_max": 0.02,
+                "acknowledged_escalation_ids": [],
             }
             approval_path.write_text(
                 yaml.safe_dump(approval, sort_keys=False),

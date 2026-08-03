@@ -79,9 +79,10 @@ invalid until the Partner completes them locally.
 - `GATE_4_INPUTS_VALIDATED`: the local input set is structurally complete and reconciled.
 - `GATE_4_CONSTRAINTS_CALCULATED`: every required S13 constraint ceiling is reproducible.
 - `GATE_4_CONSTRAINTS_INCOMPLETE`: at least one required S13 input or ceiling is missing.
-- `GATE_4_SYSTEM_ASSESSMENT_READY`: reserved for S14.
+- `GATE_4_SYSTEM_ASSESSMENT_READY`: S14 produced a reproducible System Portfolio Assessment.
 - `PARTNER_APPROVAL_PENDING`: no Partner decision may be treated as approved before the system assessment.
-- `GATE_4_APPROVED`: reserved for a named Partner decision after system assessment.
+- `GATE_4_APPROVED`: a named Partner decision is validated against the current assessment hash and constraint ceiling.
+- `GATE_4_MODIFIED`, `GATE_4_REJECTED`, and `GATE_4_DEFERRED`: other validated Partner-owned outcomes.
 
 Input validation does not calculate a recommended position and never places a
 trade. It emits only a privacy-safe diagnostic containing check IDs, field
@@ -135,6 +136,27 @@ private values or the calculated ceiling. It separately records every limit,
 formula, missing item, and binding constraint. The maximum is not a suggested
 or approved position; S13 leaves System Portfolio Assessment `NOT_EVALUATED`
 and Partner Decision `PENDING`.
+
+After S13, run S14 locally:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+S14 re-runs S13 from the current local files, confirms the input bundle and
+Gate 3 identity did not change during the run, and returns `ELIGIBLE`,
+`ELIGIBLE_WITH_ESCALATION`, `REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or
+`NOT_EVALUATED`. The separately owned Partner decision may be `PENDING`,
+`APPROVED`, `MODIFIED`, `REJECTED`, or `DEFERRED`. An approval or modification
+must bind to the current deterministic assessment hash, stay within the total
+issuer constraint ceiling, and acknowledge every active escalation.
+
+The same S14 contract renders four bilingual local Markdown files: One-Page,
+Full Report, Evidence Appendix, and Validation Report. The renderer does not
+recalculate any ceiling, assessment, or decision. Read
+`references/gate4_assessment_and_approval.md` for the complete state machine.
 
 ## Privacy Controls
 
@@ -193,3 +215,16 @@ Install Gate 4 parsing dependencies first:
 ```bash
 python3 -m pip install -r requirements-gate4.txt
 ```
+
+Build and validate the public synthetic S14 report package:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
+python3 partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
+  examples/gate4-synthetic
+```
+
+The package contains four bilingual PDFs generated from one shared contract.
+The validator requires one A4 page for the One-Page Summary, verifies all file
+hashes and rendered decision states, and rejects position-recommendation
+wording. Synthetic constraints demonstrate the interface only.

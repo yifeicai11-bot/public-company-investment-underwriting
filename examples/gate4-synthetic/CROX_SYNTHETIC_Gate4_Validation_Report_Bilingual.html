@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Gate 4 Validation Report</title><style>
+    @page { size: A4; margin: 11mm 11mm 13mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #18212b; font-family: Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size:9.5px; line-height:1.38; }
+    h1 { font-size: 19px; line-height: 1.14; margin: 0 0 5px; color: #0e3a4a; letter-spacing: 0; }
+    h2 { font-size: 12px; margin: 10px 0 5px; padding-bottom: 3px; border-bottom: 1px solid #9db1b8; color: #0e3a4a; letter-spacing: 0; }
+    h3 { font-size: 10px; margin: 7px 0 3px; letter-spacing: 0; }
+    p { margin: 3px 0; }
+    ul { margin: 3px 0 5px 16px; padding: 0; }
+    li { margin: 2px 0; }
+    .banner { background: #fff2bf; border: 1px solid #d6b94f; padding: 5px 7px; font-weight: 700; margin: 6px 0; }
+    .decision { background: #eaf3f0; border-left: 4px solid #1f796b; padding: 7px 9px; margin: 6px 0; }
+    .boundary { background: #f4f6f7; border-left: 4px solid #66757d; padding: 6px 8px; margin: 6px 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .panel { border: 1px solid #c8d2d6; padding: 6px 7px; break-inside: avoid; }
+    .metric { font-size: 17px; font-weight: 700; color: #0e3a4a; }
+    .muted { color: #64727a; }
+    .hash { font-family: Menlo, Consolas, monospace; font-size: 7px; overflow-wrap: anywhere; }
+    table { width: 100%; border-collapse: collapse; margin: 4px 0 8px; table-layout: fixed; }
+    th { background: #e7edef; color: #24343c; text-align: left; font-weight: 700; }
+    th, td { border: 1px solid #bdc9ce; padding: 3px 4px; vertical-align: top; overflow-wrap: anywhere; }
+    .compact-table { font-size: 7.6px; line-height: 1.22; }
+    .compact-table th, .compact-table td { padding: 2px 3px; }
+    .audit-card { border: 1px solid #bdc9ce; margin: 0 0 6px; padding: 6px 7px; break-inside: avoid; }
+    .audit-card h3 { color: #0e3a4a; margin-top: 0; border-bottom: 1px solid #d5dde0; padding-bottom: 3px; }
+    .audit-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 4px 0; }
+    .audit-metric { background: #f3f6f7; padding: 4px; min-height: 31px; }
+    .audit-metric b { display: block; font-size: 7px; color: #64727a; }
+    .audit-line { display: grid; grid-template-columns: 26mm 1fr; gap: 5px; margin-top: 3px; }
+    .audit-line b { color: #34454d; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .status { font-weight: 700; }
+    .pass { color: #176b4a; }
+    .warning { color: #8a5a00; }
+    .fail { color: #a12626; }
+    .page-break { break-before: page; }
+    .avoid { break-inside: avoid; }
+    footer { position: fixed; left: 0; right: 0; bottom: -8mm; border-top: 1px solid #bac5c9; padding-top: 2px; font-size: 7px; color: #66757d; display: flex; justify-content: space-between; }
+    .inline-footer { margin-top: 8px; border-top: 1px solid #bac5c9; padding-top: 2px; font-size: 7px; color: #66757d; display: flex; justify-content: space-between; }
+    </style></head><body><h1>Crocs, Inc. (CROX)</h1><div class='muted'>Gate 4 Validation Report / Gate 4 验证报告</div><div class='banner'>SYNTHETIC DATA ONLY / 仅使用合成数据</div><div class='grid'><section class='panel'><h2>Contract / 合同</h2><div class='metric'>PASS</div></section><section class='panel'><h2>Analytical validation / 分析验证</h2><div class='metric'>PASS</div></section><section class='panel'><h2>Hard Stops / 强制停止</h2><div class='metric'>0</div></section><section class='panel'><h2>Warnings / 警告</h2><div class='metric'>5</div></section></div><h2>Validation Checks / 验证检查</h2><table class='compact-table'><thead><tr><th>Check</th><th>Status</th><th>Severity</th><th>Message / 中文</th><th>Evidence</th></tr></thead><tbody><tr><td class='hash'>S14-S13-CONTRACT</td><td class='status pass'>PASS</td><td>INFO</td><td>The S13 output matches the shared constraint contract.<br><span class='muted'>S13 输出符合共享约束合同。</span></td><td class='hash'>G4-EV-S13</td></tr><tr><td class='hash'>S14-S13-STATUS</td><td class='status pass'>PASS</td><td>INFO</td><td>Every required S13 ceiling is available.<br><span class='muted'>所有必要的 S13 上限均已获得。</span></td><td class='hash'>G4-EV-S13</td></tr><tr><td class='hash'>S14-S13-OUTPUT-VALIDATION</td><td class='status pass'>PASS</td><td>INFO</td><td>S13 output validation passed.<br><span class='muted'>S13 输出验证通过。</span></td><td class='hash'>G4-EV-S13</td></tr><tr><td class='hash'>S14-GATE3-RECHECK</td><td class='status pass'>PASS</td><td>INFO</td><td>The latest Gate 3 recheck remains eligible.<br><span class='muted'>最新 Gate 3 复核仍符合资格。</span></td><td class='hash'>G4-EV-GATE3</td></tr><tr><td class='hash'>S14-BUNDLE-STABILITY</td><td class='status pass'>PASS</td><td>INFO</td><td>The private input bundle did not change during the S14 run.<br><span class='muted'>S14 运行期间私有输入包未发生变化。</span></td><td class='hash'>G4-EV-BUNDLE</td></tr><tr><td class='hash'>S14-CEILING-REPRODUCIBILITY</td><td class='status pass'>PASS</td><td>INFO</td><td>The final ceiling and binding constraints are reproducible from required S13 rows.<br><span class='muted'>最终上限和约束项可由必要的 S13 行复算。</span></td><td class='hash'>G4-EV-S13</td></tr><tr><td class='hash'>S14-NO-SYSTEM-POSITION-SELECTION</td><td class='status pass'>PASS</td><td>INFO</td><td>The S13 maximum remains classified only as a constraint ceiling.<br><span class='muted'>S13 最大值仍仅被归类为约束上限。</span></td><td class='hash'>G4-EV-S13</td></tr><tr><td class='hash'>S14-ESCALATION:constraint:downside</td><td class='status warning'>WARNING</td><td>WARNING</td><td>Active escalation requires Partner acknowledgement: constraint:downside.<br><span class='muted'>有效升级项需要 Partner 明确认可：constraint:downside。</span></td><td class='hash'>G4-EV-SYSTEM-ASSESSMENT</td></tr><tr><td class='hash'>S14-ESCALATION:constraint:sector</td><td class='status warning'>WARNING</td><td>WARNING</td><td>Active escalation requires Partner acknowledgement: constraint:sector.<br><span class='muted'>有效升级项需要 Partner 明确认可：constraint:sector。</span></td><td class='hash'>G4-EV-SYSTEM-ASSESSMENT</td></tr><tr><td class='hash'>S14-ESCALATION:gate3:G3-peer-valuation-context</td><td class='status warning'>WARNING</td><td>WARNING</td><td>Active escalation requires Partner acknowledgement: gate3:G3-peer-valuation-context.<br><span class='muted'>有效升级项需要 Partner 明确认可：gate3:G3-peer-valuation-context。</span></td><td class='hash'>G4-EV-SYSTEM-ASSESSMENT</td></tr><tr><td class='hash'>S14-ESCALATION:gate3:G3-probability-methodology</td><td class='status warning'>WARNING</td><td>WARNING</td><td>Active escalation requires Partner acknowledgement: gate3:G3-probability-methodology.<br><span class='muted'>有效升级项需要 Partner 明确认可：gate3:G3-probability-methodology。</span></td><td class='hash'>G4-EV-SYSTEM-ASSESSMENT</td></tr><tr><td class='hash'>S14-ESCALATION:gate3:G3-probability-validation</td><td class='status warning'>WARNING</td><td>WARNING</td><td>Active escalation requires Partner acknowledgement: gate3:G3-probability-validation.<br><span class='muted'>有效升级项需要 Partner 明确认可：gate3:G3-probability-validation。</span></td><td class='hash'>G4-EV-SYSTEM-ASSESSMENT</td></tr></tbody></table><div class='boundary'><b>Renderer Control / 渲染控制</b><p>Formatting only. Assessment, ceiling, approval, and validation are read from the shared contract without independent recalculation.</p><p>仅负责格式化。评估、约束上限、审批和验证均直接读取共享合同，不在渲染器中独立重算。</p></div><div class='inline-footer'><span>CROX | Gate 4 S14</span><span>Assessment hash: 4a67339c4e7e3ece</span><span>No automatic trade / 不自动交易</span></div></body></html>

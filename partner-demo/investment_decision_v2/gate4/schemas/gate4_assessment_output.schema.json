@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/gate4/gate4_assessment_output.schema.json",
+  "title": "Gate 4 S14 Assessment and Approval Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assessment_engine_version",
+    "assessment_output_contract_version",
+    "generated_at",
+    "status",
+    "data_classification",
+    "input_mode",
+    "gate3_identity",
+    "candidate_identity",
+    "assessment_input_fingerprint",
+    "s13_result_hash",
+    "assessment_hash",
+    "constraint_snapshot",
+    "system_portfolio_assessment",
+    "partner_decision",
+    "evidence_ledger",
+    "validation",
+    "report_controls",
+    "automatic_trade_execution",
+    "external_transmission",
+    "local_private_output_only",
+    "raw_private_values_included",
+    "contract_validation",
+    "next_action_en",
+    "next_action_zh"
+  ],
+  "properties": {
+    "assessment_engine_version": {"const": "1.0.0"},
+    "assessment_output_contract_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "status": {
+      "enum": [
+        "GATE_4_SYSTEM_ASSESSMENT_READY",
+        "GATE_4_SYSTEM_ASSESSMENT_NOT_EVALUATED",
+        "GATE_4_ASSESSMENT_OUTPUT_INVALID"
+      ]
+    },
+    "data_classification": {
+      "enum": ["PRIVATE_PORTFOLIO", "SYNTHETIC_PUBLIC_EXAMPLE"]
+    },
+    "input_mode": {
+      "enum": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS", "NOT_EVALUATED"]
+    },
+    "gate3_identity": {"type": "object"},
+    "candidate_identity": {"type": "object"},
+    "assessment_input_fingerprint": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "s13_result_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "assessment_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "constraint_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "s13_status",
+        "s13_output_validation_status",
+        "measurement_basis",
+        "constraints",
+        "formula_registry",
+        "missing_items",
+        "binding_constraints",
+        "maximum_constraint_based_incremental_position_weight",
+        "maximum_constraint_based_total_position_weight",
+        "maximum_constraint_based_position_is_recommendation",
+        "ceiling_disclosure_en",
+        "ceiling_disclosure_zh"
+      ],
+      "properties": {
+        "s13_status": {"type": "string"},
+        "s13_output_validation_status": {"type": "string"},
+        "measurement_basis": {"type": ["string", "null"]},
+        "constraints": {"type": "array", "items": {"type": "object"}},
+        "formula_registry": {"type": "object"},
+        "missing_items": {"type": "array", "items": {"type": "string"}},
+        "binding_constraints": {"type": "array", "items": {"type": "object"}},
+        "maximum_constraint_based_incremental_position_weight": {
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        },
+        "maximum_constraint_based_total_position_weight": {
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        },
+        "maximum_constraint_based_position_is_recommendation": {"const": false},
+        "ceiling_disclosure_en": {"type": "string", "minLength": 1},
+        "ceiling_disclosure_zh": {"type": "string", "minLength": 1}
+      }
+    },
+    "system_portfolio_assessment": {"$ref": "#/$defs/systemAssessment"},
+    "partner_decision": {"$ref": "#/$defs/partnerDecision"},
+    "evidence_ledger": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/evidence"}
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "hard_stop_count", "warning_count", "checks"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "hard_stop_count": {"type": "integer", "minimum": 0},
+        "warning_count": {"type": "integer", "minimum": 0},
+        "checks": {"type": "array", "items": {"$ref": "#/$defs/validationCheck"}}
+      }
+    },
+    "report_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bilingual",
+        "renderer_may_recalculate",
+        "synthetic_pdf_generation_allowed",
+        "private_pdf_requires_sanitizer",
+        "maximum_ceiling_term_en",
+        "maximum_ceiling_term_zh"
+      ],
+      "properties": {
+        "bilingual": {"const": true},
+        "renderer_may_recalculate": {"const": false},
+        "synthetic_pdf_generation_allowed": {"type": "boolean"},
+        "private_pdf_requires_sanitizer": {"const": true},
+        "maximum_ceiling_term_en": {"const": "Constraint ceiling"},
+        "maximum_ceiling_term_zh": {"const": "约束上限"}
+      }
+    },
+    "automatic_trade_execution": {"const": false},
+    "external_transmission": {"const": "DENIED"},
+    "local_private_output_only": {"type": "boolean"},
+    "raw_private_values_included": {"type": "boolean"},
+    "contract_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "error_count", "error_paths"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "error_count": {"type": "integer", "minimum": 0},
+        "error_paths": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "next_action_en": {"type": "string", "minLength": 1},
+    "next_action_zh": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "systemAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_status",
+        "assessment",
+        "assessment_label_en",
+        "assessment_label_zh",
+        "rationale_codes",
+        "rationale_en",
+        "rationale_zh",
+        "breach_ids",
+        "review_ids",
+        "escalation_ids",
+        "can_support_partner_approval",
+        "maximum_constraint_ceiling",
+        "position_range",
+        "system_generated_position_recommendation"
+      ],
+      "properties": {
+        "workflow_status": {"enum": ["GATE_4_SYSTEM_ASSESSMENT_READY", "NOT_EVALUATED"]},
+        "assessment": {
+          "enum": ["ELIGIBLE", "ELIGIBLE_WITH_ESCALATION", "REVIEW_REQUIRED", "NOT_ELIGIBLE", "NOT_EVALUATED"]
+        },
+        "assessment_label_en": {"type": "string"},
+        "assessment_label_zh": {"type": "string"},
+        "rationale_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "rationale_en": {"type": "array", "items": {"type": "string"}},
+        "rationale_zh": {"type": "array", "items": {"type": "string"}},
+        "breach_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "review_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "escalation_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "can_support_partner_approval": {"type": "boolean"},
+        "maximum_constraint_ceiling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["incremental_weight", "total_issuer_weight", "measurement_basis", "is_recommendation", "disclosure_en", "disclosure_zh"],
+          "properties": {
+            "incremental_weight": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "total_issuer_weight": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "measurement_basis": {"type": ["string", "null"]},
+            "is_recommendation": {"const": false},
+            "disclosure_en": {"type": "string"},
+            "disclosure_zh": {"type": "string"}
+          }
+        },
+        "position_range": {"type": "null"},
+        "system_generated_position_recommendation": {"const": false}
+      }
+    },
+    "partnerDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_status",
+        "submitted_decision",
+        "decision",
+        "validation_status",
+        "approved_by",
+        "approved_at",
+        "decision_rationale",
+        "approved_position_range",
+        "acknowledged_escalation_ids",
+        "assessment_hash_binding",
+        "decision_hash",
+        "blocking_reason_codes",
+        "system_generated",
+        "automatic_trade_execution"
+      ],
+      "properties": {
+        "workflow_status": {
+          "enum": ["PARTNER_APPROVAL_PENDING", "GATE_4_APPROVED", "GATE_4_MODIFIED", "GATE_4_REJECTED", "GATE_4_DEFERRED", "PARTNER_DECISION_BLOCKED"]
+        },
+        "submitted_decision": {"enum": ["PENDING", "APPROVED", "MODIFIED", "REJECTED", "DEFERRED"]},
+        "decision": {"enum": ["PENDING", "APPROVED", "MODIFIED", "REJECTED", "DEFERRED"]},
+        "validation_status": {"enum": ["PENDING", "VALIDATED", "BLOCKED"]},
+        "approved_by": {"type": ["string", "null"]},
+        "approved_at": {"type": ["string", "null"]},
+        "decision_rationale": {"type": ["string", "null"]},
+        "approved_position_range": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum", "maximum", "basis", "is_system_recommendation"],
+              "properties": {
+                "minimum": {"type": "number", "minimum": 0, "maximum": 1},
+                "maximum": {"type": "number", "minimum": 0, "maximum": 1},
+                "basis": {"const": "TOTAL_ISSUER_GROSS_LONG_WEIGHT"},
+                "is_system_recommendation": {"const": false}
+              }
+            }
+          ]
+        },
+        "acknowledged_escalation_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "assessment_hash_binding": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "decision_hash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "blocking_reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "system_generated": {"const": false},
+        "automatic_trade_execution": {"const": false}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "evidence_class", "label_en", "label_zh", "source_object", "source_fields", "value"],
+      "properties": {
+        "evidence_id": {"type": "string", "pattern": "^G4-EV-[A-Z0-9_-]+$"},
+        "evidence_class": {"enum": ["FACT", "CALC", "JUDGMENT", "CONTROL"]},
+        "label_en": {"type": "string"},
+        "label_zh": {"type": "string"},
+        "source_object": {"type": "string"},
+        "source_fields": {"type": "array", "items": {"type": "string"}},
+        "value": {}
+      }
+    },
+    "validationCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check_id", "status", "severity", "message_en", "message_zh", "evidence_ids"],
+      "properties": {
+        "check_id": {"type": "string"},
+        "status": {"enum": ["PASS", "WARNING", "FAIL"]},
+        "severity": {"enum": ["INFO", "WARNING", "HARD_STOP"]},
+        "message_en": {"type": "string"},
+        "message_zh": {"type": "string"},
+        "evidence_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

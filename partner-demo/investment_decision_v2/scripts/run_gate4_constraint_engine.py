@@ -84,6 +84,8 @@ def _finalize_result(
 def run_gate4_constraint_engine(
     gate3_target: Path,
     manifest_path: Path,
+    *,
+    system_assessment_ready: bool = False,
 ) -> tuple[dict[str, Any], Path | None]:
     manifest_path = manifest_path.expanduser().resolve(strict=False)
     manifest = read_mapping(manifest_path)
@@ -98,7 +100,10 @@ def run_gate4_constraint_engine(
         data_classification=boundary_classification,
     )
 
-    bundle, private_diagnostic = load_and_validate_private_inputs(manifest_path)
+    bundle, private_diagnostic = load_and_validate_private_inputs(
+        manifest_path,
+        system_assessment_ready=system_assessment_ready,
+    )
     private_status = str(
         private_diagnostic.get("status", INPUT_STATUS_REQUIRED)
     )

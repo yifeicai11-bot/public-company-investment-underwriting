@@ -1,0 +1,1015 @@
+{
+  "assessment_engine_version": "1.0.0",
+  "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
+  "assessment_input_fingerprint": "e11d5abb321888e3a24a58905c669d0e2ba36826e8d148ace6b70789f8e6363b",
+  "assessment_output_contract_version": "1.0.0",
+  "automatic_trade_execution": false,
+  "candidate_identity": {
+    "correlation_bucket": "Consumer Growth",
+    "country": "United States",
+    "issuer_identifier": "0001334036",
+    "issuer_name": "Crocs, Inc.",
+    "sector": "Consumer",
+    "security_identifier": "CROX",
+    "security_type": "EQUITY"
+  },
+  "constraint_snapshot": {
+    "binding_constraints": [
+      {
+        "constraint_id": "sector",
+        "maximum_incremental_position_weight": 0.05
+      }
+    ],
+    "ceiling_disclosure_en": "This is the maximum allowed by the tested constraints. It is not an investment instruction or an approved range.",
+    "ceiling_disclosure_zh": "该数值仅表示已测试约束允许的最大值，不构成投资指令或已批准区间。",
+    "constraints": [
+      {
+        "binding": false,
+        "candidate_value": null,
+        "constraint_id": "existing_issuer_exposure",
+        "current_value": 0,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "sum(gross long weights with candidate issuer_identifier)",
+        "formula_inputs": {
+          "exposure_basis": "COMPLETE_SECURITY_LEVEL_HOLDINGS"
+        },
+        "label_en": "Existing issuer exposure",
+        "label_zh": "现有发行人敞口",
+        "limit_value": null,
+        "maximum_incremental_position_weight": null,
+        "missing_fields": [],
+        "notes_en": "Zero is used only when complete holdings or an explicit zero issuer exposure row supports it.",
+        "notes_zh": "只有完整持仓或明确的零发行人敞口行支持时，系统才使用零。",
+        "remaining_capacity": null,
+        "required_for_ceiling": false,
+        "source_fields": [
+          "constraint_inputs.candidate.issuer_identifier",
+          "holdings or exposure_summary"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": null,
+        "constraint_id": "single_name",
+        "current_value": 0,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": false,
+        "formula": "max(0, single_name_position_limit - current_gross_long_weight)",
+        "formula_inputs": {
+          "current_gross_long_weight": 0,
+          "current_limit_utilization": 0.0,
+          "single_name_position_limit": 0.1
+        },
+        "label_en": "Single-name concentration",
+        "label_zh": "单一标的集中度",
+        "limit_value": 0.1,
+        "maximum_incremental_position_weight": 0.1,
+        "missing_fields": [],
+        "notes_en": "The result is an incremental concentration ceiling, not a position recommendation.",
+        "notes_zh": "该结果是新增集中度上限，不是建议仓位。",
+        "remaining_capacity": 0.1,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "policy.single_name_position_limit",
+          "COMPLETE_SECURITY_LEVEL_HOLDINGS:issuer"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": true,
+        "candidate_value": null,
+        "constraint_id": "sector",
+        "current_value": 0.3,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": true,
+        "formula": "max(0, sector_concentration_limit - current_gross_long_weight)",
+        "formula_inputs": {
+          "current_gross_long_weight": 0.3,
+          "current_limit_utilization": 0.8571428571428572,
+          "sector_concentration_limit": 0.35
+        },
+        "label_en": "Sector concentration",
+        "label_zh": "行业集中度",
+        "limit_value": 0.35,
+        "maximum_incremental_position_weight": 0.05,
+        "missing_fields": [],
+        "notes_en": "The result is an incremental concentration ceiling, not a position recommendation.",
+        "notes_zh": "该结果是新增集中度上限，不是建议仓位。",
+        "remaining_capacity": 0.04999999999999999,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "policy.sector_concentration_limit",
+          "COMPLETE_SECURITY_LEVEL_HOLDINGS:sector"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": null,
+        "constraint_id": "correlated_exposure",
+        "current_value": 0.3,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": false,
+        "formula": "max(0, correlated_exposure_limit - current_gross_long_weight)",
+        "formula_inputs": {
+          "correlated_exposure_limit": 0.4,
+          "current_gross_long_weight": 0.3,
+          "current_limit_utilization": 0.7499999999999999
+        },
+        "label_en": "Correlated exposure",
+        "label_zh": "相关性敞口",
+        "limit_value": 0.4,
+        "maximum_incremental_position_weight": 0.1,
+        "missing_fields": [],
+        "notes_en": "The result is an incremental concentration ceiling, not a position recommendation.",
+        "notes_zh": "该结果是新增集中度上限，不是建议仓位。",
+        "remaining_capacity": 0.10000000000000003,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "policy.correlated_exposure_limit",
+          "COMPLETE_SECURITY_LEVEL_HOLDINGS:correlation"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": null,
+        "constraint_id": "country",
+        "current_value": 0.5,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": false,
+        "formula": "max(0, country_concentration_limit - current_gross_long_weight)",
+        "formula_inputs": {
+          "country_concentration_limit": 0.8,
+          "current_gross_long_weight": 0.5,
+          "current_limit_utilization": 0.625
+        },
+        "label_en": "Country concentration",
+        "label_zh": "国家集中度",
+        "limit_value": 0.8,
+        "maximum_incremental_position_weight": 0.3,
+        "missing_fields": [],
+        "notes_en": "The result is an incremental concentration ceiling, not a position recommendation.",
+        "notes_zh": "该结果是新增集中度上限，不是建议仓位。",
+        "remaining_capacity": 0.30000000000000004,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "policy.country_concentration_limit",
+          "COMPLETE_SECURITY_LEVEL_HOLDINGS:country"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": 0.28,
+        "constraint_id": "target_return",
+        "current_value": null,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "candidate_validated_return >= policy_target_return",
+        "formula_inputs": {
+          "candidate_validated_return": 0.28,
+          "policy_target_return": 0.2
+        },
+        "label_en": "Target-return hurdle",
+        "label_zh": "目标回报门槛",
+        "limit_value": 0.2,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "Public price sensitivity is not accepted as expected return.",
+        "notes_zh": "公开的价格敏感性不能作为预期回报。",
+        "remaining_capacity": null,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.candidate.expected_return",
+          "policy.target_return"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": 365,
+        "constraint_id": "holding_period",
+        "current_value": null,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "candidate_holding_period_days <= policy_holding_period_days",
+        "formula_inputs": {
+          "candidate_holding_period_days": 365,
+          "policy_holding_period_days": 365
+        },
+        "label_en": "Holding-period limit",
+        "label_zh": "持有期上限",
+        "limit_value": 365,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "The expected-return and downside horizons must already match.",
+        "notes_zh": "预期回报与下行情景的期限必须已经一致。",
+        "remaining_capacity": null,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.candidate.expected_return.holding_period_days",
+          "policy.holding_period_days"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": -0.2,
+        "constraint_id": "downside",
+        "current_value": null,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": true,
+        "formula": "candidate_formal_downside_return >= policy_downside_tolerance",
+        "formula_inputs": {
+          "candidate_formal_downside_return": -0.2,
+          "downside_limit_utilization": 0.8,
+          "policy_downside_tolerance": -0.25
+        },
+        "label_en": "Downside tolerance",
+        "label_zh": "下行容忍度",
+        "limit_value": -0.25,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "Only a validated dated-horizon downside return is accepted; Bear price sensitivity is excluded.",
+        "notes_zh": "只接受经验证、具有明确期限的下行回报；Bear 价格敏感性被排除。",
+        "remaining_capacity": null,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.candidate.downside_return",
+          "policy.downside_tolerance"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": 0.7,
+        "constraint_id": "liquidity_portfolio_floor",
+        "current_value": null,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "current_liquid_portfolio_weight >= minimum_liquid_portfolio_weight",
+        "formula_inputs": {
+          "current_liquid_portfolio_weight": 0.7,
+          "minimum_liquid_portfolio_weight": 0.25
+        },
+        "label_en": "Portfolio liquidity floor",
+        "label_zh": "组合流动性下限",
+        "limit_value": 0.25,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "A pre-existing liquidity-floor breach conservatively blocks incremental exposure.",
+        "notes_zh": "若组合已低于流动性下限，系统将保守地阻止新增敞口。",
+        "remaining_capacity": null,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.portfolio_state.current_liquid_portfolio_weight",
+          "policy.liquidity_requirement.minimum_liquid_portfolio_weight"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": 50000000.0,
+        "constraint_id": "liquidity_exit_capacity",
+        "current_value": null,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": null,
+        "formula": "ADVT * maximum_daily_volume_participation * maximum_days_to_exit / portfolio_NAV",
+        "formula_inputs": {
+          "advt_age_days": 2,
+          "average_daily_value_traded": 50000000.0,
+          "maximum_advt_age_days": 5,
+          "maximum_daily_volume_participation": 0.1,
+          "maximum_days_to_exit": 5,
+          "minimum_average_daily_value_traded": 1000000.0,
+          "portfolio_nav": 10000000.0
+        },
+        "label_en": "Candidate exit-capacity ceiling",
+        "label_zh": "候选标的退出容量上限",
+        "limit_value": 5,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "Exposure-only mode cannot calculate this ceiling when NAV is intentionally unavailable.",
+        "notes_zh": "若 exposure-only 模式未提供 NAV，则无法计算该上限。",
+        "remaining_capacity": 2.5,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.candidate.liquidity",
+          "manifest.portfolio_nav",
+          "policy.liquidity_requirement"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": -0.2,
+        "constraint_id": "risk_budget",
+        "current_value": 0.06,
+        "escalation_threshold": 0.8,
+        "escalation_triggered": false,
+        "formula": "max(0, risk_budget_limit - current_risk_budget_usage) / abs(candidate_validated_downside_return)",
+        "formula_inputs": {
+          "candidate_validated_downside_return": -0.2,
+          "current_risk_budget_usage": 0.06,
+          "current_risk_budget_utilization": 0.4,
+          "risk_budget_limit": 0.15
+        },
+        "label_en": "Downside-loss risk budget",
+        "label_zh": "下行损失风险预算",
+        "limit_value": 0.15,
+        "maximum_incremental_position_weight": 0.45,
+        "missing_fields": [],
+        "notes_en": "The formula assumes the policy-defined downside-loss budget and does not net an unvalidated hedge.",
+        "notes_zh": "该公式采用政策定义的下行损失预算，且不会扣除未经验证的对冲效果。",
+        "remaining_capacity": 0.09,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "policy.risk_budget_limit",
+          "policy.risk_budget_method",
+          "constraint_inputs.portfolio_state.current_risk_budget_usage",
+          "constraint_inputs.candidate.downside_return"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": 0.05000000000000002,
+        "constraint_id": "opportunity_cost",
+        "current_value": null,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "candidate_validated_return - highest comparable validated alternative return >= minimum_excess_return",
+        "formula_inputs": {
+          "candidate_validated_return": 0.28,
+          "comparable_count": 2,
+          "highest_comparable_validated_alternative_return": 0.23,
+          "maximum_holding_period_mismatch_days": 0,
+          "minimum_comparable_opportunities": 2,
+          "minimum_excess_return": 0.03
+        },
+        "label_en": "Opportunity-cost hurdle",
+        "label_zh": "机会成本门槛",
+        "limit_value": 0.03,
+        "maximum_incremental_position_weight": 1.0,
+        "missing_fields": [],
+        "notes_en": "Only active, validated, same-security-type alternatives within the reviewed horizon tolerance are compared.",
+        "notes_zh": "仅比较处于 active 状态、已验证、证券类型相同且期限差在政策范围内的备选标的。",
+        "remaining_capacity": null,
+        "required_for_ceiling": true,
+        "source_fields": [
+          "constraint_inputs.candidate.expected_return",
+          "opportunity_set",
+          "policy.opportunity_cost_requirement"
+        ],
+        "status": "PASS"
+      },
+      {
+        "binding": false,
+        "candidate_value": null,
+        "constraint_id": "hedge",
+        "current_value": null,
+        "escalation_threshold": null,
+        "escalation_triggered": null,
+        "formula": "no proposed hedge; no hedge relief credited",
+        "formula_inputs": {},
+        "label_en": "Applicable hedge constraints",
+        "label_zh": "适用对冲约束",
+        "limit_value": 0.5,
+        "maximum_incremental_position_weight": null,
+        "missing_fields": [],
+        "notes_en": "The unhedged constraint ceiling remains authoritative.",
+        "notes_zh": "未对冲的约束上限仍为权威结果。",
+        "remaining_capacity": null,
+        "required_for_ceiling": false,
+        "source_fields": [
+          "constraint_inputs.candidate.proposed_hedge",
+          "policy.permitted_hedge_instruments",
+          "policy.maximum_hedge_ratio"
+        ],
+        "status": "NOT_APPLICABLE"
+      }
+    ],
+    "formula_registry": {
+      "correlated_exposure": "max(0, correlated_exposure_limit - current_gross_long_weight)",
+      "country": "max(0, country_concentration_limit - current_gross_long_weight)",
+      "downside": "candidate_formal_downside_return >= policy_downside_tolerance",
+      "existing_issuer_exposure": "sum(gross long weights with candidate issuer_identifier)",
+      "hedge": "no proposed hedge; no hedge relief credited",
+      "holding_period": "candidate_holding_period_days <= policy_holding_period_days",
+      "liquidity_exit_capacity": "ADVT * maximum_daily_volume_participation * maximum_days_to_exit / portfolio_NAV",
+      "liquidity_portfolio_floor": "current_liquid_portfolio_weight >= minimum_liquid_portfolio_weight",
+      "opportunity_cost": "candidate_validated_return - highest comparable validated alternative return >= minimum_excess_return",
+      "risk_budget": "max(0, risk_budget_limit - current_risk_budget_usage) / abs(candidate_validated_downside_return)",
+      "sector": "max(0, sector_concentration_limit - current_gross_long_weight)",
+      "single_name": "max(0, single_name_position_limit - current_gross_long_weight)",
+      "target_return": "candidate_validated_return >= policy_target_return"
+    },
+    "maximum_constraint_based_incremental_position_weight": 0.05,
+    "maximum_constraint_based_position_is_recommendation": false,
+    "maximum_constraint_based_total_position_weight": 0.05,
+    "measurement_basis": "GROSS_LONG_WEIGHT",
+    "missing_items": [],
+    "s13_output_validation_status": "PASS",
+    "s13_status": "GATE_4_CONSTRAINTS_CALCULATED"
+  },
+  "contract_validation": {
+    "error_count": 0,
+    "error_paths": [],
+    "status": "PASS"
+  },
+  "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
+  "evidence_ledger": [
+    {
+      "evidence_class": "CONTROL",
+      "evidence_id": "G4-EV-GATE3",
+      "label_en": "Gate 3 identity and latest eligibility recheck",
+      "label_zh": "Gate 3 标识与最新资格复核",
+      "source_fields": [
+        "gate3_identity",
+        "gate3_recheck"
+      ],
+      "source_object": "s13_result.gate3_recheck",
+      "value": {
+        "eligible": true,
+        "escalated_warning_ids": [
+          "G3-peer-valuation-context",
+          "G3-probability-methodology",
+          "G3-probability-validation"
+        ],
+        "gate3_identity": {
+          "company": {
+            "cik": "0001334036",
+            "exchange": "Nasdaq",
+            "name": "Crocs, Inc.",
+            "ticker": "CROX"
+          },
+          "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
+          "report_id": "RPT-D12C3A257792FC"
+        }
+      }
+    },
+    {
+      "evidence_class": "CONTROL",
+      "evidence_id": "G4-EV-BUNDLE",
+      "label_en": "Assessment-input fingerprint excluding the Partner decision",
+      "label_zh": "不含 Partner 决策的评估输入指纹",
+      "source_fields": [
+        "manifest",
+        "referenced_input_files"
+      ],
+      "source_object": "local_private_workspace",
+      "value": "e11d5abb321888e3a24a58905c669d0e2ba36826e8d148ace6b70789f8e6363b"
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-S13",
+      "label_en": "Validated S13 constraint result",
+      "label_zh": "经验证的 S13 约束结果",
+      "source_fields": [
+        "constraints",
+        "binding_constraints",
+        "maximum_constraint_based_incremental_position_weight",
+        "maximum_constraint_based_total_position_weight"
+      ],
+      "source_object": "gate4_constraint_engine_result",
+      "value": {
+        "binding_constraints": [
+          {
+            "constraint_id": "sector",
+            "maximum_incremental_position_weight": 0.05
+          }
+        ],
+        "maximum_incremental_weight": 0.05,
+        "maximum_total_issuer_weight": 0.05,
+        "s13_result_hash": "175ddac5b871e9eed1b283d2cf1be7e2f110fa91ae1b6d1e7fe9f9c9fe051272",
+        "status": "GATE_4_CONSTRAINTS_CALCULATED"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_EXISTING_ISSUER_EXPOSURE",
+      "label_en": "Existing issuer exposure",
+      "label_zh": "现有发行人敞口",
+      "source_fields": [
+        "constraint_inputs.candidate.issuer_identifier",
+        "holdings or exposure_summary"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": null,
+        "current_value": 0,
+        "escalation_triggered": null,
+        "formula": "sum(gross long weights with candidate issuer_identifier)",
+        "limit_value": null,
+        "maximum_incremental_position_weight": null,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_SINGLE_NAME",
+      "label_en": "Single-name concentration",
+      "label_zh": "单一标的集中度",
+      "source_fields": [
+        "policy.single_name_position_limit",
+        "COMPLETE_SECURITY_LEVEL_HOLDINGS:issuer"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": null,
+        "current_value": 0,
+        "escalation_triggered": false,
+        "formula": "max(0, single_name_position_limit - current_gross_long_weight)",
+        "limit_value": 0.1,
+        "maximum_incremental_position_weight": 0.1,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_SECTOR",
+      "label_en": "Sector concentration",
+      "label_zh": "行业集中度",
+      "source_fields": [
+        "policy.sector_concentration_limit",
+        "COMPLETE_SECURITY_LEVEL_HOLDINGS:sector"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": true,
+        "candidate_value": null,
+        "current_value": 0.3,
+        "escalation_triggered": true,
+        "formula": "max(0, sector_concentration_limit - current_gross_long_weight)",
+        "limit_value": 0.35,
+        "maximum_incremental_position_weight": 0.05,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_CORRELATED_EXPOSURE",
+      "label_en": "Correlated exposure",
+      "label_zh": "相关性敞口",
+      "source_fields": [
+        "policy.correlated_exposure_limit",
+        "COMPLETE_SECURITY_LEVEL_HOLDINGS:correlation"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": null,
+        "current_value": 0.3,
+        "escalation_triggered": false,
+        "formula": "max(0, correlated_exposure_limit - current_gross_long_weight)",
+        "limit_value": 0.4,
+        "maximum_incremental_position_weight": 0.1,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_COUNTRY",
+      "label_en": "Country concentration",
+      "label_zh": "国家集中度",
+      "source_fields": [
+        "policy.country_concentration_limit",
+        "COMPLETE_SECURITY_LEVEL_HOLDINGS:country"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": null,
+        "current_value": 0.5,
+        "escalation_triggered": false,
+        "formula": "max(0, country_concentration_limit - current_gross_long_weight)",
+        "limit_value": 0.8,
+        "maximum_incremental_position_weight": 0.3,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_TARGET_RETURN",
+      "label_en": "Target-return hurdle",
+      "label_zh": "目标回报门槛",
+      "source_fields": [
+        "constraint_inputs.candidate.expected_return",
+        "policy.target_return"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": 0.28,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "candidate_validated_return >= policy_target_return",
+        "limit_value": 0.2,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_HOLDING_PERIOD",
+      "label_en": "Holding-period limit",
+      "label_zh": "持有期上限",
+      "source_fields": [
+        "constraint_inputs.candidate.expected_return.holding_period_days",
+        "policy.holding_period_days"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": 365,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "candidate_holding_period_days <= policy_holding_period_days",
+        "limit_value": 365,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_DOWNSIDE",
+      "label_en": "Downside tolerance",
+      "label_zh": "下行容忍度",
+      "source_fields": [
+        "constraint_inputs.candidate.downside_return",
+        "policy.downside_tolerance"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": -0.2,
+        "current_value": null,
+        "escalation_triggered": true,
+        "formula": "candidate_formal_downside_return >= policy_downside_tolerance",
+        "limit_value": -0.25,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_LIQUIDITY_PORTFOLIO_FLOOR",
+      "label_en": "Portfolio liquidity floor",
+      "label_zh": "组合流动性下限",
+      "source_fields": [
+        "constraint_inputs.portfolio_state.current_liquid_portfolio_weight",
+        "policy.liquidity_requirement.minimum_liquid_portfolio_weight"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": 0.7,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "current_liquid_portfolio_weight >= minimum_liquid_portfolio_weight",
+        "limit_value": 0.25,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_LIQUIDITY_EXIT_CAPACITY",
+      "label_en": "Candidate exit-capacity ceiling",
+      "label_zh": "候选标的退出容量上限",
+      "source_fields": [
+        "constraint_inputs.candidate.liquidity",
+        "manifest.portfolio_nav",
+        "policy.liquidity_requirement"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": 50000000.0,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "ADVT * maximum_daily_volume_participation * maximum_days_to_exit / portfolio_NAV",
+        "limit_value": 5,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_RISK_BUDGET",
+      "label_en": "Downside-loss risk budget",
+      "label_zh": "下行损失风险预算",
+      "source_fields": [
+        "policy.risk_budget_limit",
+        "policy.risk_budget_method",
+        "constraint_inputs.portfolio_state.current_risk_budget_usage",
+        "constraint_inputs.candidate.downside_return"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": -0.2,
+        "current_value": 0.06,
+        "escalation_triggered": false,
+        "formula": "max(0, risk_budget_limit - current_risk_budget_usage) / abs(candidate_validated_downside_return)",
+        "limit_value": 0.15,
+        "maximum_incremental_position_weight": 0.45,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_OPPORTUNITY_COST",
+      "label_en": "Opportunity-cost hurdle",
+      "label_zh": "机会成本门槛",
+      "source_fields": [
+        "constraint_inputs.candidate.expected_return",
+        "opportunity_set",
+        "policy.opportunity_cost_requirement"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": 0.05000000000000002,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "candidate_validated_return - highest comparable validated alternative return >= minimum_excess_return",
+        "limit_value": 0.03,
+        "maximum_incremental_position_weight": 1.0,
+        "status": "PASS"
+      }
+    },
+    {
+      "evidence_class": "CALC",
+      "evidence_id": "G4-EV-CONSTRAINT_HEDGE",
+      "label_en": "Applicable hedge constraints",
+      "label_zh": "适用对冲约束",
+      "source_fields": [
+        "constraint_inputs.candidate.proposed_hedge",
+        "policy.permitted_hedge_instruments",
+        "policy.maximum_hedge_ratio"
+      ],
+      "source_object": "s13_result.constraints",
+      "value": {
+        "binding": false,
+        "candidate_value": null,
+        "current_value": null,
+        "escalation_triggered": null,
+        "formula": "no proposed hedge; no hedge relief credited",
+        "limit_value": 0.5,
+        "maximum_incremental_position_weight": null,
+        "status": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "evidence_class": "JUDGMENT",
+      "evidence_id": "G4-EV-SYSTEM-ASSESSMENT",
+      "label_en": "System portfolio assessment",
+      "label_zh": "系统组合评估",
+      "source_fields": [
+        "system_portfolio_assessment"
+      ],
+      "source_object": "gate4_assessment_engine",
+      "value": {
+        "assessment": "ELIGIBLE_WITH_ESCALATION",
+        "rationale_codes": [
+          "ESCALATION:constraint:downside",
+          "ESCALATION:constraint:sector",
+          "ESCALATION:gate3:G3-peer-valuation-context",
+          "ESCALATION:gate3:G3-probability-methodology",
+          "ESCALATION:gate3:G3-probability-validation"
+        ]
+      }
+    },
+    {
+      "evidence_class": "CONTROL",
+      "evidence_id": "G4-EV-PARTNER-DECISION",
+      "label_en": "Separately owned Partner decision",
+      "label_zh": "独立归属的 Partner 决策",
+      "source_fields": [
+        "partner_decision"
+      ],
+      "source_object": "approval_config.partner_decision",
+      "value": {
+        "decision_hash": null,
+        "effective_decision": "PENDING",
+        "submitted_decision": "PENDING",
+        "validation_status": "PENDING"
+      }
+    }
+  ],
+  "external_transmission": "DENIED",
+  "gate3_identity": {
+    "company": {
+      "cik": "0001334036",
+      "exchange": "Nasdaq",
+      "name": "Crocs, Inc.",
+      "ticker": "CROX"
+    },
+    "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
+    "report_id": "RPT-D12C3A257792FC"
+  },
+  "generated_at": "2026-08-03T04:20:28Z",
+  "input_mode": "FULL_HOLDINGS",
+  "local_private_output_only": false,
+  "next_action_en": "The designated Partner should review the assessment and record a dated decision locally.",
+  "next_action_zh": "应由指定 Partner 在本地复核评估并记录带日期的决定。",
+  "partner_decision": {
+    "acknowledged_escalation_ids": [],
+    "approved_at": null,
+    "approved_by": null,
+    "approved_position_range": null,
+    "assessment_hash_binding": null,
+    "automatic_trade_execution": false,
+    "blocking_reason_codes": [],
+    "decision": "PENDING",
+    "decision_hash": null,
+    "decision_rationale": null,
+    "submitted_decision": "PENDING",
+    "system_generated": false,
+    "validation_status": "PENDING",
+    "workflow_status": "PARTNER_APPROVAL_PENDING"
+  },
+  "raw_private_values_included": false,
+  "report_controls": {
+    "bilingual": true,
+    "maximum_ceiling_term_en": "Constraint ceiling",
+    "maximum_ceiling_term_zh": "约束上限",
+    "private_pdf_requires_sanitizer": true,
+    "renderer_may_recalculate": false,
+    "synthetic_pdf_generation_allowed": true
+  },
+  "s13_result_hash": "175ddac5b871e9eed1b283d2cf1be7e2f110fa91ae1b6d1e7fe9f9c9fe051272",
+  "status": "GATE_4_SYSTEM_ASSESSMENT_READY",
+  "system_portfolio_assessment": {
+    "assessment": "ELIGIBLE_WITH_ESCALATION",
+    "assessment_label_en": "Eligible with Escalation",
+    "assessment_label_zh": "符合条件但需升级复核",
+    "breach_ids": [],
+    "can_support_partner_approval": true,
+    "escalation_ids": [
+      "constraint:downside",
+      "constraint:sector",
+      "gate3:G3-peer-valuation-context",
+      "gate3:G3-probability-methodology",
+      "gate3:G3-probability-validation"
+    ],
+    "maximum_constraint_ceiling": {
+      "disclosure_en": "This is the maximum allowed by the tested constraints. It is not an investment instruction or an approved range.",
+      "disclosure_zh": "该数值仅表示已测试约束允许的最大值，不构成投资指令或已批准区间。",
+      "incremental_weight": 0.05,
+      "is_recommendation": false,
+      "measurement_basis": "GROSS_LONG_WEIGHT",
+      "total_issuer_weight": 0.05
+    },
+    "position_range": null,
+    "rationale_codes": [
+      "ESCALATION:constraint:downside",
+      "ESCALATION:constraint:sector",
+      "ESCALATION:gate3:G3-peer-valuation-context",
+      "ESCALATION:gate3:G3-probability-methodology",
+      "ESCALATION:gate3:G3-probability-validation"
+    ],
+    "rationale_en": [
+      "Required constraints pass, but one or more reviewed escalation thresholds or Gate 3 warning escalations are active."
+    ],
+    "rationale_zh": [
+      "必要约束均通过，但一项或多项升级阈值或 Gate 3 警告升级仍处于有效状态。"
+    ],
+    "review_ids": [],
+    "system_generated_position_recommendation": false,
+    "workflow_status": "GATE_4_SYSTEM_ASSESSMENT_READY"
+  },
+  "validation": {
+    "checks": [
+      {
+        "check_id": "S14-S13-CONTRACT",
+        "evidence_ids": [
+          "G4-EV-S13"
+        ],
+        "message_en": "The S13 output matches the shared constraint contract.",
+        "message_zh": "S13 输出符合共享约束合同。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-S13-STATUS",
+        "evidence_ids": [
+          "G4-EV-S13"
+        ],
+        "message_en": "Every required S13 ceiling is available.",
+        "message_zh": "所有必要的 S13 上限均已获得。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-S13-OUTPUT-VALIDATION",
+        "evidence_ids": [
+          "G4-EV-S13"
+        ],
+        "message_en": "S13 output validation passed.",
+        "message_zh": "S13 输出验证通过。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-GATE3-RECHECK",
+        "evidence_ids": [
+          "G4-EV-GATE3"
+        ],
+        "message_en": "The latest Gate 3 recheck remains eligible.",
+        "message_zh": "最新 Gate 3 复核仍符合资格。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-BUNDLE-STABILITY",
+        "evidence_ids": [
+          "G4-EV-BUNDLE"
+        ],
+        "message_en": "The private input bundle did not change during the S14 run.",
+        "message_zh": "S14 运行期间私有输入包未发生变化。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-CEILING-REPRODUCIBILITY",
+        "evidence_ids": [
+          "G4-EV-S13"
+        ],
+        "message_en": "The final ceiling and binding constraints are reproducible from required S13 rows.",
+        "message_zh": "最终上限和约束项可由必要的 S13 行复算。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-NO-SYSTEM-POSITION-SELECTION",
+        "evidence_ids": [
+          "G4-EV-S13"
+        ],
+        "message_en": "The S13 maximum remains classified only as a constraint ceiling.",
+        "message_zh": "S13 最大值仍仅被归类为约束上限。",
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "check_id": "S14-ESCALATION:constraint:downside",
+        "evidence_ids": [
+          "G4-EV-SYSTEM-ASSESSMENT"
+        ],
+        "message_en": "Active escalation requires Partner acknowledgement: constraint:downside.",
+        "message_zh": "有效升级项需要 Partner 明确认可：constraint:downside。",
+        "severity": "WARNING",
+        "status": "WARNING"
+      },
+      {
+        "check_id": "S14-ESCALATION:constraint:sector",
+        "evidence_ids": [
+          "G4-EV-SYSTEM-ASSESSMENT"
+        ],
+        "message_en": "Active escalation requires Partner acknowledgement: constraint:sector.",
+        "message_zh": "有效升级项需要 Partner 明确认可：constraint:sector。",
+        "severity": "WARNING",
+        "status": "WARNING"
+      },
+      {
+        "check_id": "S14-ESCALATION:gate3:G3-peer-valuation-context",
+        "evidence_ids": [
+          "G4-EV-SYSTEM-ASSESSMENT"
+        ],
+        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-peer-valuation-context.",
+        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-peer-valuation-context。",
+        "severity": "WARNING",
+        "status": "WARNING"
+      },
+      {
+        "check_id": "S14-ESCALATION:gate3:G3-probability-methodology",
+        "evidence_ids": [
+          "G4-EV-SYSTEM-ASSESSMENT"
+        ],
+        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-probability-methodology.",
+        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-probability-methodology。",
+        "severity": "WARNING",
+        "status": "WARNING"
+      },
+      {
+        "check_id": "S14-ESCALATION:gate3:G3-probability-validation",
+        "evidence_ids": [
+          "G4-EV-SYSTEM-ASSESSMENT"
+        ],
+        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-probability-validation.",
+        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-probability-validation。",
+        "severity": "WARNING",
+        "status": "WARNING"
+      }
+    ],
+    "hard_stop_count": 0,
+    "status": "PASS",
+    "warning_count": 5
+  }
+}

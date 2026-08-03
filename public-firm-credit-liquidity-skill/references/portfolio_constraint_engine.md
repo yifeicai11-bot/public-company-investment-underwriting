@@ -135,3 +135,7 @@ S13 output is not an S14 system assessment. Keep:
 Always call the result a `constraint ceiling`, `maximum allowed by the tested
 constraints`, or `maximum constraint-based position`. Never call it a
 recommended, suggested, target, approved, or optimal position.
+
+After S13 passes, read `gate4_assessment_and_approval.md` and run
+`run_gate4_assessment.py`. S14 must consume the current shared S13 engine result;
+it must not recreate S13 formulas in a renderer.

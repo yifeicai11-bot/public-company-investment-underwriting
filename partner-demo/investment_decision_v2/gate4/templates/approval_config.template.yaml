@@ -1,4 +1,4 @@
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 document_type: approval_config
 data_classification: TEMPLATE_NO_DATA
 as_of_date:
@@ -9,15 +9,18 @@ external_transmission_policy: DENY
 allowed_decisions:
   - PENDING
   - APPROVED
-  - APPROVED_WITH_MODIFICATION
+  - MODIFIED
   - REJECTED
   - DEFERRED
 partner_decision:
   status: PENDING
+  assessment_hash:
   approved_by:
   approved_at:
   decision_rationale:
+  approved_position_basis:
   approved_position_min:
   approved_position_max:
+  acknowledged_escalation_ids: []
 reviewed_by:
 reviewed_at:

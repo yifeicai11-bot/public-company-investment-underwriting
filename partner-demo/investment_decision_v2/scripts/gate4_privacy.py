@@ -85,6 +85,10 @@ SENSITIVE_EXACT_FILENAMES = {
     "gate4_constraint_engine_result.json",
     "gate4_system_assessment.json",
     "gate4_partner_decision.json",
+    "gate4_one_page_summary_bilingual.md",
+    "gate4_full_report_bilingual.md",
+    "gate4_evidence_appendix_bilingual.md",
+    "gate4_validation_report_bilingual.md",
 }
 
 SENSITIVE_NAME_TOKENS = {

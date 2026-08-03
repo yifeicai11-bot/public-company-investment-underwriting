@@ -111,6 +111,8 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Cross-Company Valuation QA | [`run_s12_valuation_cross_company_acceptance.py`](partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py) | Offline six-model and five-contract acceptance, status-boundary checks, return-language controls, and anti-hardcoding scan |
 | Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
 | Gate 4 Local Entry | [`run_gate4_local_entry.py`](partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
+| Gate 4 Constraints | [`gate4_constraint_engine.py`](partner-demo/investment_decision_v2/scripts/gate4_constraint_engine.py) | Reproducible policy ceilings, formulas, missing inputs, escalations, and binding constraints |
+| Gate 4 Assessment | [`gate4_assessment_engine.py`](partner-demo/investment_decision_v2/scripts/gate4_assessment_engine.py) | Five-state System Assessment, separately owned Partner Decision, stable hash binding, and no-trade controls |
 | Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
 | Independent QA | [`validate_friday_v1_delivery.py`](partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py) | Reproduces market cap, FCF bridge, reverse valuation, scenarios, dates, contract identity, and output boundaries |
 
@@ -167,8 +169,31 @@ freshness, valuation status, Hard Stops, and issuer Warnings.
 过期或不合资格的 Gate 3 会返回 `GATE_4_BLOCKED_STALE_GATE_3` 或
 `GATE_4_BLOCKED_INELIGIBLE_GATE_3`，并压制所有 Gate 4 回报、风险、仓位和行动计算。
 缺失或无效的私有输入返回 `GATE_4_PRIVATE_INPUTS_REQUIRED`；完整且一致的输入返回
-`GATE_4_INPUTS_VALIDATED`。这仍不代表完成投资决策：当前阶段的 System Portfolio
-Assessment 保持 `NOT_EVALUATED`，Partner Decision 保持 `PENDING`，不会生成仓位或交易指令。
+`GATE_4_INPUTS_VALIDATED`。S13 计算的是约束上限，不是仓位意见。完成 S13 后，可运行：
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+  path/to/step3/underwriting_output_contract.json \
+  --manifest ~/investment_private/gate4_private_workspace_manifest.json
+```
+
+S14 将 System Portfolio Assessment 与 Partner Decision 分开：系统状态为
+`ELIGIBLE`、`ELIGIBLE_WITH_ESCALATION`、`REVIEW_REQUIRED`、`NOT_ELIGIBLE` 或
+`NOT_EVALUATED`；Partner 决定为 `PENDING`、`APPROVED`、`MODIFIED`、`REJECTED`
+或 `DEFERRED`。批准或修改必须绑定当前 assessment hash、使用发行人总 gross-long
+口径、不超过约束上限，并确认全部有效升级项。系统不会自动执行交易。
+
+Build and validate the public synthetic S14 demonstration package:
+
+```bash
+python3 partner-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
+python3 partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
+  examples/gate4-synthetic
+```
+
+The four bilingual PDFs are generated from one validated synthetic assessment
+contract. They are interface demonstrations, not real portfolio facts or an
+approved position.
 
 Enable the repository privacy hook once per clone:
 
@@ -259,12 +284,13 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 290 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- 335 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
 - The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - AutoZone: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - Both One-Page PDFs are one A4 page; both Full Reports are 11 A4 pages and were visually reviewed after page rendering.
+- The S14 synthetic package contains a one-page summary, full report, evidence appendix, and validation report; hashes, A4 pages, bilingual text, controlled position language, and no-trade controls pass the delivery validator.
 
 ## Boundaries / 使用边界
 

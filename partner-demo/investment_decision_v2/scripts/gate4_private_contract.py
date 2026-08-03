@@ -37,7 +37,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 GATE4_DIR = SCRIPT_DIR.parent / "gate4"
 SCHEMA_DIR = GATE4_DIR / "schemas"
 FIELD_GOVERNANCE_PATH = GATE4_DIR / "field_governance.json"
-PRIVATE_INPUT_CONTRACT_VERSION = "2.1.0"
+PRIVATE_INPUT_CONTRACT_VERSION = "2.2.0"
 FRAMEWORK_STATUS = "GATE_4_FRAMEWORK_READY"
 INPUT_STATUS_REQUIRED = "GATE_4_PRIVATE_INPUTS_REQUIRED"
 INPUT_STATUS_VALIDATED = "GATE_4_INPUTS_VALIDATED"
@@ -82,7 +82,7 @@ MODE_CAPABILITIES = {
 ALLOWED_DECISIONS = {
     "PENDING",
     "APPROVED",
-    "APPROVED_WITH_MODIFICATION",
+    "MODIFIED",
     "REJECTED",
     "DEFERRED",
 }
@@ -1655,25 +1655,50 @@ def _approval_checks(
         field="allowed_decisions",
         message_pass="The complete controlled Partner decision set is configured.",
         message_fail="The configured Partner decision set is incomplete or unsupported.",
-        remediation="Use exactly PENDING, APPROVED, APPROVED_WITH_MODIFICATION, REJECTED, and DEFERRED.",
+        remediation="Use exactly PENDING, APPROVED, MODIFIED, REJECTED, and DEFERRED.",
     )
     decision = approval.get("partner_decision", {})
     status = decision.get("status") if isinstance(decision, dict) else None
+    assessment_hash = clean_text(decision.get("assessment_hash")) if isinstance(decision, dict) else None
     approved_by = clean_text(decision.get("approved_by")) if isinstance(decision, dict) else None
     approved_at = parse_datetime(decision.get("approved_at")) if isinstance(decision, dict) else None
     rationale = clean_text(decision.get("decision_rationale")) if isinstance(decision, dict) else None
+    position_basis = clean_text(decision.get("approved_position_basis")) if isinstance(decision, dict) else None
     minimum = parse_ratio(decision.get("approved_position_min")) if isinstance(decision, dict) else None
     maximum = parse_ratio(decision.get("approved_position_max")) if isinstance(decision, dict) else None
+    acknowledgements = decision.get("acknowledged_escalation_ids", []) if isinstance(decision, dict) else []
+    acknowledgements_valid = (
+        isinstance(acknowledgements, list)
+        and len(acknowledgements) == len(set(acknowledgements))
+        and all(isinstance(value, str) and value.strip() for value in acknowledgements)
+    )
     if status == "PENDING":
-        decision_valid = all(value is None for value in (approved_by, approved_at, rationale, minimum, maximum))
-    elif status in {"APPROVED", "APPROVED_WITH_MODIFICATION"}:
         decision_valid = (
-            approved_by is not None
+            all(
+                value is None
+                for value in (
+                    assessment_hash,
+                    approved_by,
+                    approved_at,
+                    rationale,
+                    position_basis,
+                    minimum,
+                    maximum,
+                )
+            )
+            and acknowledgements == []
+        )
+    elif status in {"APPROVED", "MODIFIED"}:
+        decision_valid = (
+            assessment_hash is not None
+            and approved_by is not None
             and approved_at is not None
             and rationale is not None
+            and position_basis == "TOTAL_ISSUER_GROSS_LONG_WEIGHT"
             and minimum is not None
             and maximum is not None
             and 0 <= minimum <= maximum <= 1
+            and acknowledgements_valid
             and manifest_as_of is not None
             and approved_at.date() <= manifest_as_of
         )
@@ -1682,8 +1707,10 @@ def _approval_checks(
             approved_by is not None
             and approved_at is not None
             and rationale is not None
+            and position_basis is None
             and minimum is None
             and maximum is None
+            and acknowledgements_valid
             and manifest_as_of is not None
             and approved_at.date() <= manifest_as_of
         )
@@ -1792,6 +1819,8 @@ def validate_private_input_bundle(
 
 def load_and_validate_private_inputs(
     manifest_path: Path,
+    *,
+    system_assessment_ready: bool = False,
 ) -> tuple[PrivateInputBundle | None, dict[str, Any]]:
     checks: list[PrivateInputCheck] = []
     try:
@@ -1846,7 +1875,11 @@ def load_and_validate_private_inputs(
     )
     if bundle is None:
         return None, _diagnostic_without_bundle(checks)
-    return bundle, validate_private_input_bundle(bundle, existing_checks=checks)
+    return bundle, validate_private_input_bundle(
+        bundle,
+        existing_checks=checks,
+        system_assessment_ready=system_assessment_ready,
+    )
 
 
 def _diagnostic_without_bundle(checks: list[PrivateInputCheck]) -> dict[str, Any]:

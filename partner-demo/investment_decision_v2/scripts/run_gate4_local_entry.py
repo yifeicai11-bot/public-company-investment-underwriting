@@ -112,7 +112,7 @@ def build_local_entry_result(
             status = INPUT_STATUS_REQUIRED
 
     return {
-        "gate4_local_entry_version": "2.1.0",
+        "gate4_local_entry_version": "2.2.0",
         "generated_at": utc_now(),
         "status": status,
         "private_input_status": private_status,
