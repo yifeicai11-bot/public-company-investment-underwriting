@@ -89,9 +89,10 @@ def _gate3_identity_matches_current(
         current = load_gate3_contract(gate3_target)
     except (OSError, ValueError, json.JSONDecodeError):
         return False
-    expected = s13_result.get("gate3_identity", {})
+    expected = s13_result.get("gate3_recheck", {}).get("gate3_identity", {})
     return (
-        current.get("report_id") == expected.get("report_id")
+        current.get("schema_version") == expected.get("schema_version")
+        and current.get("report_id") == expected.get("report_id")
         and current.get("contract_hash") == expected.get("contract_hash")
         and current.get("company") == expected.get("company")
     )
@@ -138,9 +139,19 @@ def run_gate4_assessment(
         manifest_path,
         system_assessment_ready=True,
     )
+    full_fingerprint_final = _bundle_fingerprint(
+        manifest_path,
+        include_partner_decision=True,
+    )
+    assessment_fingerprint_final = _bundle_fingerprint(
+        manifest_path,
+        include_partner_decision=False,
+    )
     bundle_unchanged = (
         full_fingerprint_before == full_fingerprint_after
+        and full_fingerprint_after == full_fingerprint_final
         and assessment_fingerprint_before == assessment_fingerprint_after
+        and assessment_fingerprint_after == assessment_fingerprint_final
         and _gate3_identity_matches_current(gate3_target, s13_result)
     )
     approval_config = (
@@ -151,7 +162,7 @@ def run_gate4_assessment(
     result = build_gate4_assessment(
         s13_result,
         approval_config,
-        assessment_input_fingerprint=assessment_fingerprint_after,
+        assessment_input_fingerprint=assessment_fingerprint_final,
         private_bundle_unchanged=bundle_unchanged,
     )
     outputs: dict[str, Path] = {}

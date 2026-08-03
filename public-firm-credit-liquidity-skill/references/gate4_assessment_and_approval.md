@@ -64,6 +64,10 @@ Keep the submitted decision and effective decision separate. An invalid
 completed record is displayed as submitted but its effective decision remains
 `PENDING` with `PARTNER_DECISION_BLOCKED`.
 
+Every completed non-`PENDING` decision must bind to the exact current
+assessment hash. This includes `REJECTED` and `DEFERRED`, so an old human
+decision cannot silently carry forward after substantive inputs change.
+
 `APPROVED` and `MODIFIED` require:
 
 - a current `ELIGIBLE` or `ELIGIBLE_WITH_ESCALATION` assessment;
@@ -85,7 +89,7 @@ approval-policy configuration. It excludes `partner_decision` so the Partner
 can bind a later decision to a stable assessment hash.
 
 Any change to an assessment input produces a new assessment hash. A completed
-decision carrying the old hash is blocked.
+decision with a missing or old hash is blocked.
 
 ## Report Contract
 

@@ -180,8 +180,9 @@ python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
 S14 将 System Portfolio Assessment 与 Partner Decision 分开：系统状态为
 `ELIGIBLE`、`ELIGIBLE_WITH_ESCALATION`、`REVIEW_REQUIRED`、`NOT_ELIGIBLE` 或
 `NOT_EVALUATED`；Partner 决定为 `PENDING`、`APPROVED`、`MODIFIED`、`REJECTED`
-或 `DEFERRED`。批准或修改必须绑定当前 assessment hash、使用发行人总 gross-long
-口径、不超过约束上限，并确认全部有效升级项。系统不会自动执行交易。
+或 `DEFERRED`。所有非 `PENDING` 决定必须绑定当前 assessment hash；批准或修改还
+必须使用发行人总 gross-long 口径、不超过约束上限，并确认全部有效升级项。系统不会
+自动执行交易。
 
 Build and validate the public synthetic S14 demonstration package:
 
@@ -284,7 +285,7 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 335 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
+- 342 shared accounting, evidence, market-data, gate, scenario, valuation, rendering, Gate 4, cross-industry, and privacy-boundary tests passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
 - The regression matrix distinguishes 12 actively tested stress characteristics from 7 planned coverage gaps; planned cases are not represented as tested.
 - CROX: 36 independent delivery checks passed; 0 failures; 0 hard stops.

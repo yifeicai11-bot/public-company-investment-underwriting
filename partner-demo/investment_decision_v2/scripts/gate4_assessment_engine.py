@@ -187,17 +187,33 @@ def _constraint_integrity(
     constraints = s13_result.get("constraints", [])
     if not isinstance(constraints, list):
         return False, ["constraints_not_array"]
+    rows = [row for row in constraints if isinstance(row, dict)]
+    constraint_ids = [str(row.get("constraint_id") or "") for row in rows]
+    issues: list[str] = []
+    if any(not value for value in constraint_ids):
+        issues.append("constraint_id_missing")
+    if len(constraint_ids) != len(set(constraint_ids)):
+        issues.append("constraint_ids_not_unique")
+
+    expected_formula_registry = {
+        str(row.get("constraint_id")): row.get("formula") for row in rows
+    }
+    if s13_result.get("formula_registry") != expected_formula_registry:
+        issues.append("formula_registry_not_reproducible")
+
     required = [
         row
-        for row in constraints
+        for row in rows
         if isinstance(row, dict) and row.get("required_for_ceiling") is True
     ]
     if not required:
-        return False, ["required_constraints_absent"]
-    issues: list[str] = []
+        issues.append("required_constraints_absent")
+        return False, issues
     ceilings: list[tuple[str, float]] = []
     for row in required:
         constraint_id = str(row.get("constraint_id") or "unknown")
+        if row.get("status") not in {"PASS", "BREACH"}:
+            issues.append(f"required_constraint_status_invalid:{constraint_id}")
         value = _finite_ratio(row.get("maximum_incremental_position_weight"))
         if value is None:
             issues.append(f"missing_numeric_ceiling:{constraint_id}")
@@ -217,13 +233,69 @@ def _constraint_integrity(
             for constraint_id, value in ceilings
             if math.isclose(value, expected, rel_tol=0, abs_tol=EPSILON)
         }
-        actual_binding = {
-            str(row.get("constraint_id"))
+        binding_rows = [
+            row
             for row in s13_result.get("binding_constraints", [])
             if isinstance(row, dict)
-        }
+        ]
+        binding_ids = [str(row.get("constraint_id")) for row in binding_rows]
+        actual_binding = set(binding_ids)
+        if len(binding_ids) != len(actual_binding):
+            issues.append("binding_constraint_ids_not_unique")
         if expected_binding != actual_binding:
             issues.append("binding_constraints_not_reproducible")
+        row_binding = {
+            str(row.get("constraint_id"))
+            for row in rows
+            if row.get("binding") is True
+        }
+        if expected_binding != row_binding:
+            issues.append("constraint_row_binding_flags_not_reproducible")
+        for row in binding_rows:
+            binding_id = str(row.get("constraint_id"))
+            binding_value = _finite_ratio(
+                row.get("maximum_incremental_position_weight")
+            )
+            if (
+                binding_id not in expected_binding
+                or binding_value is None
+                or not math.isclose(
+                    binding_value,
+                    expected,
+                    rel_tol=0,
+                    abs_tol=EPSILON,
+                )
+            ):
+                issues.append(f"binding_constraint_value_invalid:{binding_id}")
+
+        existing_rows = [
+            row
+            for row in rows
+            if row.get("constraint_id") == "existing_issuer_exposure"
+        ]
+        if len(existing_rows) != 1:
+            issues.append("existing_issuer_exposure_row_invalid")
+        else:
+            existing_weight = _finite_ratio(existing_rows[0].get("current_value"))
+            total_ceiling = _finite_ratio(
+                s13_result.get(
+                    "maximum_constraint_based_total_position_weight"
+                )
+            )
+            if existing_weight is None or total_ceiling is None:
+                issues.append("total_issuer_ceiling_input_missing")
+            else:
+                expected_total = round(
+                    max(0.0, min(1.0, existing_weight + maximum)),
+                    12,
+                )
+                if not math.isclose(
+                    expected_total,
+                    total_ceiling,
+                    rel_tol=0,
+                    abs_tol=EPSILON,
+                ):
+                    issues.append("total_issuer_ceiling_not_reproducible")
     return not issues, issues
 
 
@@ -356,13 +428,13 @@ def build_system_assessment(
         _check(
             "S14-CEILING-REPRODUCIBILITY",
             integrity_ok,
-            message_pass_en="The final ceiling and binding constraints are reproducible from required S13 rows.",
-            message_pass_zh="最终上限和约束项可由必要的 S13 行复算。",
+            message_pass_en="The constraint IDs, formulas, incremental and total ceilings, and binding rows are reproducible from S13.",
+            message_pass_zh="约束编号、公式、新增及总上限和 binding 行均可由 S13 复算。",
             message_fail_en=(
-                "The final ceiling or binding constraints are not reproducible: "
+                "The S13 constraint result is not fully reproducible: "
                 + ", ".join(integrity_issues)
             ),
-            message_fail_zh="最终上限或约束项无法复算。",
+            message_fail_zh="S13 约束结果无法完整复算。",
             evidence_ids=["G4-EV-S13"],
         ),
         _check(
@@ -422,7 +494,7 @@ def build_system_assessment(
         str(row.get("constraint_id"))
         for row in constraints
         if row.get("required_for_ceiling") is not True
-        and row.get("status") in {"WARNING", "MISSING"}
+        and row.get("status") in {"BREACH", "WARNING", "MISSING"}
     )
     constraint_escalations = {
         f"constraint:{row.get('constraint_id')}"
@@ -622,7 +694,7 @@ def build_partner_decision(
     else:
         if any(value is not None for value in (minimum, maximum, basis)):
             blocking.append("NON_APPROVAL_POSITION_RANGE_PRESENT")
-        if submitted_hash is not None and submitted_hash != assessment_hash:
+        if assessment_hash is None or submitted_hash != assessment_hash:
             blocking.append("ASSESSMENT_HASH_MISMATCH")
         if acknowledgements:
             blocking.append("NON_APPROVAL_ESCALATION_ACKNOWLEDGEMENT_PRESENT")

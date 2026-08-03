@@ -465,6 +465,43 @@ class Gate4PrivateContractTests(unittest.TestCase):
             diagnostic["blocking_check_ids"],
         )
 
+    def test_rejected_or_deferred_decision_requires_assessment_hash(self) -> None:
+        for status in ("REJECTED", "DEFERRED"):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as tmp:
+                manifest_path = self.copy_synthetic_workspace(Path(tmp))
+                approval_path = (
+                    manifest_path.parent / "synthetic_approval_config.yaml"
+                )
+                approval = yaml.safe_load(
+                    approval_path.read_text(encoding="utf-8")
+                )
+                approval["partner_decision"] = {
+                    "status": status,
+                    "assessment_hash": None,
+                    "approved_by": "Synthetic Partner",
+                    "approved_at": "2026-07-17T08:00:00Z",
+                    "decision_rationale": "Synthetic negative decision record.",
+                    "approved_position_basis": None,
+                    "approved_position_min": None,
+                    "approved_position_max": None,
+                    "acknowledged_escalation_ids": [],
+                }
+                approval_path.write_text(
+                    yaml.safe_dump(approval, sort_keys=False),
+                    encoding="utf-8",
+                )
+
+                _, diagnostic = load_and_validate_private_inputs(
+                    manifest_path,
+                    system_assessment_ready=True,
+                )
+
+            self.assertEqual(diagnostic["status"], INPUT_STATUS_REQUIRED)
+            self.assertIn(
+                "G4I-partner-decision-completeness",
+                diagnostic["blocking_check_ids"],
+            )
+
     def test_empty_public_template_does_not_invent_policy_defaults(self) -> None:
         _, diagnostic = load_and_validate_private_inputs(
             TEMPLATE_DIR / "gate4_private_workspace_manifest.template.json"

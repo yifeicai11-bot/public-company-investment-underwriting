@@ -169,9 +169,10 @@ python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
 The system assessment uses `ELIGIBLE`, `ELIGIBLE_WITH_ESCALATION`,
 `REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or `NOT_EVALUATED`. The Partner decision is
 separate and uses `PENDING`, `APPROVED`, `MODIFIED`, `REJECTED`, or `DEFERRED`.
-An approval or modification must reference the current assessment hash, use a
-total-issuer gross-long basis, remain within the constraint ceiling, and
-acknowledge every active escalation ID.
+Every non-pending decision must reference the current assessment hash. An
+approval or modification must additionally use a total-issuer gross-long
+basis, remain within the constraint ceiling, and acknowledge every active
+escalation ID.
 
 The local runner writes one S14 JSON contract plus bilingual One-Page, Full
 Report, Evidence Appendix, and Validation Report Markdown files. These files

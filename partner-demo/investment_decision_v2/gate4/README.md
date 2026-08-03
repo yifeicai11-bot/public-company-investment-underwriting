@@ -150,8 +150,9 @@ Gate 3 identity did not change during the run, and returns `ELIGIBLE`,
 `ELIGIBLE_WITH_ESCALATION`, `REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or
 `NOT_EVALUATED`. The separately owned Partner decision may be `PENDING`,
 `APPROVED`, `MODIFIED`, `REJECTED`, or `DEFERRED`. An approval or modification
-must bind to the current deterministic assessment hash, stay within the total
-issuer constraint ceiling, and acknowledge every active escalation.
+must stay within the total issuer constraint ceiling and acknowledge every
+active escalation. Every non-pending decision, including rejection or
+deferral, must bind to the current deterministic assessment hash.
 
 The same S14 contract renders four bilingual local Markdown files: One-Page,
 Full Report, Evidence Appendix, and Validation Report. The renderer does not

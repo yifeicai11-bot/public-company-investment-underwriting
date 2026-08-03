@@ -814,7 +814,7 @@
     "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
     "report_id": "RPT-D12C3A257792FC"
   },
-  "generated_at": "2026-08-03T04:20:28Z",
+  "generated_at": "2026-08-03T06:00:53Z",
   "input_mode": "FULL_HOLDINGS",
   "local_private_output_only": false,
   "next_action_en": "The designated Partner should review the assessment and record a dated decision locally.",
@@ -942,8 +942,8 @@
         "evidence_ids": [
           "G4-EV-S13"
         ],
-        "message_en": "The final ceiling and binding constraints are reproducible from required S13 rows.",
-        "message_zh": "最终上限和约束项可由必要的 S13 行复算。",
+        "message_en": "The constraint IDs, formulas, incremental and total ceilings, and binding rows are reproducible from S13.",
+        "message_zh": "约束编号、公式、新增及总上限和 binding 行均可由 S13 复算。",
         "severity": "INFO",
         "status": "PASS"
       },

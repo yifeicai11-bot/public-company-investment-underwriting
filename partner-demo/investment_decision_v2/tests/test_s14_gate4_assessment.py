@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
@@ -43,12 +44,16 @@ for path in (SCRIPT_DIR, TEST_DIR):
 
 from gate4_assessment_engine import (  # noqa: E402
     build_gate4_assessment,
+    build_partner_decision,
     s13_result_hash,
     validate_assessment_output,
 )
 from gate4_private_contract import read_mapping  # noqa: E402
 from gate4_reports import html_reports, markdown_reports  # noqa: E402
-from run_gate4_assessment import run_gate4_assessment  # noqa: E402
+from run_gate4_assessment import (  # noqa: E402
+    _gate3_identity_matches_current,
+    run_gate4_assessment,
+)
 from run_gate4_constraint_engine import run_gate4_constraint_engine  # noqa: E402
 import test_s13_portfolio_constraint_engine as s13_test_module  # noqa: E402
 
@@ -196,6 +201,166 @@ class S14Gate4AssessmentTests(unittest.TestCase):
         later["gate3_recheck"]["status"] = "BLOCKED"
         self.assertNotEqual(s13_result_hash(first), s13_result_hash(later))
 
+    def test_constraint_integrity_tampering_is_a_hard_stop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = self.copy_workspace(Path(tmp))
+            baseline = self.run_s13(workspace)
+
+            cases = []
+
+            total = copy.deepcopy(baseline)
+            total["maximum_constraint_based_total_position_weight"] = 0.25
+            cases.append(("total", total, "total_issuer_ceiling_not_reproducible"))
+
+            formula = copy.deepcopy(baseline)
+            formula["formula_registry"]["sector"] = "tampered formula"
+            cases.append(("formula", formula, "formula_registry_not_reproducible"))
+
+            duplicate = copy.deepcopy(baseline)
+            duplicate["constraints"].append(copy.deepcopy(duplicate["constraints"][0]))
+            cases.append(("duplicate", duplicate, "constraint_ids_not_unique"))
+
+            binding_flag = copy.deepcopy(baseline)
+            next(
+                row
+                for row in binding_flag["constraints"]
+                if row["constraint_id"] == "sector"
+            )["binding"] = False
+            cases.append(
+                (
+                    "binding_flag",
+                    binding_flag,
+                    "constraint_row_binding_flags_not_reproducible",
+                )
+            )
+
+            binding_value = copy.deepcopy(baseline)
+            binding_value["binding_constraints"][0][
+                "maximum_incremental_position_weight"
+            ] = 0.06
+            cases.append(
+                (
+                    "binding_value",
+                    binding_value,
+                    "binding_constraint_value_invalid:sector",
+                )
+            )
+
+            duplicate_binding = copy.deepcopy(baseline)
+            duplicate_binding["binding_constraints"].append(
+                copy.deepcopy(duplicate_binding["binding_constraints"][0])
+            )
+            cases.append(
+                (
+                    "duplicate_binding",
+                    duplicate_binding,
+                    "binding_constraint_ids_not_unique",
+                )
+            )
+
+            required_status = copy.deepcopy(baseline)
+            next(
+                row
+                for row in required_status["constraints"]
+                if row["constraint_id"] == "target_return"
+            )["status"] = "WARNING"
+            cases.append(
+                (
+                    "required_status",
+                    required_status,
+                    "required_constraint_status_invalid:target_return",
+                )
+            )
+
+            for label, s13_result, expected_issue in cases:
+                with self.subTest(case=label):
+                    result = self.build_from_s13(workspace, s13_result)
+                    integrity_check = next(
+                        row
+                        for row in result["validation"]["checks"]
+                        if row["check_id"] == "S14-CEILING-REPRODUCIBILITY"
+                    )
+                    self.assertEqual(
+                        result["system_portfolio_assessment"]["assessment"],
+                        "NOT_EVALUATED",
+                    )
+                    self.assertEqual(integrity_check["status"], "FAIL")
+                    self.assertIn(expected_issue, integrity_check["message_en"])
+
+    def test_final_private_fingerprint_change_blocks_assessment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = self.copy_workspace(Path(tmp))
+            manifest = workspace / "synthetic_gate4_manifest.json"
+            with patch(
+                "run_gate4_assessment._bundle_fingerprint",
+                side_effect=[
+                    "a" * 64,
+                    "b" * 64,
+                    "a" * 64,
+                    "b" * 64,
+                    "c" * 64,
+                    "b" * 64,
+                ],
+            ):
+                result, _ = run_gate4_assessment(CROX_CONTRACT, manifest)
+
+        self.assertEqual(
+            result["system_portfolio_assessment"]["assessment"],
+            "NOT_EVALUATED",
+        )
+        stability = next(
+            row
+            for row in result["validation"]["checks"]
+            if row["check_id"] == "S14-BUNDLE-STABILITY"
+        )
+        self.assertEqual(stability["status"], "FAIL")
+
+    def test_final_gate3_identity_includes_schema_version(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = self.copy_workspace(Path(tmp))
+            s13 = self.run_s13(workspace)
+            altered = Path(tmp) / "altered_gate3.json"
+            gate3 = json.loads(CROX_CONTRACT.read_text(encoding="utf-8"))
+            gate3["schema_version"] = "999.0.0"
+            altered.write_text(json.dumps(gate3), encoding="utf-8")
+
+            self.assertFalse(_gate3_identity_matches_current(altered, s13))
+
+    def test_rejected_and_deferred_require_current_assessment_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = self.copy_workspace(Path(tmp))
+            first, _ = run_gate4_assessment(
+                CROX_CONTRACT,
+                workspace / "synthetic_gate4_manifest.json",
+            )
+
+        for status in ("REJECTED", "DEFERRED"):
+            with self.subTest(status=status):
+                decision, _ = build_partner_decision(
+                    {
+                        "designated_partner": "Synthetic Partner",
+                        "partner_decision": {
+                            "status": status,
+                            "assessment_hash": None,
+                            "approved_by": "Synthetic Partner",
+                            "approved_at": "2026-07-17T12:00:00Z",
+                            "decision_rationale": "Synthetic negative decision.",
+                            "approved_position_basis": None,
+                            "approved_position_min": None,
+                            "approved_position_max": None,
+                            "acknowledged_escalation_ids": [],
+                        },
+                    },
+                    system_assessment=first["system_portfolio_assessment"],
+                    assessment_hash=first["assessment_hash"],
+                )
+                self.assertEqual(decision["decision"], "PENDING")
+                self.assertEqual(decision["validation_status"], "BLOCKED")
+                self.assertIn(
+                    "ASSESSMENT_HASH_MISMATCH",
+                    decision["blocking_reason_codes"],
+                )
+
     def test_modified_decision_is_a_distinct_valid_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             workspace = self.copy_workspace(Path(tmp))
@@ -316,6 +481,28 @@ class S14Gate4AssessmentTests(unittest.TestCase):
             ]
         )
 
+    def test_non_required_breach_returns_review_required(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = self.copy_workspace(Path(tmp))
+            s13 = self.run_s13(workspace)
+            hedge = next(
+                row
+                for row in s13["constraints"]
+                if row["constraint_id"] == "hedge"
+            )
+            self.assertFalse(hedge["required_for_ceiling"])
+            hedge["status"] = "BREACH"
+            result = self.build_from_s13(workspace, s13)
+
+        self.assertEqual(
+            result["system_portfolio_assessment"]["assessment"],
+            "REVIEW_REQUIRED",
+        )
+        self.assertIn(
+            "hedge",
+            result["system_portfolio_assessment"]["review_ids"],
+        )
+
     def test_required_breach_returns_not_eligible(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             workspace = self.copy_workspace(Path(tmp))
@@ -366,6 +553,37 @@ class S14Gate4AssessmentTests(unittest.TestCase):
                 "maximum_constraint_ceiling"
             ]["incremental_weight"]
         )
+
+    def test_all_private_input_modes_return_controlled_s14_states(self) -> None:
+        expected = {
+            "synthetic_exposure_only_manifest.json": (
+                "EXPOSURE_ONLY",
+                "NOT_EVALUATED",
+            ),
+            "synthetic_aggregated_portfolio_manifest.json": (
+                "AGGREGATED_PORTFOLIO",
+                "ELIGIBLE_WITH_ESCALATION",
+            ),
+            "synthetic_gate4_manifest.json": (
+                "FULL_HOLDINGS",
+                "ELIGIBLE_WITH_ESCALATION",
+            ),
+        }
+        for manifest_name, (input_mode, assessment) in expected.items():
+            with self.subTest(manifest=manifest_name), tempfile.TemporaryDirectory() as tmp:
+                workspace = self.copy_workspace(Path(tmp))
+                result, _ = run_gate4_assessment(
+                    CROX_CONTRACT,
+                    workspace / manifest_name,
+                )
+            self.assertEqual(result["input_mode"], input_mode)
+            self.assertEqual(
+                result["system_portfolio_assessment"]["assessment"],
+                assessment,
+            )
+            self.assertEqual(result["partner_decision"]["decision"], "PENDING")
+            self.assertEqual(result["contract_validation"]["status"], "PASS")
+            self.assertFalse(result["automatic_trade_execution"])
 
     def test_rejected_and_deferred_remain_human_owned(self) -> None:
         for decision in ("REJECTED", "DEFERRED"):

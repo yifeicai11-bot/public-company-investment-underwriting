@@ -1704,13 +1704,14 @@ def _approval_checks(
         )
     elif status in {"REJECTED", "DEFERRED"}:
         decision_valid = (
-            approved_by is not None
+            assessment_hash is not None
+            and approved_by is not None
             and approved_at is not None
             and rationale is not None
             and position_basis is None
             and minimum is None
             and maximum is None
-            and acknowledgements_valid
+            and acknowledgements == []
             and manifest_as_of is not None
             and approved_at.date() <= manifest_as_of
         )
