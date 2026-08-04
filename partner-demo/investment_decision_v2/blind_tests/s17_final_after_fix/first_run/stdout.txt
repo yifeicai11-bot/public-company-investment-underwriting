@@ -1,0 +1,40 @@
+{
+  "pipeline_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "generated_at": "2026-08-03T23:52:34Z",
+  "status": "RESEARCH_INPUT_REQUIRED",
+  "company_query": "MMS",
+  "command": "python underwrite.py analyze MMS --output-root <OUTPUT_ROOT>",
+  "public_only_boundary": "Gate 4 portfolio inputs are not accepted by this entry point.",
+  "contract_path": "mms_maximus_inc/step3/underwriting_output_contract.json",
+  "analyst_input_template": "mms_maximus_inc/step3/analyst_input_template.json",
+  "delivery_dir": "mms_maximus_inc/delivery",
+  "eligibility": {
+    "eligible": false,
+    "data_gate": 1.0,
+    "blockers": [
+      "data_gate=1; Gate 3 required for partner-ready formal delivery"
+    ]
+  },
+  "contract_summary": {
+    "company": {
+      "cik": "0001032220",
+      "name": "MAXIMUS, INC.",
+      "ticker": "MMS",
+      "exchange": "NYSE"
+    },
+    "report_id": "RPT-156A46ECB6C0F2",
+    "contract_hash": "247cc4f693ef6f919c61049e3d7187c8ab124c46038bb3b1b5c0346618a919a0",
+    "schema_version": "5.1.0",
+    "data_gate": 1,
+    "decision_confidence": "Low",
+    "current_action": "Underwriting In Progress",
+    "hard_stop_count": 0,
+    "warning_count": 27,
+    "contract_validation": "PASS"
+  },
+  "render_manifest": null,
+  "validation_report": null,
+  "environment_status": "PASS",
+  "manifest_path": "mms_maximus_inc/delivery/pipeline_manifest.json"
+}
