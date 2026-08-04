@@ -1,0 +1,30 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 24,
+  "artifacts": {
+    "builder_output/rpm_rpm_international_inc_de/data/data_evidence_pack.json": "102d91da3802a49a726077d06637b81676cbef092ec8577359d503c4e745c6c2",
+    "builder_output/rpm_rpm_international_inc_de/data/normalized_data.csv": "bd795452752be9942ed98b2c667f452e7b45b962d97c1eb4733b68740f423c97",
+    "builder_output/rpm_rpm_international_inc_de/data/normalized_data.json": "102d91da3802a49a726077d06637b81676cbef092ec8577359d503c4e745c6c2",
+    "builder_output/rpm_rpm_international_inc_de/delivery/pipeline_diagnostic.json": "c7e467bd983f8f9f811309ce80e8c5b38559be86195f1aaf76c6d62555396c78",
+    "builder_output/rpm_rpm_international_inc_de/delivery/pipeline_manifest.json": "ae9e3a5f6c13a615d1310cb29b660669326f4b43989d1042ca35e09cd74eb9f4",
+    "builder_output/rpm_rpm_international_inc_de/investment_data_pack.md": "a913978c6df0d02bdc395deb5f3c9aceb3c52341f428c9431707fb5a46e8c40b",
+    "builder_output/rpm_rpm_international_inc_de/step3/analyst_input_template.json": "14cc477c9ce5a263e8eeca1f26ee1ff47827e8c20a3a5fb88f969f882e4b2c93",
+    "builder_output/rpm_rpm_international_inc_de/step3/committee_snapshot.csv": "0597f727ab99e8b6ecb52a6629d702f72473f9c14b03ea8329c1191d94ebdfef",
+    "builder_output/rpm_rpm_international_inc_de/step3/investment_layer.json": "45cd145a7ae7a47cbd976df5fd0c33d84cda4ec65f61fe5d3a32d50f04da591e",
+    "builder_output/rpm_rpm_international_inc_de/step3/investment_layer.md": "6a82d85b7f643ae4127d0b23ddcea0d70826de16b4ad218c0aff0b7ea46ac024",
+    "builder_output/rpm_rpm_international_inc_de/step3/market_expectations.csv": "f68653e137b9fddc0b357e64e8d5ac0904846e402cfcca244de38bf788831d5c",
+    "builder_output/rpm_rpm_international_inc_de/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/rpm_rpm_international_inc_de/step3/partner_overlay_template.md": "822453dc5eb97a78069c65f15162d6384cd0b8d445e25d162d9c5398a25c9e83",
+    "builder_output/rpm_rpm_international_inc_de/step3/public_data_drivers.csv": "8cdf63561b9b37910ebb163b00ab92fcc8297497ff5e3efe9c3a4cc8beac920c",
+    "builder_output/rpm_rpm_international_inc_de/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/rpm_rpm_international_inc_de/step3/step3_data.json": "45cd145a7ae7a47cbd976df5fd0c33d84cda4ec65f61fe5d3a32d50f04da591e",
+    "builder_output/rpm_rpm_international_inc_de/step3/step3_validation_report.md": "8acc5cfcff1a3c7bbbb7bd7811e50d51f29483402d2ec093e655deed0d9004d1",
+    "builder_output/rpm_rpm_international_inc_de/step3/underwriting_output_contract.json": "45cd145a7ae7a47cbd976df5fd0c33d84cda4ec65f61fe5d3a32d50f04da591e",
+    "builder_output/rpm_rpm_international_inc_de/step3/valuation_metrics.csv": "69bc7cea5175697a916d1150e227bbef8eb05a324a56614968f87c93f368652e",
+    "builder_output/rpm_rpm_international_inc_de/validation/validation_report.md": "1c205a0cbde9a1d1b566460c24eee683e77beea569baad7fb6110fcded7f2b5c",
+    "execution_context.json": "ee5aa0b8ffeb1e7f73086834a95258fc22b44476fdbf02f698a37bfa1cf59153",
+    "first_run_diagnostic.json": "87ca670b1f8e2d362103c35d0d8ef133fff31702609fdb936be0d3fb0325cebe",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "0eca81a39559d900477f06cdceab5d14001f6ddb92751db69f990a17adb99516"
+  }
+}

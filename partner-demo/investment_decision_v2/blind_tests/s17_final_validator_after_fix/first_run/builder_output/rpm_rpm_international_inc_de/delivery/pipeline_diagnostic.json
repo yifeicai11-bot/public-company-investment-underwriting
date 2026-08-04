@@ -1,0 +1,15 @@
+{
+  "status": "FORMAL_DELIVERY_BLOCKED",
+  "reason": "The shared contract is preserved, but partner-ready reports require Gate 3 and passing validation.",
+  "reason_zh": "共享 contract 已保存，但正式 Partner 报告必须达到 Gate 3 并通过验证。",
+  "eligibility": {
+    "eligible": false,
+    "data_gate": 1.0,
+    "blockers": [
+      "contract_validation=FAIL",
+      "data_gate=1; Gate 3 required for partner-ready formal delivery"
+    ]
+  },
+  "analyst_input_template": "rpm_rpm_international_inc_de/step3/analyst_input_template.json",
+  "next_command": "python underwrite.py analyze RPM --output-root <OUTPUT_ROOT> --research-input <COMPLETED_PUBLIC_RESEARCH_INPUT.json>"
+}

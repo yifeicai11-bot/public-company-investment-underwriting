@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_manual_held_out_adjudication",
+  "adjudicated_at": "2026-08-04T04:00:00Z",
+  "attempt": "FINAL_VALIDATOR_AFTER_FIX",
+  "ticker": "RPM",
+  "status": "S17_SHARED_FIX_REQUIRED",
+  "automatic_result_superseded": "DATA_VALIDATION_BLOCKED",
+  "findings": [
+    {
+      "code": "ANNUAL_FALLBACK_SOURCE_METADATA_LOSS",
+      "scope": "shared_investment_analysis_engine",
+      "description": "Annual fallback and missing valuation-basis evidence did not consistently retain a filing publication date, a stable missing-data locator, and an as-of date.",
+      "ticker_specific_patch": false
+    },
+    {
+      "code": "STALE_INTERIM_PREFERRED_OVER_NEWER_ANNUAL",
+      "scope": "shared_data_and_evidence_engine",
+      "description": "The shared filing selector mechanically preferred the latest 10-Q even when a later-period 10-K had already been filed, causing the current-state registry and primary cash-flow basis to remain anchored to a stale interim period.",
+      "ticker_specific_patch": false
+    }
+  ],
+  "primary_sources": [
+    {
+      "form": "10-Q",
+      "period_end": "2026-02-28",
+      "filed": "2026-04-08",
+      "accession": "0001193125-26-147191",
+      "url": "https://www.sec.gov/Archives/edgar/data/110621/000119312526147191/rpm-20260228.htm"
+    },
+    {
+      "form": "10-K",
+      "period_end": "2026-05-31",
+      "filed": "2026-07-22",
+      "accession": "0001193125-26-312142",
+      "url": "https://www.sec.gov/Archives/edgar/data/110621/000119312526312142/rpm-20260531.htm"
+    }
+  ],
+  "first_run_observation": {
+    "pipeline_status": "DATA_VALIDATION_BLOCKED",
+    "contract_validation": "FAIL",
+    "data_gate": 1,
+    "selected_current_financial_statement_date": "2026-02-28",
+    "selected_current_filing_date": "2026-04-08",
+    "available_newer_annual_period": "2026-05-31",
+    "available_newer_annual_filing_date": "2026-07-22",
+    "selected_primary_cash_flow_basis": "YTD through 2026-02-28"
+  },
+  "required_shared_remediation": [
+    "Select the current financial filing by the latest reporting period, with filing date and accession used only as deterministic tie-breakers.",
+    "When the selected current filing is a 10-K, use annual cash-flow and capex metrics as the primary current-period basis and do not label stale interim metrics as current.",
+    "Anchor subsequent-event review after the selected current filing date.",
+    "Preserve publication date, as-of date, source hierarchy, and an explicit locator for annual fallback and missing valuation evidence.",
+    "Add shared regression tests for an annual filing that is newer than the latest available interim filing.",
+    "After the shared fix, preserve an RPM post-fix run and select a completely new issuer for final S17 acceptance."
+  ],
+  "first_run_artifacts_modified": false,
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}
