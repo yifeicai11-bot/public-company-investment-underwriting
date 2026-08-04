@@ -1,0 +1,48 @@
+{
+  "manifest_schema_version": "1.0.0",
+  "release": "v1.1.0",
+  "release_date": "2026-08-04",
+  "status": "FINAL_RELEASE_ACCEPTED",
+  "base_release_candidate": "v1.1.0-rc.1",
+  "shared_code_freeze_commit": "a3bf4c65082e7564a09a523a914f66af84c47ac1",
+  "final_held_out_manifest_commit": "1fa4f3d35224782224b3f7dcbf750c4a7ce9716f",
+  "supported_python_versions": [
+    "3.11",
+    "3.12"
+  ],
+  "dependency_lock": "requirements.lock",
+  "entry_point": "underwrite.py",
+  "s17_status": "ACCEPTED",
+  "s17_evidence": {
+    "first_post_freeze_issuer": "RPM",
+    "first_post_freeze_result": "SHARED_FIX_REQUIRED",
+    "shared_fix": "facility amount parser numeric-boundary and lineage hardening",
+    "shared_fix_validation": "SHARED_FIX_VALIDATED_SECOND_HELD_OUT_REQUIRED",
+    "final_held_out_issuer": "TNL",
+    "final_held_out_result": "S17_HELD_OUT_ACCEPTED",
+    "rpm_adjudication": "partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix_live_after_facility_parser_fix_adjudication.json",
+    "tnl_manifest": "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/manifest.json",
+    "tnl_acceptance": "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/s17_acceptance_result.json"
+  },
+  "final_validation": {
+    "shared_unit_tests": 404,
+    "shared_unit_test_failures": 0,
+    "cross_industry_regression": "PASS",
+    "s12_valuation_acceptance": "PASS",
+    "friday_v1_baseline_pdf_pixel_checks": 82,
+    "friday_v1_baseline_pdf_pixel_failures": 0,
+    "gate4_synthetic_delivery": "PASS",
+    "privacy_scan": "PASS",
+    "skill_structure": "PASS",
+    "tnl_contract_validation": "PASS",
+    "tnl_data_gate": 1,
+    "tnl_hard_stops": 0
+  },
+  "release_boundaries": {
+    "supported_core": "SEC-reporting, US GAAP, non-financial public companies",
+    "partner_ready_reports_require_gate_3": true,
+    "portfolio_overlay_requires_private_gate_4_inputs": true,
+    "automatic_investment_approval": false,
+    "automatic_trade_execution": false
+  }
+}

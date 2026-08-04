@@ -1,6 +1,6 @@
-# Migration to v1.1.0-rc.1
+# Migration to v1.1.0
 
-This release candidate adds a supported delivery interface around the existing shared engines. It does not alter the frozen Friday V1 tag.
+This release adds a supported delivery interface around the existing shared engines. It does not alter the frozen Friday V1 tag. The final version also includes S17 true held-out acceptance and the shared facility-parser correction identified during that process.
 
 ## Recommended command change
 

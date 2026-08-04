@@ -1,0 +1,35 @@
+{
+  "started_at": "2026-08-04T08:48:54Z",
+  "python_version": "3.12.13",
+  "python_executable": "<PYTHON_EXECUTABLE>",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "timezone": [
+    "HKT",
+    "HKT"
+  ],
+  "current_commit": "1fa4f3d35224782224b3f7dcbf750c4a7ce9716f",
+  "pre_run_commit": "a3bf4c65082e7564a09a523a914f66af84c47ac1",
+  "selection_integrity": {
+    "status": "PASS",
+    "pre_run_commit": "a3bf4c65082e7564a09a523a914f66af84c47ac1",
+    "selected_ticker": "TNL",
+    "selection_reproduced": true,
+    "stored_blob_hashes_reproduced": true,
+    "shared_logic_unchanged_before_first_run": true,
+    "ticker_absent_from_pre_run_shared_logic": true
+  },
+  "network_scope": "PUBLIC_DATA_ONLY",
+  "research_input": null,
+  "command": [
+    "<PYTHON_EXECUTABLE>",
+    "underwrite.py",
+    "analyze",
+    "TNL",
+    "--output-root",
+    "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/first_run/builder_output"
+  ],
+  "allowed_return_codes": [
+    0,
+    3
+  ]
+}

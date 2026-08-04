@@ -1,0 +1,2 @@
+name,probability,metric,metric_per_share,growth_assumption,exit_multiple_factor,exit_multiple,implied_price,price_change_vs_current,evidence_type,assumption_status,confidence,key_driver,falsification_trigger,assumption_sources,probability_rationale,notes,evidence_ids,formula
+blocked,,,,,,,,,,,,,,,,blocked_normalized_fcf_not_validated,,

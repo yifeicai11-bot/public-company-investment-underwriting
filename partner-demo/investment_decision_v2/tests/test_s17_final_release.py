@@ -17,6 +17,7 @@ TEST_DIR = Path(__file__).resolve().parent
 INVESTMENT_ROOT = TEST_DIR.parent
 SCRIPT_DIR = INVESTMENT_ROOT / "scripts"
 REPO_ROOT = INVESTMENT_ROOT.parents[1]
+ROOT_SCRIPT_DIR = REPO_ROOT / "scripts"
 SCHEMA_PATH = INVESTMENT_ROOT / "blind_tests" / "blind_test_manifest.schema.json"
 CROX_CONTRACT = (
     INVESTMENT_ROOT
@@ -25,8 +26,9 @@ CROX_CONTRACT = (
     / "step3"
     / "underwriting_output_contract.json"
 )
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
+for path in (SCRIPT_DIR, ROOT_SCRIPT_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 from prepare_s17_held_out_manifest import (  # noqa: E402
     EXCLUDED_PRIOR_ISSUERS,
@@ -40,6 +42,7 @@ from run_blind_company_forward_test import (  # noqa: E402
     summarize_first_run,
 )
 from validate_s17_held_out_run import contract_boundary_errors  # noqa: E402
+from validate_final_release import validate_final_release  # noqa: E402
 
 
 def with_validated_capex_control(contract: dict[str, object]) -> dict[str, object]:
@@ -199,6 +202,12 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         secondary = INVESTMENT_ROOT / "blind_tests" / "s17_secondary"
         self.assertTrue((secondary / "manifest.json").is_file())
         self.assertTrue((secondary / "first_run" / "artifact_hashes.json").is_file())
+
+    def test_v1_1_0_final_release_evidence_passes(self) -> None:
+        result = validate_final_release(REPO_ROOT)
+        self.assertEqual(result["status"], "PASS", result)
+        self.assertEqual(result["failure_count"], 0)
+        self.assertEqual(result["final_held_out_status"], "S17_HELD_OUT_ACCEPTED")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 
 An auditable, bilingual public-company issuer-underwriting skill and research-support engine. / 一套可审计、可复用、支持中英文输出的上市公司基本面与投资研究框架。
 
-- **Release:** `v1.1.0-rc.1` S16 candidate; S17 final acceptance pending
+- **Release:** `v1.1.0` final; S17 true held-out acceptance completed
 - **Current scope:** SEC-reporting, US GAAP, non-financial public companies
 - **Positioning:** issuer-level research and IC pre-read support, not an automated trading system
 
@@ -347,7 +347,7 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 
 ## Current Validation / 当前验证
 
-- 374 shared accounting, evidence, market-data, gate, scenario, valuation,
+- 404 shared accounting, evidence, market-data, gate, scenario, valuation,
   rendering, Gate 4, monitoring, cross-industry, and privacy-boundary tests
   passed locally.
 - Six active public-only regression cases cover consumer brands, technology hardware, food distribution, subscription software, automotive-parts retail, and asset-heavy transportation.
@@ -356,6 +356,8 @@ python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
 - AutoZone: 36 independent delivery checks passed; 0 failures; 0 hard stops.
 - Both One-Page PDFs are one A4 page; both Full Reports are 11 A4 pages and were visually reviewed after page rendering.
 - The S14 synthetic package contains a one-page summary, full report, evidence appendix, and validation report; hashes, A4 pages, bilingual text, controlled position language, and no-trade controls pass the delivery validator.
+- S17 preserved the RPM facility-parser finding, validated the shared fix in a new live run, and then accepted TNL as a completely new held-out issuer without ticker-specific logic. TNL correctly remained at Gate 1 with unsupported valuation and portfolio outputs suppressed.
+- Final PDF QA regenerated the frozen CROX/AZO package and passed 82 baseline, page, and pixel checks with no failures.
 
 ## Boundaries / 使用边界
 
@@ -374,7 +376,8 @@ This project is research software and an analytical demonstration. It is not inv
 ## Release Documentation / 发布文档
 
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [Migration to v1.1.0-rc.1](docs/MIGRATION.md)
+- [Migration to v1.1.0](docs/MIGRATION.md)
 - [Private Data Boundary](docs/PRIVATE_DATA.md)
 - [Changelog](CHANGELOG.md)
+- [Final Release Notes](releases/v1.1.0/RELEASE_NOTES.md)
 - [Release Candidate Notes](release-candidates/v1.1.0-rc.1/RELEASE_NOTES.md)

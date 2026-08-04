@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_completion",
+  "phase": "F",
+  "session": "S17",
+  "completed_at": "2026-08-04T09:05:08Z",
+  "status": "COMPLETE",
+  "release": "v1.1.0",
+  "shared_code_freeze_commit": "a3bf4c65082e7564a09a523a914f66af84c47ac1",
+  "first_live_revalidation": {
+    "ticker": "RPM",
+    "initial_result": "SHARED_FIX_REQUIRED",
+    "root_cause": "The shared facility regex captured a decimal suffix from a total-liquidity sentence.",
+    "fix_scope": "shared_data_engine",
+    "post_fix_result": "SHARED_FIX_VALIDATED_SECOND_HELD_OUT_REQUIRED",
+    "workflow_run_id": 30892611663,
+    "artifact_id": 8885670675
+  },
+  "final_held_out": {
+    "ticker": "TNL",
+    "industry": "Hotels & Motels",
+    "selection_method": "SHA256_MODULO_PREDECLARED_POOL",
+    "manifest_commit": "1fa4f3d35224782224b3f7dcbf750c4a7ce9716f",
+    "status": "S17_HELD_OUT_ACCEPTED",
+    "data_gate": 1,
+    "contract_validation": "PASS",
+    "hard_stops": 0,
+    "preserved_artifacts": 24,
+    "ticker_specific_fix": false
+  },
+  "acceptance": {
+    "shared_tests": 404,
+    "shared_test_failures": 0,
+    "cross_industry_regression": "PASS",
+    "s12_valuation_acceptance": "PASS",
+    "gate4_synthetic_delivery": "PASS",
+    "frozen_pdf_pixel_checks": 82,
+    "frozen_pdf_pixel_failures": 0,
+    "privacy_scan": "PASS",
+    "skill_structure": "PASS",
+    "final_release_validator": "PASS"
+  },
+  "boundaries": [
+    "The final held-out acceptance validates safe generic behavior; it is not an investment approval.",
+    "TNL remained at Gate 1 and formal valuation, expected-return, and portfolio outputs were suppressed.",
+    "Portfolio sizing and action require private Gate 4 inputs and human approval.",
+    "The system never automatically executes a trade."
+  ]
+}

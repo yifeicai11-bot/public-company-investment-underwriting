@@ -1,0 +1,30 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 24,
+  "artifacts": {
+    "builder_output/tnl_travel_leisure_co/data/data_evidence_pack.json": "b8519a8fb5fee8457cc327cafb63d141b068e47169de705a7cd6a8d98f725e13",
+    "builder_output/tnl_travel_leisure_co/data/normalized_data.csv": "b9e12d65e3903f55f6f2347da01e6c6e5975b90a57281e51f9380f5cf23b6177",
+    "builder_output/tnl_travel_leisure_co/data/normalized_data.json": "b8519a8fb5fee8457cc327cafb63d141b068e47169de705a7cd6a8d98f725e13",
+    "builder_output/tnl_travel_leisure_co/delivery/pipeline_diagnostic.json": "808934809e32df3502dc18f72e31921c67f550053297fe2cbb57b7d1cf7596a0",
+    "builder_output/tnl_travel_leisure_co/delivery/pipeline_manifest.json": "aac94ab6ffa86264b29c962b23df4a7ce441f4918ec38077fa168e1d25119e64",
+    "builder_output/tnl_travel_leisure_co/investment_data_pack.md": "48e2f0bd1fe860d7af5cc085a7e7ccccbde2c592c197346d343b51f67dbf7f9a",
+    "builder_output/tnl_travel_leisure_co/step3/analyst_input_template.json": "c9b1abd1c8b8bc9427d3c7b9f23521cc0788c0324ff66bb001baf67bcf019c3e",
+    "builder_output/tnl_travel_leisure_co/step3/committee_snapshot.csv": "0597f727ab99e8b6ecb52a6629d702f72473f9c14b03ea8329c1191d94ebdfef",
+    "builder_output/tnl_travel_leisure_co/step3/investment_layer.json": "bd59f83e895fd1ff0d4e24bdf82eaeb20f0078da18f190c983bd09d80e845af4",
+    "builder_output/tnl_travel_leisure_co/step3/investment_layer.md": "661f0bc3b97418d5f1038292354af4a63e906e6851070ac01e629a289c3b2abd",
+    "builder_output/tnl_travel_leisure_co/step3/market_expectations.csv": "eec1f38d932b72426ea27f8c19e2e8e41a797c545e588eb9d877090f717d1a11",
+    "builder_output/tnl_travel_leisure_co/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/tnl_travel_leisure_co/step3/partner_overlay_template.md": "2fe4fda1d8410204bd90156d61dceead07bb8b72da9266d6b2ea3bd0a19f14b9",
+    "builder_output/tnl_travel_leisure_co/step3/public_data_drivers.csv": "db989f91ffe1ed698afe6a9de2c67bb7a156f9f80310a2b97569d1ac4ae26a74",
+    "builder_output/tnl_travel_leisure_co/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/tnl_travel_leisure_co/step3/step3_data.json": "bd59f83e895fd1ff0d4e24bdf82eaeb20f0078da18f190c983bd09d80e845af4",
+    "builder_output/tnl_travel_leisure_co/step3/step3_validation_report.md": "fa69d91a244ca039b90af9126384c054a061d484315343ae2271cc62b5117dbd",
+    "builder_output/tnl_travel_leisure_co/step3/underwriting_output_contract.json": "bd59f83e895fd1ff0d4e24bdf82eaeb20f0078da18f190c983bd09d80e845af4",
+    "builder_output/tnl_travel_leisure_co/step3/valuation_metrics.csv": "7a84374446825fafadb41ee0c2ca61a75b991e2f26f5bb44f1f295a7c048d00c",
+    "builder_output/tnl_travel_leisure_co/validation/validation_report.md": "1a522066434e439f7dd2194c6ec2d0865dfe6e7e00f8e62851c7408f6922d33b",
+    "execution_context.json": "a88991be3d6c791b513cceccf3e0460a4af09987617cc9227cb23d9615914b56",
+    "first_run_diagnostic.json": "70b4adf8c9b8f659f1a0c5019e03794d6d2b05bfb0c937c0a2069070111f0fdb",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "096a0c8a2d4612fe90c8cb0b76302fb9017ea962168a1633e8c2fc000c9f4422"
+  }
+}

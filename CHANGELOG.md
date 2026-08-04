@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.1.0 - 2026-08-04
+
+Final release after S17 true held-out acceptance.
+
+### Validated
+
+- Preserved the first live post-freeze RPM result and its shared facility-parser defect without overwriting the evidence.
+- Corrected numeric-boundary handling in the shared facility parser and added cross-company regression coverage.
+- Revalidated RPM through GitHub Actions with current SEC filing data and privacy-safe repository-secret handling.
+- Selected TNL through the frozen deterministic candidate pool after the shared fix; preserved and accepted its first run without replacement or ticker-specific code.
+- Passed 404 shared tests, cross-industry and S12 valuation acceptance, Gate 4 synthetic delivery, privacy and skill checks, plus 82 frozen PDF and pixel checks.
+
+### Boundaries
+
+- A valid Gate 1 held-out result demonstrates safe data handling, not a complete investment recommendation.
+- Formal public-data reports still require Gate 3. Portfolio sizing and action still require private Gate 4 inputs and human approval.
+- The system does not automatically approve investments or execute trades.
+
 ## v1.1.0-rc.1 - 2026-08-03
 
 S16 release candidate for usability and delivery hardening.
