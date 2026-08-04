@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_live_post_fix_adjudication",
+  "adjudicated_at": "2026-08-04T08:43:49Z",
+  "attempt": "FINAL_VALIDATOR_AFTER_SHARED_FACILITY_FIX",
+  "ticker": "RPM",
+  "workflow_run_id": 30892611663,
+  "workflow_run_number": 4,
+  "workflow_sha": "670417a89db946dc4c79051988f7e747c0566ab2",
+  "artifact_id": 8885670675,
+  "artifact_name": "rpm-s17-post-fix-30892611663",
+  "artifact_sha256": "9742bef6cc5c926a279112f9ae788841fe58a2adc7c4c23cd1c12987bfce770f",
+  "artifact_directory": "post_fix_live_after_facility_parser_fix",
+  "immutable_artifact_verification": {
+    "status": "PASS",
+    "hash_method": "SHA256",
+    "artifact_count": 24,
+    "file_set_unchanged": true,
+    "artifact_hashes_unchanged": true
+  },
+  "pipeline_status": "RESEARCH_INPUT_REQUIRED",
+  "runner_status": "POST_FIX_COMPLETED",
+  "return_code": 3,
+  "contract_validation_status": "PASS",
+  "data_gate": 1,
+  "hard_stop_count": 0,
+  "warning_count": 25,
+  "decision_confidence": "Low",
+  "status": "SHARED_FIX_VALIDATED_SECOND_HELD_OUT_REQUIRED",
+  "financial_period_validation": {
+    "selected_filing": "10-K",
+    "financial_period_end": "2026-05-31",
+    "filing_date": "2026-07-22",
+    "accession": "0001193125-26-312142",
+    "fiscal_year_start": "2025-06-01",
+    "duration_days": 365,
+    "calendar_basis": "NON_CALENDAR_FISCAL_YEAR"
+  },
+  "reconciled_metrics": {
+    "latest_annual_cfo_usd": 898708000,
+    "latest_annual_cash_capex_usd": 223507000,
+    "latest_annual_fcf_usd": 675201000,
+    "fcf_formula": "latest_annual_cfo - latest_annual_cash_capex",
+    "point_in_time_shares": 127741412,
+    "share_count_date": "2026-07-21"
+  },
+  "facility_parser_validation": {
+    "prior_false_metric": "facility_availability_reported",
+    "prior_false_value_usd": 500000,
+    "prior_false_metric_present_after_fix": false,
+    "misleading_total_liquidity_sentence_promoted_to_facility_availability": false,
+    "liquidity_before_facility_notes_usd": 318388000,
+    "facility_note_status": "PROVISIONAL",
+    "facility_note_treatment": "Excluded from available liquidity until note-level facility review is complete."
+  },
+  "decision_boundary_validation": {
+    "target_price": null,
+    "probability_weighted_expected_return": null,
+    "position_sizing": null,
+    "portfolio_action": "Not Evaluated",
+    "portfolio_overlay": "DISABLED"
+  },
+  "privacy_validation": {
+    "workflow_contact_scan": "PASS",
+    "local_preserved_artifact_scan": "PASS",
+    "sec_user_agent_persisted": false,
+    "contact_email_persisted": false
+  },
+  "accepted_findings": [
+    "The shared facility parser no longer emits the false USD 500,000 facility-availability value from the USD 1,089.5 million total-liquidity sentence.",
+    "Annual CFO, cash capex, and FCF use one 365-day fiscal-year period and reconcile arithmetically.",
+    "The point-in-time share count is dated separately and is not substituted with weighted-average EPS shares.",
+    "Incomplete facility, covenant, lease, valuation, and research inputs remain qualified or suppressed rather than fabricated.",
+    "The contract remains at Gate 1 and does not emit target price, expected return, portfolio action, or position sizing."
+  ],
+  "required_next_actions": [
+    "Freeze the validated shared facility-parser fix and this RPM evidence chain.",
+    "Select and run a completely new held-out issuer under the S17 post-fix protocol.",
+    "Rerun the full regression, PDF QA, privacy scan, and contract validation before final release."
+  ],
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}

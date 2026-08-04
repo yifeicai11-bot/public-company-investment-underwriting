@@ -1,0 +1,6 @@
+indicator,display,value,interpretation,evidence_type,source
+P/FCF,20.3x,20.256594619759767,Trailing reported FCF multiple; it is not a sourced forecast or proof of what the market expects.,CALC,SEC LTM FCF plus Yahoo market price
+P/E,20.7x,20.67952582410494,Trailing reported earnings multiple when positive net income is meaningful; normalization remains separate.,CALC,SEC LTM net income plus Yahoo market price
+EV/Sales,2.1x,2.073939684765286,Trailing revenue multiple observation; it does not establish an appropriate exit multiple.,CALC,SEC revenue/debt/cash plus Yahoo market price
+52-week range position,39.1%,0.3908839694702822,Historical price-range observation only. A high or low position does not establish whether recovery or deterioration is fully priced.,MARKET_PROXY,https://query1.finance.yahoo.com/v8/finance/chart/RPM?range=2y&interval=1d
+12-month relative return vs SPY,-26.5%,-0.2645575504939447,Adjusted-close return on exact common dates 2025-07-31 to 2026-07-31; not a valuation conclusion.,MARKET_PROXY,https://query1.finance.yahoo.com/v8/finance/chart/SPY?range=2y&interval=1d
