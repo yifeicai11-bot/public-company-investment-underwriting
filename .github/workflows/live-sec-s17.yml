@@ -107,3 +107,5 @@ jobs:
         shell: bash
         run: |
           test "${{ steps.rpm.outputs.exit_code || '99' }}" = "0"
+
+# S17 live revalidation trigger: 2026-08-04
