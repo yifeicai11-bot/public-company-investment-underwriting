@@ -1,0 +1,11 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 5,
+  "artifacts": {
+    "builder_output/_diagnostics/environment_diagnostic.json": "37ce4468d98b28ea40bd610cd10ec66471e589fc1e9a75d6188fbb563a718894",
+    "execution_context.json": "b99d60a8a26f64bc4f88e6226fd118280817f504a421786c4aef02da816cf0c9",
+    "post_fix_diagnostic.json": "712ab7566609e91a0837ab0eb322b17a6f1ade6f14002603012464fea2cfc43d",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "114e5d644f3608db7012c644d868e85c63cea4b06fbe640f3c17dba4603d6ce0"
+  }
+}

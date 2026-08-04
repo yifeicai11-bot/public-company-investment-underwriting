@@ -1,0 +1,10 @@
+{
+  "pipeline_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "generated_at": "2026-08-04T04:09:06Z",
+  "status": "BUILD_FAILED",
+  "company_query": "RPM",
+  "error_type": "HTTPError",
+  "error": "HTTP Error 403: Forbidden",
+  "private_values_logged": false
+}

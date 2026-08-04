@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_post_fix_network_adjudication",
+  "adjudicated_at": "2026-08-04T06:10:00Z",
+  "attempt": "FINAL_VALIDATOR_AFTER_FIX_POST_FIX",
+  "ticker": "RPM",
+  "status": "EXTERNAL_SEC_ACCESS_BLOCKED",
+  "analytical_run_completed": false,
+  "analytical_result": "NOT_EVALUATED",
+  "events": [
+    {
+      "directory": "post_fix_environment_blocked",
+      "pipeline_status": "ENVIRONMENT_BLOCKED",
+      "return_code": 2,
+      "reason": "SEC_USER_AGENT was not present after the workspace reconnect.",
+      "contract_generated": false
+    },
+    {
+      "directory": "post_fix_sec_403",
+      "pipeline_status": "BUILD_FAILED",
+      "return_code": 4,
+      "reason": "The official SEC endpoint returned HTTP 403 before the Data and Evidence Layer could run.",
+      "contract_generated": false
+    }
+  ],
+  "official_endpoint": "https://data.sec.gov/submissions/CIK0000110621.json",
+  "network_recovery_checks": {
+    "compliant_identified_user_agent_used": true,
+    "more_than_sec_stated_cooldown_elapsed": true,
+    "official_endpoint_still_returned_http_403": true,
+    "third_party_financial_data_substitution_used": false,
+    "stale_contract_presented_as_post_fix_result": false
+  },
+  "preserved_first_run_integrity": "PASS",
+  "shared_fix_commit": "20b96d45ff6815820700a2f55cc4c317a1426c6a",
+  "required_next_actions": [
+    "Wait until the official SEC JSON endpoint returns HTTP 200 in the execution environment.",
+    "Run the separately preserved RPM post-fix test without overwriting either network diagnostic.",
+    "Verify that the selected current filing is the 2026-05-31 10-K filed 2026-07-22.",
+    "Verify annual revenue, net income, CFO, cash capex, reported FCF, source metadata, and unified contract validation against the official filing.",
+    "Commit the RPM post-fix artifacts, freeze again, and run FINAL_EVIDENCE_AFTER_FIX on a completely new issuer.",
+    "Do not mark S17 complete or publish v1.1.0 before the new held-out issuer passes."
+  ],
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}

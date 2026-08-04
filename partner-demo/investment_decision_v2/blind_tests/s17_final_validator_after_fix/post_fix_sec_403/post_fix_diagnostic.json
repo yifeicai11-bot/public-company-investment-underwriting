@@ -1,0 +1,32 @@
+{
+  "status": "POST_FIX_DIAGNOSTIC_REQUIRED",
+  "return_code": 4,
+  "allowed_return_codes": [
+    0,
+    3
+  ],
+  "timed_out": false,
+  "contract_relative_path": null,
+  "contract_validation_status": "NOT_AVAILABLE",
+  "pipeline_manifest_relative_path": null,
+  "pipeline_status": null,
+  "report_id": null,
+  "contract_hash": null,
+  "supported_universe": null,
+  "data_gate": null,
+  "research_workflow_status": null,
+  "public_data_investment_view": null,
+  "decision_confidence": null,
+  "validation_issue_count": 0,
+  "hard_stop_count": 0,
+  "warning_count": 0,
+  "execution_errors": [
+    "The public-only command returned an unsupported exit code.",
+    "No underwriting output contract was generated."
+  ],
+  "hard_stops": [],
+  "warnings": [],
+  "validation_issues": [],
+  "first_run_is_investment_approval": false,
+  "completed_at": "2026-08-04T04:09:06Z"
+}

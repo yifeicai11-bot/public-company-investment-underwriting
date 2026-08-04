@@ -1,0 +1,74 @@
+{
+  "pipeline_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "generated_at": "2026-08-04T04:06:39Z",
+  "status": "ENVIRONMENT_BLOCKED",
+  "company_query": "RPM",
+  "environment": {
+    "diagnostic_schema_version": "1.0.0",
+    "release_candidate": "v1.1.0-rc.1",
+    "generated_at": "2026-08-04T04:06:39Z",
+    "repository_root": ".",
+    "mode": "LIVE",
+    "status": "FAIL",
+    "failure_count": 1,
+    "warning_count": 0,
+    "checks": [
+      {
+        "check_id": "repository-layout",
+        "status": "PASS",
+        "detail": "Required repository files are present.",
+        "remediation": ""
+      },
+      {
+        "check_id": "python-version",
+        "status": "PASS",
+        "detail": "3.12.13",
+        "remediation": ""
+      },
+      {
+        "check_id": "dependency-lock",
+        "status": "PASS",
+        "detail": "10 exact package versions in requirements.lock.",
+        "remediation": ""
+      },
+      {
+        "check_id": "dependency-versions",
+        "status": "PASS",
+        "detail": "Installed packages match requirements.lock.",
+        "remediation": ""
+      },
+      {
+        "check_id": "git",
+        "status": "PASS",
+        "detail": "/usr/bin/git",
+        "remediation": ""
+      },
+      {
+        "check_id": "privacy-hook",
+        "status": "PASS",
+        "detail": ".githooks",
+        "remediation": ""
+      },
+      {
+        "check_id": "sec-user-agent",
+        "status": "FAIL",
+        "detail": "SEC_USER_AGENT is not configured.",
+        "remediation": "Set SEC_USER_AGENT=\"Your Name your.email@example.com\" before live ticker retrieval."
+      },
+      {
+        "check_id": "pdf-browser",
+        "status": "PASS",
+        "detail": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "remediation": ""
+      },
+      {
+        "check_id": "output-path",
+        "status": "PASS",
+        "detail": "outputs/",
+        "remediation": ""
+      }
+    ]
+  },
+  "manifest_path": "_diagnostics/environment_diagnostic.json"
+}
