@@ -126,6 +126,7 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         self.assertIn("FINAL_AFTER_FIX", schema["properties"]["attempt"]["enum"])
         self.assertIn("FINAL_RENDERER_AFTER_FIX", schema["properties"]["attempt"]["enum"])
         self.assertIn("FINAL_VALIDATOR_AFTER_FIX", schema["properties"]["attempt"]["enum"])
+        self.assertIn("FINAL_EVIDENCE_AFTER_FIX", schema["properties"]["attempt"]["enum"])
 
     def test_s17_command_uses_unified_entry_and_portable_record(self) -> None:
         manifest = {

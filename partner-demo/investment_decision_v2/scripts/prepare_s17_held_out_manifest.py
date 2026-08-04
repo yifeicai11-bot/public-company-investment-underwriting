@@ -287,6 +287,7 @@ def main() -> int:
             "FINAL_AFTER_FIX",
             "FINAL_RENDERER_AFTER_FIX",
             "FINAL_VALIDATOR_AFTER_FIX",
+            "FINAL_EVIDENCE_AFTER_FIX",
         ),
         default="PRIMARY",
     )

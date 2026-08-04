@@ -355,6 +355,30 @@ def ltm_metric(companyfacts: dict[str, Any], metric: str, latest_q_period: str |
     return build_shared_ltm_metric(companyfacts, metric, latest_q_period, annual_period)
 
 
+def current_interim_period(step2: dict[str, Any]) -> str | None:
+    selected = step2.get("selected_current_filing") or {}
+    if selected:
+        return selected.get("period") if selected.get("form") == "10-Q" else None
+
+    filings = step2.get("filings", {})
+    candidates = [
+        filing
+        for filing in (filings.get("latest_q"), filings.get("latest_k"))
+        if isinstance(filing, dict) and filing.get("period")
+    ]
+    if not candidates:
+        return None
+    inferred = max(
+        candidates,
+        key=lambda filing: (
+            str(filing.get("period", "")),
+            str(filing.get("filed", "")),
+            str(filing.get("accession", "")),
+        ),
+    )
+    return inferred.get("period") if inferred.get("form") == "10-Q" else None
+
+
 def annual_history(companyfacts: dict[str, Any], metric: str, annual_period: str | None, max_points: int = 5) -> dict[str, Any]:
     best_points: list[dict[str, Any]] = []
     best_tag = ""
@@ -510,7 +534,7 @@ def build_valuation(
     filings = step2.get("filings", {})
     latest_q = filings.get("latest_q") or {}
     latest_k = filings.get("latest_k") or {}
-    latest_q_period = latest_q.get("period")
+    latest_q_period = current_interim_period(step2)
     latest_k_period = latest_k.get("period")
 
     rows = [SimpleNamespace(**point) for point in step2.get("data_points", [])]
@@ -616,7 +640,7 @@ def build_public_data_drivers(step2: dict[str, Any], companyfacts: dict[str, Any
     filings = step2.get("filings", {})
     latest_q = filings.get("latest_q") or {}
     latest_k = filings.get("latest_k") or {}
-    latest_q_period = latest_q.get("period")
+    latest_q_period = current_interim_period(step2)
     latest_k_period = latest_k.get("period")
 
     annual = {
@@ -1286,6 +1310,15 @@ def evidence_ids_for(step2: dict[str, Any], *metric_names: str) -> list[str]:
         for row in step2.get("evidence_records", step2.get("data_points", []))
         if row.get("metric_name") in wanted and row.get("evidence_id")
     ]
+
+
+def current_flow_evidence_ids(step2: dict[str, Any], *base_metric_names: str) -> list[str]:
+    metric_names = [
+        f"latest_{period}_{metric}"
+        for metric in base_metric_names
+        for period in ("ytd", "annual")
+    ]
+    return evidence_ids_for(step2, *metric_names)
 
 
 def valid_iso_date(value: Any) -> bool:
@@ -2857,7 +2890,7 @@ def build_key_debates(
             "market_view": "Not Sourced",
             "alternative_view": "Not Formed",
             "market_evidence_ids": [],
-            "alternative_evidence_ids": evidence_ids_for(step2, "latest_ytd_cfo", "latest_ytd_capex", "latest_ytd_fcf"),
+            "alternative_evidence_ids": current_flow_evidence_ids(step2, "cfo", "capex", "fcf"),
             "missing_evidence": "Validated normalized FCF bridge, working-capital normalization, and maintenance capex.",
             "resolution_kpi_or_event": "A reproducible normalized FCF bridge across comparable periods.",
             "decision_impact": "Determines whether trailing FCF can support valuation or only describe historical cash flow.",
@@ -2943,13 +2976,14 @@ def build_issuer_underwriting(
         "earnings_quality": {
             "status": "PRELIMINARY" if valuation.get("ltm_net_income") is not None and valuation.get("ltm_cfo") is not None else "INCOMPLETE",
             "conclusion": "Reported earnings and CFO are period-constructed, but normalized earnings and normalized FCF are not yet validated.",
-            "evidence_ids": evidence_ids_for(step2, "latest_ytd_net_income", "latest_ytd_cfo", "latest_ytd_fcf"),
+            "evidence_ids": current_flow_evidence_ids(step2, "net_income", "cfo", "fcf"),
             "limitations": ["Impairments, acquisitions, stock compensation, restructuring, and working-capital timing require a transparent normalization bridge."],
         },
         "working_capital_and_cash_conversion": {
             "status": "PRELIMINARY" if any(row.get("driver") == "FCF margin" and row.get("value") is not None for row in drivers.get("rows", [])) else "INCOMPLETE",
             "conclusion": "Same-period and average-balance metrics are used where available; trend and business-model interpretation remain incomplete.",
-            "evidence_ids": evidence_ids_for(step2, "dso_avg_ar", "dio_avg_inventory", "dpo_avg_ap", "cash_conversion_cycle", "latest_ytd_fcf"),
+            "evidence_ids": evidence_ids_for(step2, "dso_avg_ar", "dio_avg_inventory", "dpo_avg_ap", "cash_conversion_cycle")
+            + current_flow_evidence_ids(step2, "fcf"),
             "limitations": working_capital_limitations,
         },
         "liquidity_sources_and_uses": {
@@ -2965,9 +2999,9 @@ def build_issuer_underwriting(
             "limitations": ["Compliance does not establish adequate headroom; carrying values do not equal contractual payment schedules."],
         },
         "capital_allocation": {
-            "status": "PRELIMINARY" if evidence_ids_for(step2, "latest_ytd_share_repurchases", "latest_ytd_dividends_paid", "latest_ytd_debt_issuance", "latest_ytd_debt_repayment", "latest_ytd_business_acquisitions") else "INCOMPLETE",
+            "status": "PRELIMINARY" if current_flow_evidence_ids(step2, "share_repurchases", "dividends_paid", "debt_issuance", "debt_repayment", "business_acquisitions") else "INCOMPLETE",
             "conclusion": "Reported financing and investing cash flows are observations; buyback, dividend, acquisition, and deleveraging priorities remain to be reconciled with balance-sheet capacity and management policy.",
-            "evidence_ids": evidence_ids_for(step2, "latest_ytd_share_repurchases", "latest_ytd_dividends_paid", "latest_ytd_debt_issuance", "latest_ytd_debt_repayment", "latest_ytd_business_acquisitions"),
+            "evidence_ids": current_flow_evidence_ids(step2, "share_repurchases", "dividends_paid", "debt_issuance", "debt_repayment", "business_acquisitions"),
             "limitations": ["Authorization is not cash deployment; compare actual uses, debt reduction, acquisitions, dilution, and downside liquidity."],
         },
         "management_guidance_and_subsequent_events": {
@@ -4119,6 +4153,7 @@ def build_analysis_evidence(
     ltm_period_ends: dict[str, str] = {}
     for metric, result in valuation.get("ltm", {}).items():
         component_ids: list[str] = []
+        component_publication_dates: list[str] = []
         for component_name, component in result.get("components", {}).items():
             if not component:
                 continue
@@ -4145,6 +4180,8 @@ def build_analysis_evidence(
                     publication_date=component.get("filed", ""),
                 )
             )
+            if component.get("filed"):
+                component_publication_dates.append(str(component["filed"]))
         result_period_end = (
             result.get("period_end")
             or result.get("components", {}).get("current_ytd", {}).get("end")
@@ -4165,6 +4202,17 @@ def build_analysis_evidence(
         )
         ltm_period_ends[metric] = result_period_end
         evidence_class = "CALC" if result.get("period_type") == "LTM" else "FACT" if result.get("value") is not None else "MISSING"
+        basis_as_of_date = (
+            result_period_end
+            or step2.get("as_of_registry", {}).get("financial_statement_date")
+            or retrieval_date
+        )
+        basis_locator = result.get("method")
+        if not basis_locator or basis_locator == "missing":
+            basis_locator = (
+                f"No compatible {metric} XBRL fact was selected as of "
+                f"{basis_as_of_date}."
+            )
         ltm_ids[metric] = add(
             f"valuation_basis_{metric}",
             result.get("value"),
@@ -4172,14 +4220,31 @@ def build_analysis_evidence(
             currency="USD",
             period_end=result_period_end,
             period_type=result.get("period_type", "missing"),
-            as_of_date=result_period_end,
+            as_of_date=basis_as_of_date,
             measurement_basis=result.get("method", "missing"),
             source_level=1,
-            source_type="calculation_from_primary" if evidence_class == "CALC" else "regulatory_filing",
-            source_name="Shared investment analysis engine",
+            source_type=(
+                "calculation_from_primary"
+                if evidence_class == "CALC"
+                else "regulatory_filing"
+                if evidence_class == "FACT"
+                else "missing_public_data"
+            ),
+            source_name=(
+                "U.S. Securities and Exchange Commission"
+                if evidence_class == "FACT"
+                else "Shared investment analysis engine"
+            ),
             source_url=companyfacts_url,
-            source_locator=result.get("method", "missing"),
-            source_tag="calculation" if evidence_class == "CALC" else "annual_fallback",
+            source_locator=basis_locator,
+            source_tag=(
+                "calculation"
+                if evidence_class == "CALC"
+                else "annual_fallback"
+                if evidence_class == "FACT"
+                else "missing_xbrl_basis"
+            ),
+            publication_date=max(component_publication_dates, default=""),
             evidence_class=evidence_class,
             formula=(
                 result.get("formula")

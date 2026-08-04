@@ -1116,6 +1116,20 @@ def latest_filings(submissions: dict[str, Any]) -> tuple[Filing | None, Filing |
     return latest_q, prior_q, latest_k
 
 
+def select_current_financial_filing(
+    latest_q: Filing | None,
+    latest_k: Filing | None,
+) -> Filing | None:
+    """Select the filing with the latest reported period, then break ties deterministically."""
+
+    candidates = [filing for filing in (latest_q, latest_k) if filing is not None]
+    return max(
+        candidates,
+        key=lambda filing: (filing.period, filing.filed, filing.accession),
+        default=None,
+    )
+
+
 def fact_points(companyfacts: dict[str, Any], tag: str) -> list[dict[str, Any]]:
     item = companyfacts.get("facts", {}).get("us-gaap", {}).get(tag)
     if not item:
@@ -2076,6 +2090,7 @@ CALCULATION_INPUTS: dict[str, tuple[str, ...]] = {
     "available_liquidity_before_facility_notes": ("unrestricted_cash", "short_term_investments"),
     "current_lease_obligations_total": ("finance_lease_current", "operating_lease_current"),
     "latest_ytd_fcf": ("latest_ytd_cfo", "latest_ytd_capex"),
+    "latest_annual_fcf": ("latest_annual_cfo", "latest_annual_capex"),
     "derived_latest_quarter_fcf": ("derived_latest_quarter_cfo", "derived_latest_quarter_capex"),
     "latest_quarter_fcf": ("latest_quarter_cfo", "latest_quarter_capex"),
     "dso_avg_ar": ("accounts_receivable_net", "prior_accounts_receivable_net", "latest_quarter_revenue"),
@@ -2095,6 +2110,7 @@ CALCULATION_FORMULAS: dict[str, str] = {
     "available_liquidity_before_facility_notes": "unrestricted_cash + short_term_investments",
     "current_lease_obligations_total": "finance_lease_current + operating_lease_current",
     "latest_ytd_fcf": "latest_ytd_cfo - latest_ytd_capex",
+    "latest_annual_fcf": "latest_annual_cfo - latest_annual_capex",
     "derived_latest_quarter_fcf": "derived_latest_quarter_cfo - derived_latest_quarter_capex",
     "latest_quarter_fcf": "latest_quarter_cfo - latest_quarter_capex",
     "dso_avg_ar": "average(accounts_receivable_net, prior_accounts_receivable_net) / latest_quarter_revenue * duration_days",
@@ -2356,6 +2372,10 @@ def build_pack_markdown(company: dict[str, Any], filings: dict[str, Filing | Non
     if qtr_fcf is None:
         qtr_fcf = val(m, "latest_quarter_fcf")
     ytd_fcf = val(m, "latest_ytd_fcf")
+    annual_fcf = val(m, "latest_annual_fcf")
+    current_fcf = ytd_fcf if ytd_fcf is not None else annual_fcf
+    current_fcf_label = "YTD" if ytd_fcf is not None else "annual"
+    selected_current = select_current_financial_filing(latest_q, latest_k)
 
     key_lines = [
         "| Metric | Value | Period | Evidence | Decision Use |",
@@ -2372,6 +2392,7 @@ def build_pack_markdown(company: dict[str, Any], filings: dict[str, Filing | Non
         ("current_debt", "Current debt", "12-month funded debt pressure"),
         ("current_lease_obligations_total", "Current lease obligations", "Mandatory uses not captured by current debt"),
         ("latest_ytd_fcf", "YTD FCF", "Cash generation, period-specific"),
+        ("latest_annual_fcf", "Annual FCF", "Cash generation for the selected current annual period"),
         ("derived_latest_quarter_fcf", "Derived latest-quarter FCF", "Same-period cash conversion if derivable"),
         ("dso_avg_ar", "DSO", "Receivables collection pressure"),
         ("dio_avg_inventory", "DIO", "Inventory pressure"),
@@ -2415,6 +2436,7 @@ def build_pack_markdown(company: dict[str, Any], filings: dict[str, Filing | Non
             "- Confidence: Medium if core statements and validation pass; lower where facility, covenant, lease, valuation, or consensus data is missing.",
             f"- Latest quarterly filing: {latest_q.form if latest_q else 'missing'} filed {latest_q.filed if latest_q else 'n/a'}, period {latest_q.period if latest_q else 'n/a'}.",
             f"- Latest annual filing: {latest_k.form if latest_k else 'missing'} filed {latest_k.filed if latest_k else 'n/a'}, period {latest_k.period if latest_k else 'n/a'}.",
+            f"- Selected current filing: {selected_current.form if selected_current else 'missing'} filed {selected_current.filed if selected_current else 'n/a'}, period {selected_current.period if selected_current else 'n/a'}.",
             f"- Validation: {len(failed)} fail, {len(blocked)} blocked, {len(missing)} missing/provisional checks.",
             "",
             "## Core View",
@@ -2422,7 +2444,7 @@ def build_pack_markdown(company: dict[str, Any], filings: dict[str, Filing | Non
             "- The pack can support a preliminary credit/liquidity view only after data validation.",
             f"- Visible liquid resources {liquidity_label} are {fmt_usd(available_liquidity)}." if available_liquidity is not None else "- Visible liquid resources could not be fully calculated from standardized tags.",
             f"- Current lease obligations identified are {fmt_usd(current_lease_uses)}; current debt alone should not be treated as total near-term obligations." if current_lease_uses is not None else "- Current lease obligations are missing or not standardized; near-term obligations need note review.",
-            f"- YTD FCF is {fmt_usd(ytd_fcf)}; latest-quarter FCF is {fmt_usd(qtr_fcf)} where derivable." if (ytd_fcf is not None or qtr_fcf is not None) else "- CFO/FCF is missing or not derivable; cash conversion confidence is low.",
+            f"- Current reported {current_fcf_label} FCF is {fmt_usd(current_fcf)}; latest-quarter FCF is {fmt_usd(qtr_fcf)} where current and derivable." if (current_fcf is not None or qtr_fcf is not None) else "- CFO/FCF is missing or not derivable; cash conversion confidence is low.",
             "- Formal investment action remains blocked until earnings drivers, normalized EBITDA/FCF, consensus, valuation, scenarios, catalysts, and risk/reward are sourced.",
             "",
             "## Key Metrics",
@@ -2538,8 +2560,9 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
     if not latest_q and not latest_k:
         return write_unsupported_diagnostic_pack(company, support_assessment, out_root)
 
-    filing_for_period = latest_q or latest_k
+    filing_for_period = select_current_financial_filing(latest_q, latest_k)
     assert filing_for_period is not None
+    current_is_interim = filing_for_period.form == "10-Q"
 
     rows: list[DataPoint] = []
     validations: list[dict[str, Any]] = []
@@ -2570,6 +2593,25 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             "Apply specialized overlays if the issuer's reporting model changes.",
             category="supported_universe",
         )
+
+    competing_periods = ", ".join(
+        f"{filing.form} period {filing.period}, filed {filing.filed}"
+        for filing in (latest_q, latest_k)
+        if filing is not None
+    )
+    add_validation(
+        validations,
+        "P0-current-financial-filing-selection",
+        "PASS",
+        "Critical",
+        (
+            f"Selected {filing_for_period.form} period {filing_for_period.period}, "
+            f"filed {filing_for_period.filed}; available candidates: {competing_periods}."
+        ),
+        "Current balance-sheet, primary cash-flow, and subsequent-event anchors use the latest reported period rather than a fixed form preference.",
+        "Re-run the selector after each new 10-Q or 10-K and investigate same-period amended filings separately.",
+        category="period_validation",
+    )
 
     # Instant facts for the latest period and the opening balance sheet used by
     # quarter-based working-capital calculations. For Q1, the opening balance
@@ -2646,20 +2688,20 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                 )
 
     # Try HTML AP extraction where standardized AP tag is missing.
-    if "accounts_payable" not in {r.metric_name for r in rows} and latest_q:
-        ap = extract_ap_proxy_from_html(latest_q.url)
+    if "accounts_payable" not in {r.metric_name for r in rows}:
+        ap = extract_ap_proxy_from_html(filing_for_period.url)
         if ap:
             rows.append(
                 manual_dp(
                     "accounts_payable",
                     ap[0],
-                    period_end=latest_q.period,
-                    fiscal_period="latest quarter",
-                    filing_type=latest_q.form,
-                    filing_date=latest_q.filed,
+                    period_end=filing_for_period.period,
+                    fiscal_period="latest selected period",
+                    filing_type=filing_for_period.form,
+                    filing_date=filing_for_period.filed,
                     source_location=f"Inline filing row: {ap[2]}",
                     source_tag=ap[1],
-                    source_url=latest_q.url,
+                    source_url=filing_for_period.url,
                     evidence_type="FACT",
                     reported_or_calculated="reported",
                     confidence="Medium",
@@ -2701,7 +2743,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         ) + "Composite payable/accrual balance is retained as a liquidity fact but excluded from DPO and CCC."
 
     # Flow metrics.
-    if latest_q:
+    if current_is_interim and latest_q:
         for metric, tags in FLOW_TAGS.items():
             quarter_selection: dict[str, Any] | None = None
             ytd_selection: dict[str, Any] | None = None
@@ -2942,7 +2984,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         metric: build_ltm_metric(
             facts,
             metric,
-            latest_q.period if latest_q else None,
+            latest_q.period if current_is_interim and latest_q else None,
             latest_k.period if latest_k else None,
         )
         for metric in ("revenue", "net_income", "cfo", "capex")
@@ -3078,6 +3120,37 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
                 source_tag="calculation",
                 source_url=latest_url,
                 notes="YTD FCF; not standalone quarter and not necessarily normalized maintenance FCF.",
+            )
+        )
+    annual_cfo = val(m, "latest_annual_cfo")
+    annual_capex = val(m, "latest_annual_capex")
+    annual_fcf_basis = compatible_monetary_inputs(
+        m.get("latest_annual_cfo"),
+        m.get("latest_annual_capex"),
+    )
+    if (
+        annual_cfo is not None
+        and annual_capex is not None
+        and annual_fcf_basis["status"] == "PASS"
+    ):
+        annual_cfo_row = m["latest_annual_cfo"]
+        rows.append(
+            manual_dp(
+                "latest_annual_fcf",
+                annual_cfo - annual_capex,
+                unit=annual_fcf_basis["unit"],
+                currency=annual_fcf_basis["currency"],
+                period_start=annual_cfo_row.period_start,
+                period_end=annual_cfo_row.period_end,
+                period_type="annual",
+                duration_days_value=annual_cfo_row.duration_days,
+                fiscal_period=annual_cfo_row.fiscal_period,
+                filing_type=annual_cfo_row.filing_type,
+                filing_date=annual_cfo_row.filing_date,
+                source_location="Annual CFO - annual cash capex",
+                source_tag="calculation",
+                source_url=latest_k.url if latest_k else latest_url,
+                notes="Annual reported FCF; not necessarily normalized maintenance FCF.",
             )
         )
     quarter_fcf_metric = ""
@@ -3623,8 +3696,8 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             issue_class="WARNING",
         )
 
-    primary_capex_metric = "latest_ytd_capex" if latest_q else "latest_annual_capex"
-    primary_fcf_metric = "latest_ytd_fcf" if latest_q else "latest_annual_fcf"
+    primary_capex_metric = "latest_ytd_capex" if current_is_interim else "latest_annual_capex"
+    primary_fcf_metric = "latest_ytd_fcf" if current_is_interim else "latest_annual_fcf"
     primary_capex_control = capex_control_results.get(primary_capex_metric, {})
     if primary_capex_metric in m and primary_capex_control.get("status") == "PASS":
         component_labels = sorted(primary_capex_control.get("components", {}))
@@ -3711,7 +3784,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
         "total_assets",
         "shareholders_equity",
     }
-    if latest_q:
+    if current_is_interim:
         required_selection_names.update(
             {
                 "latest_quarter_revenue",
@@ -3901,9 +3974,13 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
 
     if "latest_ytd_fcf" in m:
         add_validation(validations, "P0-fcf-classification", "PASS", "High", f"YTD FCF tagged as {m['latest_ytd_fcf'].period_type}.", "Stops YTD FCF from being mislabeled as standalone quarter.", "Show period type in memo.")
+    elif "latest_annual_fcf" in m:
+        add_validation(validations, "P0-fcf-classification", "PASS", "High", f"Annual FCF tagged as {m['latest_annual_fcf'].period_type}.", "Stops annual FCF from being mislabeled as YTD or standalone quarter.", "Show period type in memo.")
     if "derived_latest_quarter_fcf" in m or "latest_quarter_fcf" in m:
         row = m.get("derived_latest_quarter_fcf") or m.get("latest_quarter_fcf")
         add_validation(validations, "P0-quarter-fcf-check", "PASS", "High", f"Latest-quarter FCF is tagged as {row.period_type}.", "Supports same-period cash conversion analysis.", "Do not annualize mechanically.")
+    elif not current_is_interim:
+        add_validation(validations, "P0-quarter-fcf-check", "NOT_APPLICABLE", "Medium", "The selected current filing is a 10-K; no stale interim FCF is presented as the current-period cash-flow basis.", "Annual CFO less annual cash capex is the primary reported FCF basis.", "Use a later 10-Q only after its reported period exceeds the current annual period.", issue_class="INFO")
     else:
         add_validation(validations, "P0-quarter-fcf-check", "MISSING", "Medium", "Standalone quarter FCF not derivable from available tags.", "Cash conversion confidence is lower.", "Use YTD view and inspect cash-flow statement.")
 
@@ -4315,6 +4392,7 @@ def build_company_pack(query: str, out_root: Path = DEFAULT_OUT_ROOT) -> Path:
             if key != "point"
         },
         "denominator_control_log": denominator_control_log,
+        "selected_current_filing": selected_filing,
         "filings": {k: asdict(v) if v else None for k, v in {"latest_q": latest_q, "prior_q": prior_q, "latest_k": latest_k}.items()},
         "subsequent_event_filings": events,
         "notes_and_events_assessment": notes_and_events_assessment,

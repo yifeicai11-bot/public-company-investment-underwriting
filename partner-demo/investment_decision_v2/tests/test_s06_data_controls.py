@@ -12,7 +12,10 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from build_public_company_decision_pack import (  # noqa: E402
+    CALCULATION_FORMULAS,
+    CALCULATION_INPUTS,
     DataPoint,
+    Filing,
     build_ltm_metric,
     cash_capex_data_points,
     choose_cash_capex,
@@ -28,6 +31,7 @@ from build_public_company_decision_pack import (  # noqa: E402
     is_quarter_flow,
     is_ytd_flow,
     latest_share_count_fact,
+    select_current_financial_filing,
     unit_profile,
 )
 from build_public_company_investment_layer import (  # noqa: E402
@@ -92,6 +96,34 @@ def monetary_row(name: str, currency: str) -> DataPoint:
 
 
 class S06PeriodContextTests(unittest.TestCase):
+    @staticmethod
+    def filing(form: str, period: str, filed: str, accession: str) -> Filing:
+        return Filing(
+            form=form,
+            filed=filed,
+            period=period,
+            accession=accession,
+            primary_doc=f"{accession}.htm",
+            url=f"https://www.sec.gov/{accession}.htm",
+        )
+
+    def test_newer_annual_period_supersedes_stale_interim_current_state(self) -> None:
+        interim = self.filing("10-Q", "2026-02-28", "2026-04-08", "q3")
+        annual = self.filing("10-K", "2026-05-31", "2026-07-22", "fy")
+        selected = select_current_financial_filing(interim, annual)
+        self.assertEqual(selected, annual)
+
+    def test_newer_interim_period_supersedes_annual_current_state(self) -> None:
+        interim = self.filing("10-Q", "2026-06-30", "2026-08-01", "q2")
+        annual = self.filing("10-K", "2025-12-31", "2026-02-15", "fy")
+        selected = select_current_financial_filing(interim, annual)
+        self.assertEqual(selected, interim)
+
+    def test_same_period_uses_filing_date_and_accession_tiebreakers(self) -> None:
+        earlier = self.filing("10-Q", "2026-03-31", "2026-05-01", "a")
+        later = self.filing("10-K", "2026-03-31", "2026-05-02", "b")
+        self.assertEqual(select_current_financial_filing(earlier, later), later)
+
     def test_standalone_98_day_quarter_is_accepted(self) -> None:
         point = {
             "start": "2026-01-04",
@@ -472,6 +504,16 @@ class S06DenominatorAndMissingTagTests(unittest.TestCase):
 
 
 class S06CashCapexCompositionTests(unittest.TestCase):
+    def test_annual_fcf_has_shared_formula_and_input_lineage(self) -> None:
+        self.assertEqual(
+            CALCULATION_INPUTS["latest_annual_fcf"],
+            ("latest_annual_cfo", "latest_annual_capex"),
+        )
+        self.assertEqual(
+            CALCULATION_FORMULAS["latest_annual_fcf"],
+            "latest_annual_cfo - latest_annual_capex",
+        )
+
     @staticmethod
     def point(value: float, *, start: str = "2026-01-01") -> dict[str, object]:
         return {

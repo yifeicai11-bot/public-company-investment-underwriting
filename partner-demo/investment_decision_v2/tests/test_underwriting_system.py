@@ -34,6 +34,8 @@ from build_public_company_investment_layer import (  # noqa: E402
     build_peer_valuation_context,
     build_probability_validation,
     build_unsupported_investment_output,
+    current_flow_evidence_ids,
+    current_interim_period,
     latest_shares,
     ltm_metric,
     market_data_is_approved,
@@ -62,6 +64,30 @@ from underwriting_contract import (  # noqa: E402
 
 
 class PeriodSelectionTests(unittest.TestCase):
+    def test_investment_layer_suppresses_stale_interim_after_newer_annual(self) -> None:
+        step2 = {
+            "selected_current_filing": {
+                "form": "10-K",
+                "period": "2026-05-31",
+                "filed": "2026-07-22",
+            },
+            "filings": {
+                "latest_q": {"form": "10-Q", "period": "2026-02-28"},
+                "latest_k": {"form": "10-K", "period": "2026-05-31"},
+            },
+        }
+        self.assertIsNone(current_interim_period(step2))
+
+    def test_investment_layer_keeps_selected_current_interim(self) -> None:
+        step2 = {
+            "selected_current_filing": {
+                "form": "10-Q",
+                "period": "2026-06-30",
+                "filed": "2026-08-01",
+            }
+        }
+        self.assertEqual(current_interim_period(step2), "2026-06-30")
+
     def test_ytd_fact_is_not_relabelled_as_quarter(self) -> None:
         facts = {
             "facts": {
@@ -281,6 +307,89 @@ class AccountingControlTests(unittest.TestCase):
 
 
 class EvidenceInputTests(unittest.TestCase):
+    def test_current_flow_evidence_supports_annual_or_ytd_basis(self) -> None:
+        step2 = {
+            "evidence_records": [
+                {"metric_name": "latest_annual_cfo", "evidence_id": "EV-ANNUAL-CFO"},
+                {"metric_name": "latest_annual_fcf", "evidence_id": "EV-ANNUAL-FCF"},
+                {"metric_name": "latest_ytd_cfo", "evidence_id": "EV-YTD-CFO"},
+            ]
+        }
+        self.assertEqual(
+            current_flow_evidence_ids(step2, "cfo", "fcf"),
+            ["EV-ANNUAL-CFO", "EV-ANNUAL-FCF", "EV-YTD-CFO"],
+        )
+
+    def test_annual_fallback_and_missing_basis_preserve_source_metadata(self) -> None:
+        annual = {
+            "value": 123.0,
+            "period_type": "annual",
+            "method": "latest annual fallback; LTM components did not pass shared comparability controls",
+            "confidence": "Medium",
+            "components": {
+                "annual": {
+                    "value": 123.0,
+                    "unit": "USD",
+                    "taxonomy": "us-gaap",
+                    "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+                    "form": "10-K",
+                    "accn": "0000000000-26-000001",
+                    "filed": "2026-07-22",
+                    "start": "2025-06-01",
+                    "end": "2026-05-31",
+                }
+            },
+        }
+        missing = {
+            "value": None,
+            "period_type": "missing",
+            "method": "missing",
+            "confidence": "Low",
+            "components": {},
+        }
+        records, _, _ = build_analysis_evidence(
+            {"cik": "0000000000", "ticker": "TEST"},
+            {
+                "evidence_records": [],
+                "as_of_registry": {"financial_statement_date": "2026-05-31"},
+            },
+            {},
+            {},
+            {
+                "price": None,
+                "price_currency": "USD",
+                "price_date": "",
+                "shares": None,
+                "shares_as_of_date": "",
+                "shares_source": {},
+                "market_cap": None,
+                "ltm": {"revenue": annual, "operating_income": missing},
+                "ltm_fcf": None,
+            },
+            {},
+            {},
+            [],
+            {"status": "NOT_PROVIDED"},
+            {},
+        )
+        revenue = next(
+            row for row in records if row.get("metric_name") == "valuation_basis_revenue"
+        )
+        self.assertEqual(revenue["evidence_class"], "FACT")
+        self.assertEqual(revenue["publication_date"], "2026-07-22")
+        self.assertEqual(revenue["as_of_date"], "2026-05-31")
+        self.assertTrue(revenue["input_evidence_ids"])
+
+        operating_income = next(
+            row
+            for row in records
+            if row.get("metric_name") == "valuation_basis_operating_income"
+        )
+        self.assertEqual(operating_income["evidence_class"], "MISSING")
+        self.assertEqual(operating_income["as_of_date"], "2026-05-31")
+        self.assertIn("No compatible operating_income XBRL fact", operating_income["source_locator"])
+        self.assertTrue(operating_income["retrieval_date"])
+
     def test_normalized_fcf_base_can_use_shared_metric_name(self) -> None:
         ltm_result = {
             "value": 100.0,
