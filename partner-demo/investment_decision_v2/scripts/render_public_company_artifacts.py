@@ -274,7 +274,7 @@ body {{ font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; font-size:
 main {{ width:100%; margin:0 auto; }}
 h1,h2,h3,p {{ overflow-wrap:anywhere; }}
 h1 {{ margin:0; font-size:22px; line-height:1.14; letter-spacing:0; }}
-h2 {{ margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; }}
+h2 {{ margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; break-after:avoid; page-break-after:avoid; }}
 h3 {{ margin:8px 0 4px; font-size:10.5px; line-height:1.3; letter-spacing:0; }}
 p {{ margin:4px 0; }} ul {{ margin:4px 0 7px; padding-left:17px; }} li {{ margin:2px 0; }}
 a {{ color:var(--teal); text-decoration:none; }}
@@ -301,6 +301,7 @@ th {{ background:var(--soft); color:#334047; text-align:left; font-size:8px; fon
 .metric-note {{ margin-top:3px; color:var(--muted); font-size:6.9px; }}
 .evidence-id {{ display:inline-block; color:#5f6b72; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6.6px; line-height:1.25; }}
 .bundle-id {{ display:inline-block; margin:2px 0; padding:1px 4px; border:1px solid #a9c5c5; color:var(--teal); background:var(--teal-soft); font-size:6.5px; font-weight:700; line-height:1.25; }}
+.bundle-tail {{ break-inside:avoid; page-break-inside:avoid; }}
 .two-col {{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }}
 .scenario-band {{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:7px 0 9px; }}
 .scenario-card {{ min-height:76px; padding:7px; border-top:3px solid var(--gold); background:var(--gold-soft); }}
@@ -1562,11 +1563,12 @@ def full_report_html(contract: dict[str, Any]) -> str:
     body += "<h3>Reverse-valuation limitations / 反向估值限制</h3>" + list_html(
         reverse.get("limitations", reverse.get("assumptions", []))
     )
-    body += "<h3>Peer valuation context / 同业估值背景</h3>" + peer_valuation_html(contract)
-    body += bundle_badge(contract, "valuation_market")
+    body += '<div class="bundle-tail"><h3>Peer valuation context / 同业估值背景</h3>'
+    body += peer_valuation_html(contract)
+    body += bundle_badge(contract, "valuation_market") + "</div>"
     body += "</section>"
 
-    body += '<section class="page-break"><h2>7. Scenario Price Sensitivity: Bear, Base and Bull / 情景价格敏感性：悲观、基准与乐观</h2>'
+    body += '<section><h2>7. Scenario Price Sensitivity: Bear, Base and Bull / 情景价格敏感性：悲观、基准与乐观</h2>'
     body += scenario_table(contract, compact=True)
     body += "<h3>Separated valuation outputs / 分离估值输出</h3>"
     body += valuation_return_outputs_html(contract)
@@ -1627,7 +1629,7 @@ def full_report_html(contract: dict[str, Any]) -> str:
     body += "<h3>Selected short evidence references / 关键短证据引用</h3>" + evidence_register(contract)
     body += "</section>"
 
-    body += '<section class="page-break"><h2>10. Source Register / 来源记录</h2>'
+    body += '<section><h2>10. Source Register / 来源记录</h2>'
     body += (
         '<p class="section-intro">Source hierarchy: Level 1 regulatory/company filings; Level 2 official '
         "company materials; Level 3 approved research market data; Level 4 institutional third-party research; "

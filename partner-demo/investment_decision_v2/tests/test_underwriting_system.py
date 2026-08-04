@@ -1622,6 +1622,30 @@ class FridayV1RegressionTests(unittest.TestCase):
                 self.assertIn(contract["report_id"], text)
                 self.assertIn(str(contract["contract_hash"]), text)
 
+    def test_valuation_evidence_bundle_is_kept_with_preceding_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = TEST_DIR.parent / "friday_v1_outputs" / "crox_crocs_inc" / "step3" / "underwriting_output_contract.json"
+            manifest = render(source, Path(tmp))
+            full = Path(manifest["outputs"]["full_report_html"]).read_text(encoding="utf-8")
+            self.assertIn(
+                '<div class="bundle-tail"><h3>Peer valuation context / 同业估值背景</h3>',
+                full,
+            )
+            self.assertIn(".bundle-tail { break-inside:avoid; page-break-inside:avoid; }", full)
+            self.assertIn(
+                '<section><h2>7. Scenario Price Sensitivity: Bear, Base and Bull',
+                full,
+            )
+            self.assertNotIn(
+                '<section class="page-break"><h2>7. Scenario Price Sensitivity: Bear, Base and Bull',
+                full,
+            )
+            self.assertIn('<section><h2>10. Source Register / 来源记录</h2>', full)
+            self.assertNotIn(
+                '<section class="page-break"><h2>10. Source Register / 来源记录</h2>',
+                full,
+            )
+
 
 def minimal_contract(gate: dict[str, object]) -> dict[str, object]:
     module = {

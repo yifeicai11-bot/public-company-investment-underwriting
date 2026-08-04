@@ -124,6 +124,7 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
     def test_schema_allows_a_new_final_attempt_after_a_shared_fix(self) -> None:
         schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
         self.assertIn("FINAL_AFTER_FIX", schema["properties"]["attempt"]["enum"])
+        self.assertIn("FINAL_RENDERER_AFTER_FIX", schema["properties"]["attempt"]["enum"])
 
     def test_s17_command_uses_unified_entry_and_portable_record(self) -> None:
         manifest = {

@@ -281,7 +281,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--attempt",
-        choices=("PRIMARY", "SECONDARY", "FINAL_AFTER_FIX"),
+        choices=("PRIMARY", "SECONDARY", "FINAL_AFTER_FIX", "FINAL_RENDERER_AFTER_FIX"),
         default="PRIMARY",
     )
     parser.add_argument("--selection-date", default=date.today().isoformat())
