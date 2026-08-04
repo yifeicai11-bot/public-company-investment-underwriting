@@ -108,4 +108,115 @@ jobs:
         run: |
           test "${{ steps.rpm.outputs.exit_code || '99' }}" = "0"
 
+# S17 live revalidation after facility-parser fix: 2026-08-04
+name: S17 live SEC RPM revalidation
+
+"on":
+  push:
+    branches: ["codex/phase-f-s17-final-release"]
+    paths: [".github/workflows/live-sec-s17.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s17-live-sec-rpm-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rpm-post-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+      PYTHONHASHSEED: "0"
+      MANIFEST: partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/manifest.json
+      POST_FIX_DIR: partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements.lock
+
+      - name: Validate live SEC identity
+        shell: bash
+        run: |
+          if [[ -z "$SEC_USER_AGENT" ]]; then
+            echo "SEC_USER_AGENT repository secret is not configured."
+            exit 1
+          fi
+          python underwrite.py doctor --live --output /tmp/s17-live-environment.json
+
+      - name: Verify frozen S17 inputs
+        run: |
+          python partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py "$MANIFEST" --verify-preserved-first-run
+
+      - name: Run immutable RPM post-fix test
+        id: rpm
+        shell: bash
+        run: |
+          set +e
+          python partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py \
+            "$MANIFEST" \
+            --post-fix \
+            --timeout-seconds 900 \
+            > /tmp/rpm-post-fix-run.txt 2>&1
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          cat /tmp/rpm-post-fix-run.txt
+          exit 0
+
+      - name: Confirm contact identity was not persisted
+        if: always()
+        shell: bash
+        run: |
+          contact_email="${SEC_USER_AGENT##* }"
+          scan_targets=(
+            "$POST_FIX_DIR"
+            /tmp/s17-live-environment.json
+            /tmp/rpm-post-fix-run.txt
+          )
+          for value in "$SEC_USER_AGENT" "$contact_email"; do
+            if [[ -n "$value" ]] && grep -R -F -l -- "$value" "${scan_targets[@]}" 2>/dev/null; then
+              echo "SEC contact identity was written into a preserved artifact."
+              exit 1
+            fi
+          done
+
+      - name: Record runner result
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p "$POST_FIX_DIR"
+          printf '{\n  "workflow_run_id": "%s",\n  "workflow_sha": "%s",\n  "runner_os": "%s",\n  "post_fix_exit_code": %s\n}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_SHA" "$RUNNER_OS" "${{ steps.rpm.outputs.exit_code || '99' }}" \
+            > "$POST_FIX_DIR/github_actions_run.json"
+
+      - name: Upload RPM post-fix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-s17-post-fix-${{ github.run_id }}
+          path: |
+            ${{ env.POST_FIX_DIR }}
+            /tmp/s17-live-environment.json
+            /tmp/rpm-post-fix-run.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce RPM post-fix result
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.rpm.outputs.exit_code || '99' }}" = "0"
+
 # S17 live revalidation trigger: 2026-08-04
