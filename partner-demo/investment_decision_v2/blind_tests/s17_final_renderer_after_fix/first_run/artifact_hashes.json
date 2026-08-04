@@ -1,0 +1,30 @@
+{
+  "hash_method": "SHA256",
+  "artifact_count": 24,
+  "artifacts": {
+    "builder_output/ttek_tetra_tech_inc/data/data_evidence_pack.json": "303a1367af728bfebd61f039ce6901d35fc420015c1905705de3478910936001",
+    "builder_output/ttek_tetra_tech_inc/data/normalized_data.csv": "0894b5447bcbbfa789915afe391a25168a812f9f444f9e3edeb0858713fa44ae",
+    "builder_output/ttek_tetra_tech_inc/data/normalized_data.json": "303a1367af728bfebd61f039ce6901d35fc420015c1905705de3478910936001",
+    "builder_output/ttek_tetra_tech_inc/delivery/pipeline_diagnostic.json": "2d8b07188e335f98d5122bef76de87d6ca484f7100f1e62befef0786e67867c7",
+    "builder_output/ttek_tetra_tech_inc/delivery/pipeline_manifest.json": "ac4e3fa51e82a8ecfab49b7d9fa6156ab7720fa1c1627d0aab17be2b27a0e4c8",
+    "builder_output/ttek_tetra_tech_inc/investment_data_pack.md": "76f026f6cc7df05a10e4f21009f3bb4cdf0f088020fc8f2504707325d33a9df6",
+    "builder_output/ttek_tetra_tech_inc/step3/analyst_input_template.json": "30bc85f727ea604bb4df9f29cc7275aab99aaa81fe1d54d246bbc92968015485",
+    "builder_output/ttek_tetra_tech_inc/step3/committee_snapshot.csv": "0597f727ab99e8b6ecb52a6629d702f72473f9c14b03ea8329c1191d94ebdfef",
+    "builder_output/ttek_tetra_tech_inc/step3/investment_layer.json": "666bd551685d04813ff0a2ae578b6bc58dd1ba60c0ff6e06c30c8cd54193a42a",
+    "builder_output/ttek_tetra_tech_inc/step3/investment_layer.md": "76b1635ca3d9ade2603e92a4309c6862f29f6dd05b4a733fff59c449f80b3d17",
+    "builder_output/ttek_tetra_tech_inc/step3/market_expectations.csv": "78adbd5e3457a56a1d0c8beff1d41f012cf4315cec7f3bae87d04913f679ba68",
+    "builder_output/ttek_tetra_tech_inc/step3/partner_overlay_template.csv": "0dcb5130c76862070876f76cfa5dc797efb7c969d6a99d7001180b73b14f52e4",
+    "builder_output/ttek_tetra_tech_inc/step3/partner_overlay_template.md": "160531393e7187eb06c417639490c8898cb9e877b71b2f9604fa3a4e5404dbd6",
+    "builder_output/ttek_tetra_tech_inc/step3/public_data_drivers.csv": "de83e535498508f78d68ba5ae3eb2222ae9ea4e28fa7ba459ef5ba0fef3c5207",
+    "builder_output/ttek_tetra_tech_inc/step3/scenario_model.csv": "a400d562571db7bfe54a169a2913d6fbe438297be5e7ad0a3f8a360fa87a3a73",
+    "builder_output/ttek_tetra_tech_inc/step3/step3_data.json": "666bd551685d04813ff0a2ae578b6bc58dd1ba60c0ff6e06c30c8cd54193a42a",
+    "builder_output/ttek_tetra_tech_inc/step3/step3_validation_report.md": "04f0e2c2e6355cf1ae58cebfb09a6f735b1e766e083c8468bbfddf8b1fdfd924",
+    "builder_output/ttek_tetra_tech_inc/step3/underwriting_output_contract.json": "666bd551685d04813ff0a2ae578b6bc58dd1ba60c0ff6e06c30c8cd54193a42a",
+    "builder_output/ttek_tetra_tech_inc/step3/valuation_metrics.csv": "25c147437bd4e4b5ae103bb2ee5de5a5597cb1d49a54d14b723dc2c7b7a12986",
+    "builder_output/ttek_tetra_tech_inc/validation/validation_report.md": "7ec280261e6a5f2a0115e91830499b40ac7e8aae73ff481a36f5542fa2bfbb47",
+    "execution_context.json": "bc0e0789cf9499d39ad3cf6f5363663d46b7a49654979e5d26740027592da6c1",
+    "first_run_diagnostic.json": "0337b6ae1612cb49d9507d5657349e8da8ab6590a512ec028e354aaf22cac082",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "41d0c2e37e19af34fd660dee584c799642b0c6354645bd3849d949deafd5ef46"
+  }
+}

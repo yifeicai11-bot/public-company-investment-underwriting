@@ -1,0 +1,35 @@
+{
+  "started_at": "2026-08-04T03:05:49Z",
+  "python_version": "3.12.13",
+  "python_executable": "<PYTHON_EXECUTABLE>",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "timezone": [
+    "HKT",
+    "HKT"
+  ],
+  "current_commit": "1d6010548f661dee380b41db5519356302eccbe1",
+  "pre_run_commit": "d54a6334f40b9885059eff42ddc39499cf71c7e9",
+  "selection_integrity": {
+    "status": "PASS",
+    "pre_run_commit": "d54a6334f40b9885059eff42ddc39499cf71c7e9",
+    "selected_ticker": "TTEK",
+    "selection_reproduced": true,
+    "stored_blob_hashes_reproduced": true,
+    "shared_logic_unchanged_before_first_run": true,
+    "ticker_absent_from_pre_run_shared_logic": true
+  },
+  "network_scope": "PUBLIC_DATA_ONLY",
+  "research_input": null,
+  "command": [
+    "<PYTHON_EXECUTABLE>",
+    "underwrite.py",
+    "analyze",
+    "TTEK",
+    "--output-root",
+    "partner-demo/investment_decision_v2/blind_tests/s17_final_renderer_after_fix/first_run/builder_output"
+  ],
+  "allowed_return_codes": [
+    0,
+    3
+  ]
+}

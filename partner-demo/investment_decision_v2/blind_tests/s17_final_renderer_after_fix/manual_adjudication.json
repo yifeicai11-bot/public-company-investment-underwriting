@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_manual_held_out_adjudication",
+  "adjudicated_at": "2026-08-04T03:13:12Z",
+  "attempt": "FINAL_RENDERER_AFTER_FIX",
+  "ticker": "TTEK",
+  "status": "S17_MANUAL_SOURCE_AUDIT_PASS",
+  "automatic_result_confirmed": "S17_HELD_OUT_ACCEPTED",
+  "review_scope": [
+    "financial period and filing date",
+    "YTD and derived-quarter cash flow",
+    "cash capital expenditures and raw FCF",
+    "accounts receivable and allowance for doubtful accounts",
+    "long-term debt",
+    "point-in-time shares outstanding",
+    "investment-output suppression at Gate 1"
+  ],
+  "primary_sources": [
+    {
+      "form": "10-Q",
+      "period_end": "2026-06-28",
+      "filed": "2026-07-31",
+      "accession": "0000831641-26-000017",
+      "url": "https://www.sec.gov/Archives/edgar/data/831641/000083164126000017/ttek-20260628.htm"
+    },
+    {
+      "form": "10-Q",
+      "period_end": "2026-03-29",
+      "filed": "2026-05-01",
+      "accession": "0000831641-26-000011",
+      "url": "https://www.sec.gov/Archives/edgar/data/831641/000083164126000011/ttek-20260329.htm"
+    }
+  ],
+  "source_reconciliation_usd": {
+    "latest_ytd_period": {
+      "period_start": "2025-09-29",
+      "period_end": "2026-06-28",
+      "cfo": 466553000,
+      "cash_capex": 13955000,
+      "raw_fcf": 452598000,
+      "formula": "466553000 - 13955000"
+    },
+    "prior_same_fiscal_year_ytd_period": {
+      "period_start": "2025-09-29",
+      "period_end": "2026-03-29",
+      "cfo": 237611000,
+      "cash_capex": 10144000
+    },
+    "derived_latest_quarter": {
+      "period_start": "2026-03-30",
+      "period_end": "2026-06-28",
+      "cfo": 228942000,
+      "cash_capex": 3811000,
+      "raw_fcf": 225131000,
+      "cfo_formula": "466553000 - 237611000",
+      "cash_capex_formula": "13955000 - 10144000",
+      "raw_fcf_formula": "228942000 - 3811000"
+    },
+    "accounts_receivable_net": 1076473000,
+    "allowance_for_doubtful_accounts": 3897000,
+    "long_term_debt": 801057000
+  },
+  "share_count_reconciliation": {
+    "as_of_date": "2026-07-20",
+    "shares_outstanding": 256044428,
+    "basis": "10-Q cover-page point-in-time shares outstanding"
+  },
+  "validation_results": {
+    "source_values_match_preserved_contract": true,
+    "quarter_ytd_ltm_mixing_identified": false,
+    "cash_capex_component_omission_identified": false,
+    "noncash_capex_included_in_fcf": false,
+    "material_unit_or_currency_mismatch_identified": false,
+    "p0_cash_capex_component_coverage": "PASS",
+    "contract_validation": "PASS",
+    "hard_stop_count": 0
+  },
+  "decision_boundaries": {
+    "data_gate": 1,
+    "pipeline_status": "RESEARCH_INPUT_REQUIRED",
+    "target_price": null,
+    "probability_weighted_expected_return": null,
+    "position_sizing": null,
+    "portfolio_action": "Not Evaluated",
+    "automatic_investment_approval": false,
+    "automatic_trade_execution": false
+  },
+  "ticker_specific_patch": false,
+  "first_run_artifacts_modified": false
+}

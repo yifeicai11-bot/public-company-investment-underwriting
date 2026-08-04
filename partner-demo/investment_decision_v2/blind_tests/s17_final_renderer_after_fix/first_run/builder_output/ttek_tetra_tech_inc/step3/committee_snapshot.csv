@@ -1,0 +1,2 @@
+role,view,evidence,decision_impact,confidence,falsification_trigger
+Committee Layer,Disabled below Gate 3.,Current Data Gate=1.,Prevents incomplete valuation or scenario work from becoming an investment-committee conclusion.,High,Enable only after Gate 3 validation passes.

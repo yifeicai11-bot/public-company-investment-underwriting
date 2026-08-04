@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_held_out_acceptance_result",
+  "status": "S17_HELD_OUT_ACCEPTED",
+  "attempt": "FINAL_RENDERER_AFTER_FIX",
+  "selected_issuer": {
+    "ticker": "TTEK",
+    "company_name": "TETRA TECH INC",
+    "exchange": "Nasdaq",
+    "industry": "Services-Engineering Services"
+  },
+  "pre_run_commit": "d54a6334f40b9885059eff42ddc39499cf71c7e9",
+  "selection_integrity": {
+    "status": "PASS",
+    "pre_run_commit": "d54a6334f40b9885059eff42ddc39499cf71c7e9",
+    "selected_ticker": "TTEK",
+    "selection_reproduced": true,
+    "stored_blob_hashes_reproduced": true,
+    "shared_logic_unchanged_before_first_run": true,
+    "ticker_absent_from_pre_run_shared_logic": true
+  },
+  "preserved_run_integrity": {
+    "status": "PASS",
+    "run_directory": "/Users/caiyifei/Documents/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s17_final_renderer_after_fix/first_run",
+    "hash_method": "SHA256",
+    "artifact_count": 24,
+    "file_set_unchanged": true,
+    "artifact_hashes_unchanged": true
+  },
+  "diagnostic_summary": {
+    "return_code": 3,
+    "pipeline_status": "RESEARCH_INPUT_REQUIRED",
+    "data_gate": {
+      "level": 1,
+      "label": "Gate 1 - Core data validated",
+      "allowed_outputs": [
+        "preliminary_company_screen",
+        "basic_financial_description",
+        "major_missing_information"
+      ],
+      "prohibited_outputs": [
+        "automatic_trade",
+        "credit_constraint_conclusion",
+        "expected_return",
+        "final_investment_action",
+        "issuer_risk_judgment",
+        "portfolio_action",
+        "position_sizing",
+        "target_price"
+      ],
+      "hard_stop_ids": [],
+      "probabilities_validated": false
+    },
+    "contract_validation_status": "PASS",
+    "hard_stop_count": 0,
+    "warning_count": 26
+  },
+  "contract_summary": {
+    "report_id": "RPT-D65D267E091A37",
+    "contract_hash": "a851f4b2deb13c8917e0ca4ed07b2c7a64fc873e5df03aa141a081e038a6c3a8",
+    "schema_version": "5.1.0",
+    "data_gate": 1,
+    "evidence_records": 107,
+    "source_records": 21,
+    "warnings": 26,
+    "hard_stops": 0
+  },
+  "errors": [],
+  "requires_second_company_after_fix": false,
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}

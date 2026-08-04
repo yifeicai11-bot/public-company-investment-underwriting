@@ -1,0 +1,7 @@
+driver,display,value,evidence,decision_use
+Revenue growth,-2.2%,-0.021904817481103844,Annual=4.7%; YTD=-9.1%,Top-line trend for base/bull/bear growth assumptions.
+CFO growth,29.2%,0.29169541594360393,Annual=27.6%; YTD=30.7%,Cash-generation trend for FCF scenario confidence.
+Operating margin,12.1%,0.12067267728367874,"LTM operating income / LTM revenue = $611.7m / $5,069.5m",Margin level for earnings-quality and downside sensitivity.
+FCF margin,10.8%,0.10796504726131351,"LTM FCF / LTM revenue = $547.3m / $5,069.5m",Cash-conversion signal: strong.
+FCF conversion,1.3x,1.2533312571416795,"FCF / net income if positive, otherwise FCF / operating income if positive.",Tests whether accounting earnings translate into cash.
+Net debt / FCF,1.4x,1.44824473896727,Net debt before facility=$792.7m; LTM FCF=$547.3m,Balance-sheet signal: flexible.

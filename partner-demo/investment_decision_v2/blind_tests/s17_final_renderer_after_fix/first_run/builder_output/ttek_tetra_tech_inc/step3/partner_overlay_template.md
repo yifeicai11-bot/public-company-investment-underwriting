@@ -1,0 +1,29 @@
+# TETRA TECH INC (TTEK) Partner Portfolio Overlay Template
+
+Fill this only if the public-data memo should be converted into a portfolio-aware decision view.
+Do not paste sensitive holdings or client data into external tools unless explicitly authorized.
+
+| Field | Example / Default | Why Needed | Sensitivity | Partner Input |
+|---|---|---|---|---|
+| overlay_mode | REAL_PARTNER_INPUT | Illustrative inputs can demonstrate workflow but cannot unlock Gate 4. | Low |  |
+| input_status | VALIDATED | Confirms the fund-specific inputs were reviewed before use. | Low |  |
+| reviewed_by | Human reviewer name or role | Records ownership of portfolio assumptions. | Low/Medium |  |
+| target_return_hurdle | 15%-20% expected return | Determines whether public-data scenario return is attractive enough. | Low if expressed as policy, higher if tied to live portfolio. |  |
+| max_bear_case_downside | -20% to -30% | Controls whether downside is tolerable before underwriting. | Low/Medium |  |
+| intended_holding_period | 6-12 months / 12-24 months / 3 years | Matches scenario horizon to the fund's investment process. | Low |  |
+| portfolio_role | core long / tactical long / hedge monitor / watchlist only | Changes required conviction, catalyst, and risk tolerance. | Medium |  |
+| existing_exposure | none / existing position / sector exposure | Needed before any sizing or incremental-capital decision. | High if position-specific; can be anonymized. |  |
+| max_position_size | 0.5%-2% starter / 3%-5% core | Prevents the memo from implying sizing outside risk limits. | Medium/High |  |
+| opportunity_cost_alternatives | SPY, sector ETF, watchlist names, existing holdings | Tests whether the idea beats real alternatives. | Medium/High if watchlist is proprietary. |  |
+| internal_variant_view | What do we believe that market consensus may miss? | Turns public-data analysis into an investable thesis. | High |  |
+| internal_thesis_break | Revenue miss, margin compression, leverage trigger, catalyst failure | Defines when to stop underwriting or reduce exposure. | Medium |  |
+| human_approval | NOT_REVIEWED / APPROVED | Portfolio action and position range remain hidden without explicit human approval. | Low |  |
+| approved_by | Approver name or role | Identifies the owner of the final portfolio decision. | Low/Medium |  |
+| approved_portfolio_action | Leave blank until human-approved | The system displays an approved action; it does not invent one. | High |  |
+| approved_position_range | Leave blank until human-approved | The system displays a human-approved range only after Gate 4. | High |  |
+
+## How To Use
+
+1. Leave sensitive fields blank if they cannot be shared.
+2. Use ranges or anonymized labels when exact portfolio data is not appropriate.
+3. After completion, rerun the decision overlay or manually update the Portfolio Manager section.

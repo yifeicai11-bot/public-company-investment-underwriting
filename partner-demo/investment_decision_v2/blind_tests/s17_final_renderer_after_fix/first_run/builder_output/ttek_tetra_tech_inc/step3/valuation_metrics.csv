@@ -1,0 +1,21 @@
+metric,display,value,use
+Current price,$33.83,33.83000183105469,Entry price
+Shares used,256.0m,256044428.0,Market cap denominator
+Market cap,"$8,662.0m",8661983468.07135,Equity value
+Enterprise value proxy,"$9,454.6m",9454645468.07135,Market cap + debt + leases - cash/STI; facility availability excluded
+Cash + short-term investments,$230.8m,230835000.0,Liquid resources before facility note review
+Total debt,$801.1m,801057000.0,Funded debt pressure
+Lease liabilities,$222.4m,222440000.0,Debt-like fixed obligations
+Net debt before facility,$792.7m,792662000.0,Leverage / downside context
+LTM revenue,"$5,069.5m",5069474000.0,Scale and EV/Sales denominator
+LTM operating income,$611.7m,611747000.0,Operating earnings denominator
+LTM net income,$436.7m,436697000.0,P/E denominator when positive
+LTM CFO,$567.4m,567400000.0,Cash generation
+LTM capex,$20.1m,20074000.0,FCF bridge
+LTM FCF,$547.3m,547326000.0,Cash-flow valuation denominator
+P/E,19.8x,19.83522549518625,Market-implied earnings multiple
+P/FCF,15.8x,15.826004005056127,Market-implied cash-flow multiple
+FCF yield,6.3%,0.06318714437836094,Cash return before growth
+EV/Sales,1.9x,1.8650150820521716,Revenue valuation anchor
+EV/Operating income,15.5x,15.45515624608106,Operating earnings valuation anchor
+Net debt/FCF,1.4x,1.44824473896727,Balance-sheet pressure versus cash generation

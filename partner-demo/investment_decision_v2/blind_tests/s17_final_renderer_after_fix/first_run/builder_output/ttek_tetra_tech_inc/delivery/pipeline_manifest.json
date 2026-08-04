@@ -1,0 +1,39 @@
+{
+  "pipeline_schema_version": "1.0.0",
+  "release_candidate": "v1.1.0-rc.1",
+  "generated_at": "2026-08-04T03:05:55Z",
+  "status": "RESEARCH_INPUT_REQUIRED",
+  "company_query": "TTEK",
+  "command": "python underwrite.py analyze TTEK --output-root <OUTPUT_ROOT>",
+  "public_only_boundary": "Gate 4 portfolio inputs are not accepted by this entry point.",
+  "contract_path": "ttek_tetra_tech_inc/step3/underwriting_output_contract.json",
+  "analyst_input_template": "ttek_tetra_tech_inc/step3/analyst_input_template.json",
+  "delivery_dir": "ttek_tetra_tech_inc/delivery",
+  "eligibility": {
+    "eligible": false,
+    "data_gate": 1.0,
+    "blockers": [
+      "data_gate=1; Gate 3 required for partner-ready formal delivery"
+    ]
+  },
+  "contract_summary": {
+    "company": {
+      "cik": "0000831641",
+      "name": "TETRA TECH INC",
+      "ticker": "TTEK",
+      "exchange": "Nasdaq"
+    },
+    "report_id": "RPT-D65D267E091A37",
+    "contract_hash": "a851f4b2deb13c8917e0ca4ed07b2c7a64fc873e5df03aa141a081e038a6c3a8",
+    "schema_version": "5.1.0",
+    "data_gate": 1,
+    "decision_confidence": "Low",
+    "current_action": "Underwriting In Progress",
+    "hard_stop_count": 0,
+    "warning_count": 26,
+    "contract_validation": "PASS"
+  },
+  "render_manifest": null,
+  "validation_report": null,
+  "environment_status": "PASS"
+}
