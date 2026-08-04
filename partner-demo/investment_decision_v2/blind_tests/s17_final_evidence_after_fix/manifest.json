@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "blind_company_forward_test_manifest",
+  "phase": "F",
+  "session": "S17",
+  "status": "SELECTED_NOT_RUN",
+  "selection_date": "2026-08-04",
+  "attempt": "FINAL_EVIDENCE_AFTER_FIX",
+  "pre_run_commit": "a3bf4c65082e7564a09a523a914f66af84c47ac1",
+  "pre_run_shared_logic": {
+    "underwrite.py": "df5ffe830b5354e7932a66fb417216c199af0413",
+    "scripts/release_doctor.py": "afc15583a40fba9d707d5a75223e3ffe363c2b7d",
+    "partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py": "464a287de217caea0cec9c3b7b1542e99d75905c",
+    "partner-demo/investment_decision_v2/scripts/notes_events_controls.py": "02ace49cb82d37322e3f98a3aacb391b76860b2f",
+    "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py": "a5aa5dc08c1be5bd5f7b1e68f6cad8c191b082f0",
+    "partner-demo/investment_decision_v2/scripts/underwriting_contract.py": "c5f85fdd0111d29495e977f7c3bc9d8f3b34b5e0",
+    "partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py": "1a71b92259f1340a90d67c6617ee1e9a9286296e",
+    "partner-demo/investment_decision_v2/scripts/forward_operating_model.py": "e3b8f6d34bdf7580d6dce802e4eb5918fb42e2ae",
+    "partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py": "7de932059009f96e92745f5d99d90b9c39effcfe",
+    "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py": "0b464d4b968f0be70520e66ba262dc1f6d47c9af",
+    "partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py": "2a13295b7a8ade5c31b20461e1ac9ee67aa6d4e6",
+    "partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py": "0863d02dec64c0e11fe06f4441ee8a115f522d0e",
+    "partner-demo/investment_decision_v2/scripts/validate_s17_held_out_run.py": "0038cb703bb6db308304bb7a4d7440fd824ca0d6",
+    "partner-demo/investment_decision_v2/blind_tests/blind_test_manifest.schema.json": "89b0c8ca575c6c10648eeee39a327d991e39942d"
+  },
+  "selection_method": {
+    "method": "SHA256_MODULO_PREDECLARED_POOL",
+    "seed_material": "a3bf4c65082e7564a09a523a914f66af84c47ac1|2026-08-04|S17-TRUE-HELD-OUT-FINAL_EVIDENCE_AFTER_FIX",
+    "seed_sha256": "14e44f1f8e1461667ac2f5b86e34ade2f52c3bb6edfe19d5f5c5e6e02ea14e5f",
+    "index_formula": "int(seed_sha256, 16) % candidate_pool_length",
+    "selected_index": 15
+  },
+  "candidate_pool": [
+    "AWI",
+    "BCC",
+    "CLH",
+    "CNM",
+    "ENS",
+    "FTI",
+    "GEF",
+    "GTLS",
+    "HRI",
+    "KD",
+    "KMX",
+    "LEA",
+    "MUSA",
+    "ROL",
+    "SON",
+    "TNL",
+    "TXRH",
+    "UHS",
+    "VVV",
+    "WMS"
+  ],
+  "excluded_prior_issuers": [
+    {
+      "ticker": "AAPL",
+      "reason": "Existing cross-industry and capital-allocation fixture."
+    },
+    {
+      "ticker": "ADBE",
+      "reason": "Existing software and cross-industry fixture."
+    },
+    {
+      "ticker": "AZO",
+      "reason": "Existing Friday V1 and retail fixture."
+    },
+    {
+      "ticker": "BA",
+      "reason": "Previously used liquidity and refinancing review."
+    },
+    {
+      "ticker": "CMT",
+      "reason": "Previously used partner-facing issuer review."
+    },
+    {
+      "ticker": "CRM",
+      "reason": "Existing software valuation fixture."
+    },
+    {
+      "ticker": "CROX",
+      "reason": "Existing Friday V1 and valuation fixture."
+    },
+    {
+      "ticker": "ITT",
+      "reason": "Preserved S08 blind-company fixture."
+    },
+    {
+      "ticker": "ODFL",
+      "reason": "Preserved S05 blind-company fixture."
+    },
+    {
+      "ticker": "PFGC",
+      "reason": "Existing working-capital and distribution fixture."
+    },
+    {
+      "ticker": "OSK",
+      "reason": "Previously used S17 attempt."
+    },
+    {
+      "ticker": "CHRW",
+      "reason": "Previously used S17 attempt."
+    },
+    {
+      "ticker": "MMS",
+      "reason": "Previously used S17 attempt."
+    },
+    {
+      "ticker": "TTEK",
+      "reason": "Previously used S17 attempt."
+    },
+    {
+      "ticker": "RPM",
+      "reason": "Previously used S17 attempt."
+    }
+  ],
+  "selected_issuer": {
+    "ticker": "TNL",
+    "company_name": "Travel & Leisure Co.",
+    "exchange": "NYSE",
+    "industry": "Hotels & Motels"
+  },
+  "selection_source": {
+    "exchange_list_url": "https://www.sec.gov/files/company_tickers_exchange.json",
+    "exchange_list_sha256": "e6fbad74d63540e73239f257809cf217b9d6b4fed2410691f0c8c576c9a6cf3c",
+    "retrieved_at": "2026-08-04T08:48:06Z",
+    "selected_cik": "0001361658",
+    "selected_submission_url": "https://data.sec.gov/submissions/CIK0001361658.json",
+    "selected_sic": "7011",
+    "selected_sic_description": "Hotels & Motels"
+  },
+  "intended_stress_characteristics": [
+    "Unseen SEC-reporting non-financial issuer selected without using an expected analytical result.",
+    "Quarter, YTD, FY, LTM, instant/flow, unit, currency, and share-count controls must fail safely.",
+    "All issuer modules must preserve VALIDATED, MISSING, NOT_APPLICABLE, WARNING, or HARD_STOP without forced completeness.",
+    "The public-only run must not invent valuation assumptions, scenario probabilities, expected return, or portfolio sizing.",
+    "No selected-issuer branch or hard-coded value may be added to shared analytical logic."
+  ],
+  "blindness_attestation": {
+    "selected_before_first_run": true,
+    "no_ticker_specific_adjustment_before_first_run": true,
+    "selected_ticker_absent_from_pre_run_shared_logic": true,
+    "company_will_not_be_replaced_if_first_run_fails": true,
+    "selection_not_based_on_expected_result": true
+  },
+  "first_run_protocol": {
+    "builder": "underwrite.py",
+    "research_input": null,
+    "output_directory": "first_run",
+    "network_scope": "PUBLIC_DATA_ONLY",
+    "overwrite_existing_first_run": false
+  },
+  "required_preservation": [
+    "EXACT_COMMAND",
+    "RUNTIME_AND_COMMIT",
+    "STDOUT",
+    "STDERR",
+    "BUILDER_OUTPUT",
+    "ERRORS",
+    "WARNINGS",
+    "DIAGNOSTIC_REPORT",
+    "FIX_RECORD",
+    "POST_FIX_REGRESSION"
+  ]
+}
