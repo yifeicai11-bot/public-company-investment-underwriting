@@ -1,0 +1,65 @@
+name: Underwriting release checks
+
+"on":
+  push:
+    branches: [main, "codex/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  offline-validation:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.lock
+
+      - name: Install locked dependencies
+        run: python -m pip install -r requirements.lock
+
+      - name: Environment and release-candidate diagnostics
+        run: |
+          python underwrite.py doctor --ci --output /tmp/environment_diagnostic.json
+          python scripts/validate_release_candidate.py
+
+      - name: Shared unit tests
+        run: >-
+          python -m unittest discover
+          -s partner-demo/investment_decision_v2/tests
+          -p 'test_*.py'
+          -v
+
+      - name: Cross-company and valuation acceptance
+        run: |
+          python partner-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
+          python partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
+
+      - name: Frozen baseline and synthetic Gate 4 checks
+        run: |
+          python release-baselines/friday-v1/verify_baseline.py
+          python partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py examples/gate4-synthetic
+
+      - name: Repository privacy scan
+        run: >-
+          python partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py
+          --tracked
+
+      - name: Skill structure validation
+        run: >-
+          python scripts/validate_skill_structure.py
+          public-firm-credit-liquidity-skill
