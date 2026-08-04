@@ -1727,11 +1727,36 @@ def money_phrase_to_usd(number_text: str, scale_word: str) -> float | None:
     return value
 
 
+FACILITY_AMOUNT_CAPTURE = (
+    r"(?<![0-9,.])((?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?)"
+)
+FACILITY_NAMED_AMOUNT = (
+    r"(?<![0-9,.])(?P<amount>(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?)"
+)
+
+
 def extract_amount_phrase(text: str, patterns: tuple[str, ...]) -> float | None:
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.I)
         if match:
             return money_phrase_to_usd(match.group(1), match.group(2))
+    return None
+
+
+def extract_amount_phrase_detail(
+    text: str,
+    patterns: tuple[tuple[str, str], ...],
+) -> tuple[float, str, str] | None:
+    """Return a facility amount with its parser rule and exact matched phrase."""
+
+    for rule_id, pattern in patterns:
+        match = re.search(pattern, text, flags=re.I)
+        if not match:
+            continue
+        value = money_phrase_to_usd(match.group(1), match.group(2))
+        if value is None:
+            continue
+        return value, rule_id, re.sub(r"\s+", " ", match.group(0)).strip()
     return None
 
 
@@ -1832,31 +1857,46 @@ def dated_facility_availability(
     text: str,
     *,
     as_of_date: str | None,
-) -> tuple[float, str] | None:
+) -> tuple[float, str, str, str] | None:
     pattern = re.compile(
         rf"(?:as\s+of|at)\s+(?P<date>{FILING_DATE_PATTERN})\s*,?\s*"
-        rf"(?:we\s+)?(?:had|have)\s+\$?\s*(?P<amount>[0-9,.]+)\s*"
+        rf"(?:we\s+)?(?:had|have)\s+\$?\s*{FACILITY_NAMED_AMOUNT}\s*"
         rf"(?P<scale>billion|million)\s+(?:of\s+)?"
         rf"(?:(?:remaining\s+)?borrowing\s+availability|available\s+borrowing\s+capacity|"
         rf"unused\s+borrowing\s+capacity)\s+under\s+(?:the\s+)?"
         rf"(?:credit\s+agreement|revolving\s+credit\s+facility|revolving\s+facility|credit\s+facility)",
         flags=re.I,
     )
-    candidates: list[tuple[str, float]] = []
+    candidates: list[tuple[str, float, str]] = []
     for match in pattern.finditer(text):
         linked_date = filing_date_phrase_to_iso(match.group("date"))
         amount = money_phrase_to_usd(match.group("amount"), match.group("scale"))
         if linked_date and amount is not None:
-            candidates.append((linked_date, amount))
+            candidates.append(
+                (
+                    linked_date,
+                    amount,
+                    re.sub(r"\s+", " ", match.group(0)).strip(),
+                )
+            )
     if not candidates:
         return None
     if as_of_date:
         exact = [candidate for candidate in candidates if candidate[0] == as_of_date]
         if not exact:
             return None
-        return exact[0][1], exact[0][0]
-    selected_date, selected_amount = max(candidates, key=lambda candidate: candidate[0])
-    return selected_amount, selected_date
+        selected_date, selected_amount, matched_phrase = exact[0]
+    else:
+        selected_date, selected_amount, matched_phrase = max(
+            candidates,
+            key=lambda candidate: candidate[0],
+        )
+    return (
+        selected_amount,
+        selected_date,
+        "dated_borrowing_availability",
+        matched_phrase,
+    )
 
 
 def assess_facility_reconciliation(
@@ -1940,11 +1980,11 @@ def extract_facility_values(
     commitment = exact_table_commitment or extract_amount_phrase(
         text,
         (
-            r"(?:provides for|consists of|maintains?)\s+(?:an?\s+)?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+facility",
-            r"(?:entered into|amended|replaced)(?:[^.;]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+(?:agreement|facility)",
-            r"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{0,220})?to\s+(?:an?\s+)?aggregate\s+of\s+\$?\s*([0-9,.]+)\s*(billion|million)",
-            r"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{0,160})?(?:provides for|commitments? (?:of|totaling|equal to)|capacity of)\s+\$?\s*([0-9,.]+)\s*(billion|million)",
-            r"\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?revolving\s+credit\s+facility",
+            rf"(?:provides for|consists of|maintains?)\s+(?:an?\s+)?\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+facility",
+            rf"(?:entered into|amended|replaced)(?:[^.;]{{0,120}})?\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?(?:revolving\s+)?credit\s+(?:agreement|facility)",
+            rf"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{{0,220}})?to\s+(?:an?\s+)?aggregate\s+of\s+\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
+            rf"(?:credit agreement|revolving credit facility|revolving facility|credit facility)(?:[^.;]{{0,160}})?(?:provides for|commitments? (?:of|totaling|equal to)|capacity of)\s+\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
+            rf"\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)\s+(?:secured\s+|unsecured\s+)?(?:asset-based\s+)?revolving\s+credit\s+facility",
         ),
     )
     if commitment is not None:
@@ -1962,26 +2002,47 @@ def extract_facility_values(
         text,
         as_of_date=as_of_date,
     )
+    availability_detail = extract_amount_phrase_detail(
+        text,
+        (
+            (
+                "excess_availability",
+                rf"excess availability(?:[^.]{{0,120}})?\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
+            ),
+            (
+                "had_remaining_borrowing_availability",
+                rf"had \$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)(?:[^.]{{0,100}})?of\s+(?:remaining\s+)?borrowing\s+availability\s+under\s+(?:the\s+)?(?:credit agreement|revolving facility|credit facility)",
+            ),
+            (
+                "had_available_borrowing_capacity",
+                rf"had \$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)(?:[^.]{{0,100}})?of\s+available\s+borrowing\s+capacity\s+under\s+(?:the\s+)?(?:credit agreement|revolving facility|credit facility)",
+            ),
+            (
+                "unused_borrowing_capacity",
+                rf"unused (?:borrowing )?capacity(?:[^.]{{0,80}})?\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
+            ),
+            (
+                "undrawn_capacity",
+                rf"undrawn (?:commitments?|capacity|availability)(?:[^.]{{0,80}})?\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
+            ),
+        ),
+    )
     availability_phrase = (
         dated_availability[0]
         if dated_availability is not None
-        else extract_amount_phrase(
-            text,
-            (
-                r"excess availability(?:[^.]{0,120})?\$?\s*([0-9,.]+)\s*(billion|million)",
-                r"available (?:for borrowing|under [^.]{0,80})(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
-                r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of (?:remaining )?borrowing availability under (?:the )?(?:credit agreement|revolving facility|credit facility)",
-                r"had \$?\s*([0-9,.]+)\s*(billion|million)(?:[^.]{0,100})?of available borrowing capacity under (?:the )?(?:credit agreement|revolving facility|credit facility)",
-                r"unused (?:borrowing )?capacity(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
-                r"undrawn (?:commitments?|capacity|availability)(?:[^.]{0,80})?\$?\s*([0-9,.]+)\s*(billion|million)",
-            ),
-        )
+        else availability_detail[0] if availability_detail is not None else None
     )
     if availability_phrase is not None:
         availability_note = (
-            f"parsed from a dated availability phrase for {dated_availability[1]}"
+            (
+                f"parsed from a dated availability phrase for {dated_availability[1]}; "
+                f"parser_rule={dated_availability[2]}; matched_phrase={dated_availability[3]}"
+            )
             if dated_availability is not None
-            else "parsed from an availability phrase without a date link"
+            else (
+                f"parsed from an availability phrase without a date link; "
+                f"parser_rule={availability_detail[1]}; matched_phrase={availability_detail[2]}"
+            )
         )
         values["facility_availability_reported"] = (
             availability_phrase,
@@ -1996,7 +2057,7 @@ def extract_facility_values(
     total_availability = exact_table_availability or extract_amount_phrase(
         text,
         (
-            r"up to \$?\s*([0-9,.]+)\s*(billion|million) of available borrowings",
+            rf"up to \$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million) of available borrowings",
         ),
     )
     if total_availability is not None:
@@ -2006,8 +2067,8 @@ def extract_facility_values(
     outstanding_borrowings = extract_amount_phrase(
         text,
         (
-            r"had \$?\s*([0-9,.]+)\s*(billion|million) in outstanding borrowings(?:[^.]{0,80})?under the (?:revolving )?facility",
-            r"\$?\s*([0-9,.]+)\s*(billion|million) in outstanding borrowings(?:[^.]{0,80})?under the (?:revolving )?facility",
+            rf"had \$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million) in outstanding borrowings(?:[^.]{{0,80}})?under the (?:revolving )?facility",
+            rf"\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million) in outstanding borrowings(?:[^.]{{0,80}})?under the (?:revolving )?facility",
         ),
     )
     if outstanding_borrowings is not None:
@@ -2023,8 +2084,8 @@ def extract_facility_values(
         else extract_amount_phrase(
             text,
             (
-                r"(?:as of [^.]{0,40},?\s*)?(?:we had|there were)\s+\$?\s*([0-9,.]+)\s*(billion|million)\s+(?:in|of)\s+outstanding letters of credit",
-                r"outstanding letters of credit(?:[^.]{0,50})?(?:were|totaled)\s+\$?\s*([0-9,.]+)\s*(billion|million)",
+                rf"(?:as of [^.]{{0,40}},?\s*)?(?:we had|there were)\s+\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)\s+(?:in|of)\s+outstanding letters of credit",
+                rf"outstanding letters of credit(?:[^.]{{0,50}})?(?:were|totaled)\s+\$?\s*{FACILITY_AMOUNT_CAPTURE}\s*(billion|million)",
             ),
         )
     )

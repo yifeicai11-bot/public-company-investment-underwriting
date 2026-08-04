@@ -1,0 +1,40 @@
+{
+  "started_at": "2026-08-04T07:45:35Z",
+  "python_version": "3.12.13",
+  "python_executable": "<PYTHON_EXECUTABLE>",
+  "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+  "timezone": [
+    "UTC",
+    "UTC"
+  ],
+  "current_commit": "fdbd67140d29eaad5767bdc37f19fb05f5ee9830",
+  "pre_run_commit": "80a3e7c24aa4ca50a0b2c93448c4adf88110f17f",
+  "post_fix_prerequisites": {
+    "status": "PASS",
+    "selected_ticker": "RPM",
+    "selection_reproduced": true,
+    "frozen_pre_run_blobs_reproduced": true,
+    "first_run_integrity": {
+      "status": "PASS",
+      "run_directory": "/home/runner/work/public-company-investment-underwriting/public-company-investment-underwriting/partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/first_run",
+      "hash_method": "SHA256",
+      "artifact_count": 24,
+      "file_set_unchanged": true,
+      "artifact_hashes_unchanged": true
+    }
+  },
+  "network_scope": "PUBLIC_DATA_ONLY",
+  "research_input": null,
+  "command": [
+    "<PYTHON_EXECUTABLE>",
+    "underwrite.py",
+    "analyze",
+    "RPM",
+    "--output-root",
+    "partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix/builder_output"
+  ],
+  "allowed_return_codes": [
+    0,
+    3
+  ]
+}

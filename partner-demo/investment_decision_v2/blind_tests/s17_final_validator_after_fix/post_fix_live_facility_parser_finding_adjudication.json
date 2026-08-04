@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s17_live_post_fix_adjudication",
+  "adjudicated_at": "2026-08-04T08:01:24Z",
+  "attempt": "FINAL_VALIDATOR_AFTER_FIX_LIVE_POST_FIX",
+  "ticker": "RPM",
+  "workflow_run_id": 30889078792,
+  "workflow_sha": "fdbd67140d29eaad5767bdc37f19fb05f5ee9830",
+  "artifact_id": 8884268564,
+  "artifact_sha256": "c6e1e8d6dfcb98f4291cfcc71c4ccc19fdf2c7abdbc86093a7c1b1ec315aaa8b",
+  "artifact_directory": "post_fix_live_facility_parser_finding",
+  "pipeline_status": "RESEARCH_INPUT_REQUIRED",
+  "runner_status": "POST_FIX_COMPLETED",
+  "return_code": 3,
+  "contract_validation_status": "PASS",
+  "data_gate": 1,
+  "hard_stop_count": 0,
+  "status": "SHARED_FIX_REQUIRED",
+  "accepted_findings": [
+    "The selected current filing is the 10-K for the fiscal year ended 2026-05-31, filed 2026-07-22.",
+    "Annual CFO, cash capex, and FCF use the same 2025-06-01 through 2026-05-31 period.",
+    "No stale interim FCF is presented as the current cash-flow basis.",
+    "The contract remains at Gate 1 and suppresses formal investment action, expected return, target price, portfolio action, and position sizing."
+  ],
+  "shared_finding": {
+    "component": "shared facility amount parser",
+    "metric": "facility_availability_reported",
+    "preserved_value_usd": 500000,
+    "preserved_evidence_id": "EV-C8471E30B60D6F",
+    "source_sentence": "Our available liquidity, including our cash and cash equivalents and amounts available under our committed credit facilities, stood at $1,089.5 million at May 31, 2026.",
+    "root_cause": "A permissive regex backtracked through the integer portion of 1,089.5 and captured only .5 million as the amount.",
+    "decision_impact": "The amount was marked PROVISIONAL and did not pass Gate 1 or support an investment conclusion, but a false reported amount is not acceptable in the shared Data and Evidence Layer.",
+    "required_fix_scope": "shared_data_engine"
+  },
+  "required_next_actions": [
+    "Require a left numeric boundary and prevent wildcard text from consuming part of the target number in every facility-availability pattern.",
+    "Preserve the exact matched phrase and parser rule in the evidence record.",
+    "Add regression tests for comma-formatted decimals, misleading available-under phrases, and valid facility availability sentences.",
+    "Rerun RPM and verify that the misleading phrase is not reported as facility availability.",
+    "Freeze the shared fix and complete S17 on a completely new held-out issuer."
+  ],
+  "automatic_investment_approval": false,
+  "automatic_trade_execution": false
+}

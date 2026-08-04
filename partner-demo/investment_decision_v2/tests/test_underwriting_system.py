@@ -238,6 +238,36 @@ class AccountingControlTests(unittest.TestCase):
         self.assertEqual(reconciliation["status"], "PASS")
         self.assertAlmostEqual(reconciliation["gap"], 0)
 
+    def test_facility_parser_rejects_total_liquidity_as_facility_availability(self) -> None:
+        text = """
+        We had unused lines of credit totaling $774.3 million. Our available
+        liquidity, including our cash and cash equivalents and amounts available
+        under our committed credit facilities, stood at $1,089.5 million at
+        May 31, 2026.
+        """
+        values = extract_facility_values(text, as_of_date="2026-05-31")
+        self.assertNotIn("facility_availability_reported", values)
+
+    def test_facility_parser_keeps_full_comma_decimal_amount_and_match_lineage(self) -> None:
+        text = """
+        We had $1,089.5 million of remaining borrowing availability under the
+        credit agreement at year end.
+        """
+        values = extract_facility_values(text)
+        amount, note = values["facility_availability_reported"]
+        self.assertEqual(amount, 1_089_500_000)
+        self.assertIn("parser_rule=had_remaining_borrowing_availability", note)
+        self.assertIn("matched_phrase=had $1,089.5 million", note)
+        self.assertNotEqual(amount, 500_000)
+
+    def test_facility_parser_does_not_start_inside_a_decimal_number(self) -> None:
+        text = "Unused borrowing capacity was $1,089.5 million."
+        values = extract_facility_values(text)
+        self.assertEqual(
+            values["facility_availability_reported"][0],
+            1_089_500_000,
+        )
+
     def test_facility_parser_does_not_use_prior_date_when_current_date_is_absent(self) -> None:
         text = """
         There were $31.8 million and $37.5 million of outstanding letters of credit
