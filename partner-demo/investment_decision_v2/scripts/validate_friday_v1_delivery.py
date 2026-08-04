@@ -43,6 +43,10 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
     contract_errors = validate_output_contract(contract)
     check("contract-schema", not contract_errors, "; ".join(contract_errors) or "Shared contract validation passed.")
     check("hard-stops", not contract.get("hard_stops"), f"Hard Stops={len(contract.get('hard_stops', []))}.")
+    try:
+        gate_level = float(contract.get("data_gate", {}).get("level", 0))
+    except (TypeError, ValueError):
+        gate_level = 0.0
 
     hash_input = {key: value for key, value in contract.items() if key not in {"contract_hash", "contract_validation"}}
     expected_hash = hashlib.sha256(canonical_json(hash_input).encode("utf-8")).hexdigest()
@@ -135,31 +139,83 @@ def validate_delivery(contract: dict[str, Any], html_dir: Path | None = None) ->
     fcf = contract.get("fcf_underwriting_base", {})
     reported_fcf = metric_map.get("reported_ltm_fcf", {}).get("value")
     adjustments = sum(float(row.get("amount") or 0) for row in fcf.get("bridge_lines", []))
-    check(
-        "fcf-bridge-reproduction",
-        close_enough(fcf.get("value"), float(reported_fcf) + adjustments if reported_fcf is not None else None),
-        f"reported={reported_fcf}; adjustments={adjustments}; base={fcf.get('value')}",
-    )
-    check(
-        "fcf-period-alignment",
-        fcf.get("period_end") == dates.get("financial_statement_date"),
-        f"FCF={fcf.get('period_end')}; financials={dates.get('financial_statement_date')}",
-    )
+    if fcf.get("value") is not None:
+        check(
+            "fcf-bridge-reproduction",
+            close_enough(fcf.get("value"), float(reported_fcf) + adjustments if reported_fcf is not None else None),
+            f"reported={reported_fcf}; adjustments={adjustments}; base={fcf.get('value')}",
+        )
+        check(
+            "fcf-period-alignment",
+            fcf.get("period_end") == dates.get("financial_statement_date"),
+            f"FCF={fcf.get('period_end')}; financials={dates.get('financial_statement_date')}",
+        )
+    else:
+        check(
+            "fcf-bridge-suppression",
+            gate_level < 3
+            and fcf.get("status") != "VALIDATED"
+            and not fcf.get("bridge_lines")
+            and fcf.get("period_end") is None,
+            (
+                f"gate={gate_level:g}; status={fcf.get('status')}; value={fcf.get('value')}; "
+                f"period_end={fcf.get('period_end')}; bridge_lines={len(fcf.get('bridge_lines', []))}"
+            ),
+        )
 
     reverse = contract.get("valuation_framework", {}).get("reverse_valuation", {})
-    required_fcf = float(valuation.get("market_cap")) / float(reverse.get("selected_multiple"))
-    check(
-        "reverse-valuation-reproduction",
-        close_enough(reverse.get("required_metric_value"), required_fcf),
-        f"required={reverse.get('required_metric_value')}; recomputed={required_fcf}",
-    )
     priced = contract.get("what_is_priced_in", {})
-    check(
-        "priced-in-reproduction",
-        close_enough(priced.get("required_fcf"), required_fcf)
-        and close_enough(priced.get("difference"), required_fcf - float(fcf.get("value"))),
-        f"priced_required={priced.get('required_fcf')}; priced_difference={priced.get('difference')}",
-    )
+    market_cap = valuation.get("market_cap")
+    selected_multiple = reverse.get("selected_multiple")
+    if market_cap is not None and selected_multiple is not None:
+        try:
+            required_fcf = float(market_cap) / float(selected_multiple)
+        except (TypeError, ValueError, ZeroDivisionError):
+            required_fcf = None
+        check(
+            "reverse-valuation-reproduction",
+            required_fcf is not None
+            and close_enough(reverse.get("required_metric_value"), required_fcf),
+            f"required={reverse.get('required_metric_value')}; recomputed={required_fcf}",
+        )
+        check(
+            "priced-in-reproduction",
+            required_fcf is not None
+            and fcf.get("value") is not None
+            and close_enough(priced.get("required_fcf"), required_fcf)
+            and close_enough(priced.get("difference"), required_fcf - float(fcf.get("value"))),
+            f"priced_required={priced.get('required_fcf')}; priced_difference={priced.get('difference')}",
+        )
+    else:
+        reverse_outputs = (
+            reverse.get("required_metric_value"),
+            reverse.get("required_fcf"),
+        )
+        priced_outputs = (
+            priced.get("required_metric_value"),
+            priced.get("required_fcf"),
+            priced.get("comparison_metric_value"),
+            priced.get("fcf_underwriting_base"),
+            priced.get("difference"),
+            priced.get("difference_percent"),
+        )
+        check(
+            "reverse-valuation-suppression",
+            gate_level < 3
+            and reverse.get("status") != "VALIDATED"
+            and all(value is None for value in reverse_outputs),
+            (
+                f"gate={gate_level:g}; status={reverse.get('status')}; "
+                f"selected_multiple={selected_multiple}; outputs={reverse_outputs}"
+            ),
+        )
+        check(
+            "priced-in-suppression",
+            gate_level < 3
+            and priced.get("status") != "VALIDATED"
+            and all(value is None for value in priced_outputs),
+            f"gate={gate_level:g}; status={priced.get('status')}; outputs={priced_outputs}",
+        )
 
     for scenario in contract.get("scenarios", []):
         name = str(scenario.get("name") or "").lower()

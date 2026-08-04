@@ -29,7 +29,7 @@
     "session": {"pattern": "^S[0-9]{2}$"},
     "status": {"const": "SELECTED_NOT_RUN"},
     "selection_date": {"type": "string", "format": "date"},
-    "attempt": {"enum": ["PRIMARY", "SECONDARY", "FINAL_AFTER_FIX", "FINAL_RENDERER_AFTER_FIX"]},
+    "attempt": {"enum": ["PRIMARY", "SECONDARY", "FINAL_AFTER_FIX", "FINAL_RENDERER_AFTER_FIX", "FINAL_VALIDATOR_AFTER_FIX"]},
     "selection_source": {
       "type": "object",
       "additionalProperties": false,

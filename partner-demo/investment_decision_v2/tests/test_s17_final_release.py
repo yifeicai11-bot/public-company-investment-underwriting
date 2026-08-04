@@ -125,6 +125,7 @@ class S17FinalReleaseProtocolTests(unittest.TestCase):
         schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
         self.assertIn("FINAL_AFTER_FIX", schema["properties"]["attempt"]["enum"])
         self.assertIn("FINAL_RENDERER_AFTER_FIX", schema["properties"]["attempt"]["enum"])
+        self.assertIn("FINAL_VALIDATOR_AFTER_FIX", schema["properties"]["attempt"]["enum"])
 
     def test_s17_command_uses_unified_entry_and_portable_record(self) -> None:
         manifest = {

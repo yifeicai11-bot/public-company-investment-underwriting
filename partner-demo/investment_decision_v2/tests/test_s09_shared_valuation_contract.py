@@ -740,6 +740,35 @@ class SharedValuationContractTests(unittest.TestCase):
         self.assertEqual(checks["share-date-alignment"], "PASS")
         self.assertEqual(checks["current-share-basis-reconciliation"], "PASS")
 
+    def test_delivery_qa_validates_gate_one_suppression_without_numeric_coercion(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1]
+            / "blind_tests"
+            / "s17_final_renderer_after_fix"
+            / "first_run"
+            / "builder_output"
+            / "ttek_tetra_tech_inc"
+            / "step3"
+            / "underwriting_output_contract.json"
+        )
+        contract = json.loads(source.read_text(encoding="utf-8"))
+        result = validate_delivery(contract)
+        checks = {row["check_id"]: row["status"] for row in result["checks"]}
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(checks["fcf-bridge-suppression"], "PASS")
+        self.assertEqual(checks["reverse-valuation-suppression"], "PASS")
+        self.assertEqual(checks["priced-in-suppression"], "PASS")
+
+        contract["data_gate"]["level"] = 3
+        invalid = validate_delivery(contract)
+        invalid_checks = {
+            row["check_id"]: row["status"] for row in invalid["checks"]
+        }
+        self.assertEqual(invalid["status"], "FAIL")
+        self.assertEqual(invalid_checks["fcf-bridge-suppression"], "FAIL")
+        self.assertEqual(invalid_checks["reverse-valuation-suppression"], "FAIL")
+        self.assertEqual(invalid_checks["priced-in-suppression"], "FAIL")
+
     def test_gate4_pack_never_uses_price_sensitivity_as_downside_return(self) -> None:
         parent = parent_contract()
         parent["valuation_contract"] = build_shared_valuation_contract(parent, valid_input())
