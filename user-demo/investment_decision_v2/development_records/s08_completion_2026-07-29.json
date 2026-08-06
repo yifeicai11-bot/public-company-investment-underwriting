@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.1.0",
+  "document_type": "development_session_completion_record",
+  "phase": "B",
+  "session": "S08",
+  "name": "Cross-Company Acceptance",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "acceptance_implementation_commit": "ae097ace87173caa17b6e3e386367a8dffbf1cb0",
+  "acceptance_evidence_commit": "d486f630cdeabfe0d49d42895f62391d92392a9b",
+  "s07_frozen_shared_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
+  "required_scope": [
+    "Rerun CROX, AZO, the preserved S05 blind company ODFL, and the newly selected unfamiliar company ITT.",
+    "Confirm safe handling of VALIDATED, MISSING, NOT_APPLICABLE, WARNING, and HARD_STOP outcomes.",
+    "Confirm that no ticker-specific analytical branch, company-name condition, or hard-coded company value was introduced."
+  ],
+  "acceptance_report": "user-demo/investment_decision_v2/regression/s08_cross_company_acceptance_final_2026-07-29.json",
+  "acceptance_run": {
+    "status": "PASS",
+    "started_at": "2026-07-29T07:20:53.500057+00:00",
+    "completed_at": "2026-07-29T07:21:46.900970+00:00",
+    "elapsed_seconds": 53.401,
+    "notes_and_events_control_version": "1.1.0",
+    "s07_shared_files_unchanged": true,
+    "errors": []
+  },
+  "live_case_results": [
+    {
+      "ticker": "CROX",
+      "role": "existing_regression",
+      "status": "PASS",
+      "financial_statement_date": "2026-03-31",
+      "latest_financial_filing_date": "2026-04-30",
+      "market_price_date": "2026-07-28",
+      "data_gate": 1,
+      "hard_stops": 0,
+      "warnings": 26,
+      "evidence_records": 80
+    },
+    {
+      "ticker": "AZO",
+      "role": "existing_regression",
+      "status": "PASS",
+      "financial_statement_date": "2026-05-09",
+      "latest_financial_filing_date": "2026-06-12",
+      "market_price_date": "2026-07-28",
+      "data_gate": 1,
+      "hard_stops": 0,
+      "warnings": 26,
+      "evidence_records": 102
+    },
+    {
+      "ticker": "ODFL",
+      "role": "preserved_unfamiliar_company",
+      "status": "PASS",
+      "financial_statement_date": "2026-03-31",
+      "latest_financial_filing_date": "2026-05-06",
+      "market_price_date": "2026-07-28",
+      "data_gate": 1,
+      "hard_stops": 0,
+      "warnings": 28,
+      "evidence_records": 72
+    },
+    {
+      "ticker": "ITT",
+      "role": "new_unfamiliar_company",
+      "status": "PASS",
+      "financial_statement_date": "2026-04-04",
+      "latest_financial_filing_date": "2026-05-06",
+      "market_price_date": "2026-07-28",
+      "data_gate": 1,
+      "hard_stops": 0,
+      "warnings": 23,
+      "evidence_records": 85
+    }
+  ],
+  "safe_outcome_acceptance": [
+    {
+      "outcome": "VALIDATED",
+      "status": "PASS",
+      "behavior": "Validated modules retain stable evidence IDs and source lineage."
+    },
+    {
+      "outcome": "MISSING",
+      "status": "PASS",
+      "behavior": "Missing disclosure remains explicit and is never converted to zero."
+    },
+    {
+      "outcome": "NOT_APPLICABLE",
+      "status": "PASS",
+      "behavior": "The status requires an explicit basis or completed scan."
+    },
+    {
+      "outcome": "WARNING",
+      "status": "PASS",
+      "behavior": "Research may continue, but the affected conclusion remains qualified."
+    },
+    {
+      "outcome": "HARD_STOP",
+      "status": "PASS",
+      "behavior": "A synthetic non-reliance event drives Gate 0, suppresses formal reports, and permits diagnostic-only rendering."
+    }
+  ],
+  "anti_overfitting_acceptance": {
+    "status": "PASS",
+    "analytical_files_scanned": 5,
+    "fixture_values_checked": 14,
+    "findings": 0,
+    "selected_company_replaced": false,
+    "s07_shared_file_hashes_match_frozen_commit": true
+  },
+  "verification": {
+    "dedicated_s08_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "complete_test_suite": {
+      "passed": 176,
+      "failed": 0
+    },
+    "v1_0_0_baseline": {
+      "passed": 82,
+      "failed": 0
+    },
+    "tracked_file_privacy_scan": {
+      "files_checked": 327,
+      "violations": 0
+    },
+    "skill_validation": "PASS"
+  },
+  "scope_boundary": [
+    "Live public-company results are dated and must be regenerated after new filings or material events.",
+    "A MISSING or WARNING acceptance means the system constrained the output correctly; it does not convert missing evidence into validated evidence.",
+    "Additional live fixtures for distressed, restated, material-event, and complex-capital-structure issuers remain future coverage expansion."
+  ],
+  "exact_next_starting_point": "Read and freeze the approved S09 definition before implementing Phase C."
+}

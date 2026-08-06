@@ -1,0 +1,7 @@
+# v1.0.0 has no third-party Python package dependency.
+# Verified runtime: CPython 3.12.13.
+# Minimum supported runtime: CPython 3.11.
+#
+# PDF generation additionally requires a local Google Chrome or Chromium
+# executable. Pixel-level baseline comparison optionally requires Poppler's
+# pdfinfo and pdftoppm commands.

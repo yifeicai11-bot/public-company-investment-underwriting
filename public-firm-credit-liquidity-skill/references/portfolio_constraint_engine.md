@@ -42,7 +42,7 @@ probability-weighted return is accepted only when the Gate 3 valuation contract
 itself marks that dated-horizon output `VALIDATED` and the value and dates
 reconcile. A public Bear downside is accepted only from a validated formal
 scenario-return object; an implied-price change is never substituted. A
-Partner stress return must remain in the repo-external private input.
+User stress return must remain in the repo-external private input.
 
 ## Measurement Basis
 
@@ -128,7 +128,7 @@ shown, but it must say it is not final while inputs are missing.
 S13 output is not an S14 system assessment. Keep:
 
 - System Portfolio Assessment: `NOT_EVALUATED`
-- Partner Decision: `PENDING`
+- User Decision: `PENDING`
 - Approved Position Range: null
 - Automatic Trade Execution: false
 

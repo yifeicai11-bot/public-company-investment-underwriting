@@ -75,9 +75,9 @@ def run_doctor(
     checks: list[dict[str, str]] = []
     required_paths = (
         "public-firm-credit-liquidity-skill/SKILL.md",
-        "partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
-        "partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py",
-        "partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py",
+        "user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py",
+        "user-demo/investment_decision_v2/scripts/render_public_company_artifacts.py",
+        "user-demo/investment_decision_v2/scripts/validate_v1_delivery.py",
         "requirements.lock",
     )
     missing_paths = [value for value in required_paths if not (repo_root / value).exists()]

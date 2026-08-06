@@ -1,0 +1,268 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "phase_d_promotion_audit",
+  "phase": "D",
+  "scope": [
+    "S13 Portfolio Constraint Engine",
+    "S14 Gate 4 Assessment, Approval and Reports"
+  ],
+  "audit_timestamp_utc": "2026-08-03T06:18:35Z",
+  "branch": "codex/phase-d-gate4-s13",
+  "main_baseline_commit": "ba670da6aaceea17885dd8ca155cfc7df84b80c1",
+  "audited_implementation_commit": "e0a7715203daa539d68ba96b47ce25e9f3099a83",
+  "phase_d_commits": [
+    "2dd506c4152989b735e3152eab4436eafe8e62a7",
+    "a47cb31054e55da3457ec8d86a8307076e762c27",
+    "92bc7734cbd41b284b0867d657e1d0585e0ed7ce",
+    "d4ec5649e8d89a03c262ec3390ae949dade8ad2a",
+    "e0a7715203daa539d68ba96b47ce25e9f3099a83"
+  ],
+  "status": "PASS",
+  "promotion_recommendation": "READY_FOR_MAIN_AFTER_USER_APPROVAL",
+  "requirements_trace": [
+    {
+      "session": "S13",
+      "status": "PASS",
+      "requirements": {
+        "freshness_boundary": "Re-run Gate 3 eligibility and identity immediately before portfolio calculation.",
+        "required_constraints": [
+          "existing issuer exposure",
+          "single-name concentration",
+          "sector concentration",
+          "country concentration",
+          "correlated exposure",
+          "target-return hurdle",
+          "holding-period limit",
+          "downside tolerance",
+          "portfolio liquidity floor",
+          "candidate exit capacity",
+          "downside-loss risk budget",
+          "opportunity-cost hurdle",
+          "applicable hedge constraints"
+        ],
+        "output_boundary": "Constraint ceiling only; no system-owned position range, approval, portfolio action, external transmission, or trade."
+      },
+      "acceptance_evidence": [
+        "Every required numeric ceiling is independently reproducible and the final incremental ceiling equals the minimum required ceiling.",
+        "The total issuer ceiling equals current issuer gross-long exposure plus the final incremental ceiling, capped to the controlled weight range.",
+        "Formula registry, constraint IDs, binding list, binding values, and row-level binding flags must reconcile exactly.",
+        "Missing required inputs return GATE_4_CONSTRAINTS_INCOMPLETE rather than a partial maximum.",
+        "Exposure dimensions retain separate gross-long measurement bases and are not summed across issuer, sector, country, or correlation buckets.",
+        "No public price sensitivity is accepted as a validated portfolio return or downside input."
+      ]
+    },
+    {
+      "session": "S14",
+      "status": "PASS",
+      "requirements": {
+        "system_assessment_states": [
+          "ELIGIBLE",
+          "ELIGIBLE_WITH_ESCALATION",
+          "REVIEW_REQUIRED",
+          "NOT_ELIGIBLE",
+          "NOT_EVALUATED"
+        ],
+        "partner_decision_states": [
+          "PENDING",
+          "APPROVED",
+          "MODIFIED",
+          "REJECTED",
+          "DEFERRED"
+        ],
+        "reports": [
+          "bilingual One-Page Summary",
+          "bilingual Full Report",
+          "bilingual Evidence Appendix",
+          "bilingual Validation Report"
+        ],
+        "output_boundary": "System Assessment and User Decision remain separate; every completed decision is hash-bound and no trade is automatic."
+      },
+      "acceptance_evidence": [
+        "S14 consumes the shared S13 result and does not recreate constraint formulas in the renderer.",
+        "The complete private bundle is fingerprinted before S13, after S13, and after final reload; any change produces Not Evaluated.",
+        "Final Gate 3 identity includes schema version, report ID, contract hash, and company identity.",
+        "Every non-pending User decision requires the exact current assessment hash.",
+        "Approved and Modified decisions additionally require the designated User, timestamp, rationale, total-issuer gross-long basis, range within the total ceiling, and exact escalation acknowledgements.",
+        "Invalid submitted decisions remain visible but the effective decision becomes Pending with blocking reason codes.",
+        "All four reports consume one validated contract and the renderer performs no independent analytical calculation."
+      ]
+    }
+  ],
+  "promotion_findings_and_fixes": [
+    {
+      "severity": "HIGH",
+      "finding": "S14 reproduced the incremental ceiling but did not independently reproduce the total issuer ceiling used to cap an approved User range.",
+      "root_cause": "The integrity check stopped at the minimum required incremental ceiling and binding IDs.",
+      "system_wide_fix": "Recalculate total issuer weight from the existing issuer exposure row plus the validated incremental ceiling and Hard Stop any mismatch.",
+      "ticker_specific_patch": false,
+      "regression": "A tampered total ceiling now returns Not Evaluated with total_issuer_ceiling_not_reproducible."
+    },
+    {
+      "severity": "HIGH",
+      "finding": "Formula registry changes, duplicate constraint or binding IDs, incorrect binding values, and inconsistent row binding flags were not all independently rejected.",
+      "root_cause": "Schema validation controlled types and ranges but did not enforce every cross-field relationship.",
+      "system_wide_fix": "Add shared cross-field integrity checks for IDs, formulas, required statuses, binding sets, binding values, and row flags.",
+      "ticker_specific_patch": false,
+      "regression": "Seven adversarial S13 mutations now Hard Stop S14."
+    },
+    {
+      "severity": "HIGH",
+      "finding": "A private input file could theoretically change after the post-S13 fingerprint and before the final bundle reload completed.",
+      "root_cause": "The runner compared fingerprints before and after S13 but did not fingerprint once more after the final validated reload.",
+      "system_wide_fix": "Add final full-bundle and assessment-input fingerprints and require all three snapshots to match.",
+      "ticker_specific_patch": false,
+      "regression": "A simulated final-reload fingerprint change now returns Not Evaluated through S14-BUNDLE-STABILITY."
+    },
+    {
+      "severity": "MEDIUM",
+      "finding": "The final Gate 3 identity check compared report ID, contract hash, and company but omitted explicit schema version equality.",
+      "root_cause": "The helper consumed the abbreviated top-level S13 identity instead of the complete Gate 3 recheck identity.",
+      "system_wide_fix": "Compare the current contract with the complete recheck identity, including schema version.",
+      "ticker_specific_patch": false,
+      "regression": "A schema-only Gate 3 mutation now fails the final identity check."
+    },
+    {
+      "severity": "MEDIUM",
+      "finding": "Rejected or Deferred records could omit an assessment hash and later appear beside changed analytical inputs.",
+      "root_cause": "Exact hash binding was mandatory only for Approved and Modified records.",
+      "system_wide_fix": "Require every completed non-pending User decision to bind to the exact current assessment hash.",
+      "ticker_specific_patch": false,
+      "regression": "Missing-hash Rejected and Deferred records are blocked in both private-input validation and the assessment engine."
+    },
+    {
+      "severity": "MEDIUM",
+      "finding": "A non-required constraint with BREACH status could be omitted from both the required-breach and review lists.",
+      "root_cause": "Review Required considered non-required Warning and Missing states but not Breach.",
+      "system_wide_fix": "Route every non-required Breach, Warning, or Missing state to Review Required.",
+      "ticker_specific_patch": false,
+      "regression": "A non-required hedge breach now returns Review Required."
+    }
+  ],
+  "verification": {
+    "runtime": {
+      "python": "3.12.13",
+      "os": "macOS Darwin 24.6.0 arm64"
+    },
+    "dedicated_gate4_tests": {
+      "status": "PASS",
+      "passed": 78,
+      "failed": 0,
+      "files": [
+        "test_gate4_private_contract.py",
+        "test_gate4_privacy.py",
+        "test_s13_portfolio_constraint_engine.py",
+        "test_s14_gate4_assessment.py"
+      ]
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 342,
+      "failed": 0
+    },
+    "input_mode_matrix": {
+      "status": "PASS",
+      "cases": {
+        "EXPOSURE_ONLY": "NOT_EVALUATED",
+        "AGGREGATED_PORTFOLIO": "ELIGIBLE_WITH_ESCALATION",
+        "FULL_HOLDINGS": "ELIGIBLE_WITH_ESCALATION"
+      },
+      "partner_decision_all_cases": "PENDING",
+      "automatic_trade_execution_all_cases": false
+    },
+    "cross_company_gate3_contracts": {
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AZO",
+        "CRM"
+      ],
+      "shared_engine_only": true
+    },
+    "system_state_coverage": {
+      "status": "PASS",
+      "states": [
+        "ELIGIBLE",
+        "ELIGIBLE_WITH_ESCALATION",
+        "REVIEW_REQUIRED",
+        "NOT_ELIGIBLE",
+        "NOT_EVALUATED"
+      ]
+    },
+    "partner_state_coverage": {
+      "status": "PASS",
+      "states": [
+        "PENDING",
+        "APPROVED",
+        "MODIFIED",
+        "REJECTED",
+        "DEFERRED"
+      ]
+    },
+    "hash_and_mutation_guards": {
+      "status": "PASS",
+      "assessment_hash_stable_across_non-substantive_runtime_timestamps": true,
+      "substantive_input_change_changes_or_invalidates_hash": true,
+      "stale_or_missing_completed_decision_hash_blocked": true,
+      "running_bundle_change_blocked": true,
+      "gate3_schema_identity_change_blocked": true
+    },
+    "synthetic_delivery": {
+      "status": "PASS",
+      "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
+      "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
+      "system_assessment": "ELIGIBLE_WITH_ESCALATION",
+      "partner_decision": "PENDING",
+      "contract_validation": "PASS",
+      "hard_stops": 0,
+      "automatic_trade_execution": false
+    },
+    "pdf_delivery_and_visual_review": {
+      "status": "PASS",
+      "page_size": "A4",
+      "one_page_summary_pages": 1,
+      "full_report_pages": 4,
+      "evidence_appendix_pages": 3,
+      "validation_report_pages": 1,
+      "bilingual_text": "PASS",
+      "manifest_hashes": "PASS",
+      "controlled_position_language": "PASS",
+      "overlap_or_clipping": false,
+      "orphan_pages": false
+    },
+    "v1_0_0_frozen_contracts": {
+      "status": "PASS",
+      "CROX_checks": 29,
+      "AZO_checks": 29,
+      "failed_checks": 0
+    },
+    "cross_industry_governance": {
+      "status": "PASS",
+      "active_cases": 7,
+      "active_industries": 7,
+      "anti_hardcoding_findings": 0
+    },
+    "shared_phase_d_ticker_scan": {
+      "status": "PASS",
+      "company_specific_branches": 0
+    },
+    "promotion_fix_privacy_scan": {
+      "status": "PASS",
+      "files_checked": 17,
+      "violations": 0
+    },
+    "python_compile_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "skill_structure_validation": "PASS"
+  },
+  "scope_boundaries": [
+    "The public issuer engine and Gate 4 portfolio overlay remain separate; Gate 4 cannot accept ticker-only input or rebuild issuer analysis.",
+    "The committed Gate 4 reports use synthetic portfolio inputs and are not real fund facts, position recommendations, approvals, or investment actions.",
+    "Eligible means only that tested policy constraints permit User review; it is not a buy instruction.",
+    "A constraint ceiling is not a suggested, recommended, target, approved, or optimal position.",
+    "Real policy, holdings, exposure, opportunity-set, and approval data remain repo-external and must not be pasted into an external model.",
+    "No Gate 4 state automatically transmits or executes a trade.",
+    "This promotion audit validates software behavior against preserved fixtures; it does not claim stored public-company market data is current for a new investment decision."
+  ],
+  "upload_status": "NOT_PUSHED_PENDING_USER_APPROVAL",
+  "next_action": "After explicit user approval, merge or fast-forward the audited Phase D branch to main, rerun the short post-merge acceptance set, and push main to GitHub."
+}

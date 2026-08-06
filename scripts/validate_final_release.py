@@ -13,17 +13,17 @@ RELEASE = "v1.1.0"
 MANIFEST_PATH = ROOT / "releases" / RELEASE / "release_manifest.json"
 RPM_ADJUDICATION_PATH = (
     ROOT
-    / "partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix"
+    / "user-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix"
     / "post_fix_live_after_facility_parser_fix_adjudication.json"
 )
 RPM_RUN_PATH = (
     ROOT
-    / "partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix"
+    / "user-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix"
     / "post_fix_live_after_facility_parser_fix"
 )
 TNL_ACCEPTANCE_PATH = (
     ROOT
-    / "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix"
+    / "user-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix"
     / "s17_acceptance_result.json"
 )
 TNL_RUN_PATH = TNL_ACCEPTANCE_PATH.parent / "first_run"
@@ -36,7 +36,7 @@ def read_json(path: Path) -> dict[str, Any]:
 def validate_final_release(root: Path = ROOT) -> dict[str, Any]:
     import sys
 
-    scripts = root / "partner-demo/investment_decision_v2/scripts"
+    scripts = root / "user-demo/investment_decision_v2/scripts"
     if str(scripts) not in sys.path:
         sys.path.insert(0, str(scripts))
     from run_blind_company_forward_test import verify_preserved_run

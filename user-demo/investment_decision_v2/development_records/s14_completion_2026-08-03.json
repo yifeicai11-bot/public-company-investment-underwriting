@@ -1,0 +1,212 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_completion_record",
+  "phase": "D",
+  "session": "S14",
+  "name": "Gate 4 Assessment, Approval and Reports",
+  "status": "ACCEPTED",
+  "completion_date": "2026-08-03",
+  "branch": "codex/phase-d-gate4-s13",
+  "s13_accepted_baseline": "a47cb31054e55da3457ec8d86a8307076e762c27",
+  "implementation_commit": "92bc7734cbd41b284b0867d657e1d0585e0ed7ce",
+  "shared_contracts": {
+    "private_input_contract_version": "2.2.0",
+    "private_workspace_manifest_version": "2.2.0",
+    "field_governance_version": "1.2.0",
+    "approval_config_version": "1.1.0",
+    "constraint_engine_version": "1.0.0",
+    "constraint_output_contract_version": "1.0.0",
+    "assessment_engine_version": "1.0.0",
+    "assessment_output_contract_version": "1.0.0",
+    "authoritative_assessment_engine": "user-demo/investment_decision_v2/scripts/gate4_assessment_engine.py",
+    "local_runner": "user-demo/investment_decision_v2/scripts/run_gate4_assessment.py",
+    "shared_renderer": "user-demo/investment_decision_v2/scripts/gate4_reports.py",
+    "renderer_recalculation_allowed": false,
+    "automatic_trade_execution": false,
+    "ticker_specific_logic_allowed": false
+  },
+  "required_scope": [
+    "Consume only a current shared S13 result and rerun S13 from the exact local inputs before assessment.",
+    "Classify the System Portfolio Assessment as Eligible, Eligible with Escalation, Review Required, Not Eligible, or Not Evaluated using a fixed priority order.",
+    "Keep the User Decision separately owned and limited to Pending, Approved, Modified, Rejected, or Deferred.",
+    "Bind completed approval records to a deterministic assessment hash and the total-issuer constraint ceiling.",
+    "Generate bilingual One-Page, Full Report, Evidence Appendix, and Validation Report outputs from one validated contract.",
+    "Never describe the constraint-based maximum as a suggested, recommended, target, approved, or optimal position.",
+    "Never place or transmit a trade automatically."
+  ],
+  "system_assessment_state_machine": {
+    "priority_order": [
+      "NOT_EVALUATED",
+      "NOT_ELIGIBLE",
+      "REVIEW_REQUIRED",
+      "ELIGIBLE_WITH_ESCALATION",
+      "ELIGIBLE"
+    ],
+    "not_evaluated": "Invalid, incomplete, stale, changed, or non-reproducible S13 or Gate 3 inputs.",
+    "not_eligible": "A required condition is breached or no positive incremental capacity remains.",
+    "review_required": "A non-required but decision-relevant Warning or Missing item remains unresolved.",
+    "eligible_with_escalation": "Required constraints pass, but reviewed constraint or Gate 3 escalations require User acknowledgement.",
+    "eligible": "Required constraints pass with positive capacity and no unresolved review or escalation item."
+  },
+  "partner_decision_controls": {
+    "allowed_states": [
+      "PENDING",
+      "APPROVED",
+      "MODIFIED",
+      "REJECTED",
+      "DEFERRED"
+    ],
+    "approval_requirements": [
+      "Approval-capable System Assessment.",
+      "Exact current assessment hash.",
+      "Designated User identity, timestamp, and rationale.",
+      "TOTAL_ISSUER_GROSS_LONG_WEIGHT basis.",
+      "Minimum and maximum range within the total-issuer constraint ceiling.",
+      "Exact acknowledgement of all active escalation IDs."
+    ],
+    "invalid_completed_record": "The submitted state remains visible, but the effective decision becomes PENDING with blocking reason codes.",
+    "rejected_or_deferred_position_range": null,
+    "system_generated": false,
+    "automatic_trade_execution": false
+  },
+  "hash_and_integrity_controls": [
+    "The assessment-input fingerprint excludes only the mutable User decision record.",
+    "The assessment hash binds the stable S13 analytical payload, Gate 3 identity, candidate identity, input fingerprint, and System Assessment.",
+    "Volatile Gate 3 recheck timestamps are excluded from the analytical hash; check status, evidence, and every substantive field remain included.",
+    "The local runner verifies the full private bundle and Gate 3 identity did not change during the S14 run.",
+    "S14 independently reproduces the final S13 ceiling and binding constraints before issuing an assessment.",
+    "One-Page and Full Report display the same assessment hash and consume the same contract."
+  ],
+  "report_contract": {
+    "one_page": "Direct decision highlights, System Assessment, User Decision, constraint ceiling, binding constraint, escalation list, decision boundary, and next action.",
+    "full_report": "Executive decision, complete constraint matrix, readable per-constraint formula audit, User decision record, and decision boundaries.",
+    "evidence_appendix": "Stable evidence IDs, exact values, source objects, source fields, S13 hash, assessment hash, and input fingerprint.",
+    "validation_report": "Contract validation, analytical checks, Hard Stops, Warnings, evidence links, and renderer no-recalculation control.",
+    "bilingual": true,
+    "same_underlying_contract": true,
+    "renderer_may_recalculate": false
+  },
+  "privacy_boundary": [
+    "Real portfolio inputs and S14 Markdown outputs remain inside the repo-external private workspace.",
+    "Private output files use secure atomic writes and mode 0600.",
+    "The terminal prints no private portfolio values, policy limits, approved ranges, or private paths.",
+    "Public PDF generation accepts SYNTHETIC_PUBLIC_EXAMPLE only.",
+    "Public manifests contain only public filenames and file hashes, not private absolute paths.",
+    "Direct private PDF writes remain prohibited and require the separate sanitizer workflow."
+  ],
+  "synthetic_acceptance": {
+    "company": "CROX synthetic Gate 4 interface demonstration",
+    "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
+    "system_assessment": "ELIGIBLE_WITH_ESCALATION",
+    "partner_decision": "PENDING",
+    "contract_validation": "PASS",
+    "hard_stops": 0,
+    "warnings": 5,
+    "binding_constraint": "sector",
+    "maximum_incremental_constraint_ceiling": 0.05,
+    "maximum_total_issuer_constraint_ceiling": 0.05,
+    "is_position_recommendation": false,
+    "automatic_trade_execution": false,
+    "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
+    "interpretation": "Synthetic values verify the interface and controls only; they are not real fund facts, a recommended position, User approval, or an investment action."
+  },
+  "verification": {
+    "gate4_s13_s14_tests": {
+      "status": "PASS",
+      "passed": 71,
+      "failed": 0
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 335,
+      "failed": 0
+    },
+    "system_assessment_state_coverage": {
+      "status": "PASS",
+      "states": [
+        "ELIGIBLE",
+        "ELIGIBLE_WITH_ESCALATION",
+        "REVIEW_REQUIRED",
+        "NOT_ELIGIBLE",
+        "NOT_EVALUATED"
+      ]
+    },
+    "partner_decision_state_coverage": {
+      "status": "PASS",
+      "states": [
+        "PENDING",
+        "APPROVED",
+        "MODIFIED",
+        "REJECTED",
+        "DEFERRED"
+      ]
+    },
+    "cross_company_gate3_contracts": {
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AZO",
+        "CRM"
+      ],
+      "shared_engine_only": true
+    },
+    "hash_stability": {
+      "status": "PASS",
+      "same_substantive_inputs_across_separate_runs": true,
+      "substantive_state_change_changes_hash": true
+    },
+    "synthetic_delivery_validator": {
+      "status": "PASS",
+      "manifest_hashes": "PASS",
+      "controlled_position_language": "PASS",
+      "bilingual_text": "PASS",
+      "automatic_trade_execution": false
+    },
+    "pdf_visual_review": {
+      "status": "PASS",
+      "page_size": "A4",
+      "one_page_summary_pages": 1,
+      "full_report_pages": 4,
+      "evidence_appendix_pages": 3,
+      "validation_report_pages": 1,
+      "overlap_or_clipping": false,
+      "orphan_footer_or_table_page": false
+    },
+    "v1_0_0_frozen_contracts": {
+      "status": "PASS",
+      "CROX_checks": 29,
+      "AZO_checks": 29,
+      "failed_checks": 0
+    },
+    "cross_industry_governance": {
+      "status": "PASS",
+      "active_cases": 7,
+      "active_industries": 7,
+      "anti_hardcoding_findings": 0
+    },
+    "shared_s14_anti_hardcoding_scan": {
+      "status": "PASS",
+      "company_specific_branches": 0
+    },
+    "skill_structure_validation": "PASS",
+    "python_compile_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "privacy_scan": {
+      "status": "PASS",
+      "files_checked": 39
+    }
+  },
+  "scope_boundary": [
+    "Eligible is a policy-constraint status, not a buy instruction or investment recommendation.",
+    "The System Assessment never creates an approved or recommended position range.",
+    "Only a valid User-owned record can display an approved range, and that range remains subject to separate implementation controls.",
+    "S14 does not transmit a decision to a broker, order-management system, or external service.",
+    "Synthetic PDF reports must not be represented as real portfolio analysis.",
+    "Phase D completion does not authorize private data to enter Git or an external model."
+  ],
+  "exact_next_starting_point": {
+    "session": "Phase D Promotion Audit",
+    "name": "S13-S14 Integrated Acceptance and Main Promotion",
+    "first_action": "Re-run the frozen S13-S14 acceptance set from the implementation commit, confirm the completion record, and request explicit authorization before merging or pushing Phase D to main."
+  }
+}

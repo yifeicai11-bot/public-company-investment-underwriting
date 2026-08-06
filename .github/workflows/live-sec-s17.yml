@@ -20,8 +20,8 @@ jobs:
     env:
       SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
       PYTHONHASHSEED: "0"
-      MANIFEST: partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/manifest.json
-      POST_FIX_DIR: partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix
+      MANIFEST: user-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/manifest.json
+      POST_FIX_DIR: user-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,14 +47,14 @@ jobs:
 
       - name: Verify frozen S17 inputs
         run: |
-          python partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py "$MANIFEST" --verify-preserved-first-run
+          python user-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py "$MANIFEST" --verify-preserved-first-run
 
       - name: Run immutable RPM post-fix test
         id: rpm
         shell: bash
         run: |
           set +e
-          python partner-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py \
+          python user-demo/investment_decision_v2/scripts/run_blind_company_forward_test.py \
             "$MANIFEST" \
             --post-fix \
             --timeout-seconds 900 \

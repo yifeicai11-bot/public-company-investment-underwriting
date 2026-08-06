@@ -58,9 +58,9 @@ investment_private/
 # Regenerable local outputs
 outputs/
 tmp/
-partner-demo/investment_decision_v2/generic_outputs/
-partner-demo/investment_decision_v2/final_delivery/
-partner-demo/investment_decision_v2/output/
-partner-demo/investment_decision_v2/validation/
-partner-demo/investment_decision_v2/regression_render/
-partner-demo/investment_decision_v2/system_test_outputs/
+user-demo/investment_decision_v2/generic_outputs/
+user-demo/investment_decision_v2/final_delivery/
+user-demo/investment_decision_v2/output/
+user-demo/investment_decision_v2/validation/
+user-demo/investment_decision_v2/regression_render/
+user-demo/investment_decision_v2/system_test_outputs/

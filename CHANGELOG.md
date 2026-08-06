@@ -33,17 +33,17 @@ S16 release candidate for usability and delivery hardening.
 
 ### Changed
 
-- The recommended partner-ready workflow now requires Gate 3 plus an independent validation pass before formal report rendering.
+- The recommended user-ready workflow now requires Gate 3 plus an independent validation pass before formal report rendering.
 - `requirements-gate4.txt` delegates to the repository-wide lock.
 - The privacy scanner supports `--tracked` for CI in addition to staged and explicit-path checks.
 
 ### Boundaries
 
-- Friday V1 remains frozen at `v1.0.0-friday`.
+- v1.0.0 remains frozen at the recorded baseline commit.
 - S16 does not select or run the S17 true held-out company.
 - S16 does not publish a final release and does not change Gate 4's private, human-owned decision boundary.
 
-## v1.0.0-friday - 2026-07-17
+## v1.0.0 Baseline - 2026-07-17
 
-- Frozen partner-submitted public-company underwriting baseline.
+- Frozen user-submitted public-company underwriting baseline.
 - Preserved by tag, input/output hashes, runtime manifest, and offline verifier.

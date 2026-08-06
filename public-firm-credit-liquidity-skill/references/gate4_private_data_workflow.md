@@ -5,7 +5,7 @@ or portfolio-sizing context is requested.
 
 ## Non-Negotiable Boundary
 
-Never ask the Partner to paste or upload real portfolio data into Codex,
+Never ask the User to paste or upload real portfolio data into Codex,
 Claude, a hosted model, an external API, telemetry, remote logs, or the public
 repository. Use the local Python workflow. The repository contains only empty
 templates, schemas, and clearly classified synthetic examples.
@@ -33,7 +33,7 @@ python3 -m pip install -r requirements-gate4.txt
 Create the default local workspace:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
+python3 user-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
   --input-mode EXPOSURE_ONLY
 ```
 
@@ -73,7 +73,7 @@ and review timestamp.
 Run:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
@@ -86,7 +86,7 @@ The local entry:
 4. Propagates stale or ineligible Gate 3 status.
 5. Writes only a privacy-safe JSON diagnostic to `private_outputs/`.
 6. Leaves system assessment `NOT_EVALUATED`.
-7. Leaves Partner decision `PENDING`.
+7. Leaves User decision `PENDING`.
 8. Leaves every sizing, action, and trade field null.
 
 `GATE_4_INPUTS_VALIDATED` means the local documents are structurally valid and
@@ -99,7 +99,7 @@ ceiling.
 After entry validation, run:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
@@ -123,7 +123,7 @@ status flags.
   missing; final maximum and binding constraints remain null or empty.
 
 The maximum is a constraint ceiling, not a suggested position. S13 leaves
-System Portfolio Assessment `NOT_EVALUATED`, Partner Decision `PENDING`, and
+System Portfolio Assessment `NOT_EVALUATED`, User Decision `PENDING`, and
 approved position range null. Read `portfolio_constraint_engine.md` for binding
 formulas and language rules.
 
@@ -145,7 +145,7 @@ Private outputs and public outputs must remain in separate directories. Direct
 private PDF writes are blocked. Sanitize and verify a local PDF with:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/sanitize_gate4_private_pdf.py \
+python3 user-demo/investment_decision_v2/scripts/sanitize_gate4_private_pdf.py \
   ~/investment_private/private_outputs/raw_report.pdf \
   --output ~/investment_private/private_outputs/sanitized_report.pdf \
   --root ~/investment_private
@@ -161,13 +161,13 @@ not print private paths. Sanitization does not authorize transmission.
 After a complete S13 result, run:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
 
 The system assessment uses `ELIGIBLE`, `ELIGIBLE_WITH_ESCALATION`,
-`REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or `NOT_EVALUATED`. The Partner decision is
+`REVIEW_REQUIRED`, `NOT_ELIGIBLE`, or `NOT_EVALUATED`. The User decision is
 separate and uses `PENDING`, `APPROVED`, `MODIFIED`, `REJECTED`, or `DEFERRED`.
 Every non-pending decision must reference the current assessment hash. An
 approval or modification must additionally use a total-issuer gross-long
@@ -180,5 +180,5 @@ contain private values and remain local. Direct private PDF writes remain
 prohibited; use the sanitizer workflow.
 
 The system never automatically places a trade. S13 calculates a constraint
-ceiling, S14 classifies eligibility, and only the named Partner owns a completed
+ceiling, S14 classifies eligibility, and only the named User owns a completed
 decision and approved range.

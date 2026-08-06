@@ -6,11 +6,11 @@ across companies.
 
 Authoritative acceptance runner:
 
-`partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py`
+`user-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py`
 
 Frozen scope:
 
-`partner-demo/investment_decision_v2/regression/s12_valuation_cross_company_acceptance_manifest.json`
+`user-demo/investment_decision_v2/regression/s12_valuation_cross_company_acceptance_manifest.json`
 
 ## Aggregate Status Rules
 
@@ -85,7 +85,7 @@ exercise shared calculations and validation, not to represent a company,
 market view, target price, or investment recommendation.
 
 Keep synthetic assumptions out of public-company research inputs and rendered
-partner reports.
+user reports.
 
 ## Anti-Overfitting Rule
 
@@ -106,7 +106,7 @@ After any shared fix, rerun:
 2. the complete unit-test suite;
 3. cross-industry anti-hardcoding governance;
 4. skill validation;
-5. the frozen Friday V1 HTML, PDF page-count, and pixel baseline.
+5. the frozen v1.0.0 HTML, PDF page-count, and pixel baseline.
 
 ## Return-Language Boundary
 
@@ -114,7 +114,7 @@ After any shared fix, rerun:
 - Base-Case Return requires the complete S09 horizon.
 - Probability-Weighted Return additionally requires validated probability
   governance.
-- Partner Internal Return, position sizing, portfolio action, and trade
+- User Internal Return, position sizing, portfolio action, and trade
   execution remain disabled outside the private Gate 4 workflow.
 
 Rounded presentation values are acceptable. The authoritative calculations,

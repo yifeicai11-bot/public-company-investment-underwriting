@@ -1,0 +1,156 @@
+{
+  "baseline_id": "v1.0.0",
+  "tag": "v1.0.0",
+  "commit_hash": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+  "commit_date": "2026-07-17T23:02:57+08:00",
+  "baseline_verified_date": "2026-07-28",
+  "environment": {
+    "minimum_python": "3.11",
+    "verified_python": "CPython 3.12.13",
+    "python_dependencies": "Standard library only",
+    "dependency_lock": "release-baselines/v1.0.0/requirements.lock",
+    "operating_system": "macOS 15.7.3 (24G419)",
+    "architecture": "arm64",
+    "verified_browser": "Google Chrome 150.0.7871.187",
+    "locale": "C.UTF-8",
+    "timezone": "Asia/Hong_Kong (HKT +0800)",
+    "fonts": [
+      "Arial",
+      "Arial Unicode",
+      "Helvetica",
+      "system CJK fallback"
+    ],
+    "unsupported_observation": "The macOS system Python 3.9.6 cannot import datetime.UTC and therefore cannot run v1.0.0."
+  },
+  "versions": {
+    "gate_3_contract_schema": "5.0.0",
+    "supported_universe": "1.0.0",
+    "report_version": "v1.0.0",
+    "renderer_version": "v1.0.0 renderer at the tagged commit"
+  },
+  "rounding_rules": {
+    "calculation_precision": "Calculations and contract values retain source or full floating-point precision.",
+    "money_display": "One decimal place by default after display scaling.",
+    "percentage_display": "One decimal place by default.",
+    "multiple_display": "One decimal place by default.",
+    "scenario_probability_display": "Zero decimal places when probabilities are permitted.",
+    "principle": "Rounded display values are acceptable; underlying validated calculations are not replaced by rounded values."
+  },
+  "regeneration": {
+    "working_directory": "repository root",
+    "command": "python3 release-baselines/v1.0.0/verify_baseline.py --render --pdf --pixel-compare",
+    "network_required": false,
+    "source_basis": "The verifier extracts the tagged commit and renders from the frozen underwriting contracts. It does not refresh SEC or market data.",
+    "pdf_identity_rule": "PDF byte hashes are preserved as submitted artifacts, but regenerated PDFs are accepted through exact HTML identity, equal page counts, and exact 72-dpi raster identity because PDF metadata can change."
+  },
+  "validation_summary": {
+    "shared_tests_passed": 38,
+    "crox_delivery_checks_passed": 36,
+    "azo_delivery_checks_passed": 36,
+    "delivery_failures": 0,
+    "pixel_compared_pages": 58,
+    "mean_pixel_delta": 0.0,
+    "max_channel_delta": 0.0
+  },
+  "cases": {
+    "CROX": {
+      "company": "Crocs, Inc.",
+      "report_id": "RPT-D12C3A257792FC",
+      "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
+      "contract_path": "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json",
+      "research_input_path": "user-demo/investment_decision_v2/research_inputs/crox_gate3_public_input.json",
+      "source_manifest_path": "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json",
+      "source_manifest_section": "source_registry",
+      "example_dir": "examples/crox",
+      "schema_version": "5.0.0",
+      "data_gate": 3,
+      "contract_validation": "PASS",
+      "hard_stop_count": 0,
+      "warning_count": 4,
+      "source_record_count": 86,
+      "evidence_record_count": 142,
+      "report_dates": {
+        "financial_statement_date": "2026-03-31",
+        "latest_financial_filing_date": "2026-04-30",
+        "market_price_date": "2026-07-15",
+        "share_count_date": "2026-04-23",
+        "subsequent_event_index_review_through": "2026-07-16"
+      },
+      "pdf_pages": {
+        "CROX_One_Page_Summary_Bilingual.pdf": 1,
+        "CROX_Full_Report_Bilingual.pdf": 11,
+        "CROX_Evidence_Audit_Appendix_Bilingual.pdf": 16,
+        "CROX_V1_0_0_QA_Summary_Bilingual.pdf": 1
+      }
+    },
+    "AZO": {
+      "company": "AutoZone, Inc.",
+      "report_id": "RPT-0F80FD1B28CD0F",
+      "contract_hash": "66aa84cd69284a1d79de398ac27cf06c63905427f03f04113adb50abe122c0cd",
+      "contract_path": "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/underwriting_output_contract.json",
+      "research_input_path": "user-demo/investment_decision_v2/research_inputs/azo_gate3_public_input.json",
+      "source_manifest_path": "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/underwriting_output_contract.json",
+      "source_manifest_section": "source_registry",
+      "example_dir": "examples/autozone",
+      "schema_version": "5.0.0",
+      "data_gate": 3,
+      "contract_validation": "PASS",
+      "hard_stop_count": 0,
+      "warning_count": 4,
+      "source_record_count": 75,
+      "evidence_record_count": 146,
+      "report_dates": {
+        "financial_statement_date": "2026-05-09",
+        "latest_financial_filing_date": "2026-06-12",
+        "market_price_date": "2026-07-15",
+        "share_count_date": "2026-06-05",
+        "subsequent_event_index_review_through": "2026-07-16"
+      },
+      "pdf_pages": {
+        "AZO_One_Page_Summary_Bilingual.pdf": 1,
+        "AZO_Full_Report_Bilingual.pdf": 11,
+        "AZO_Evidence_Audit_Appendix_Bilingual.pdf": 16,
+        "AZO_V1_0_0_QA_Summary_Bilingual.pdf": 1
+      }
+    }
+  },
+  "frozen_file_sha256": {
+    "user-demo/investment_decision_v2/research_inputs/crox_gate3_public_input.json": "b62a0a38baa08670cf9a17bcaaa217e788ef6be765e4a520902f44ecb3bdf9b2",
+    "user-demo/investment_decision_v2/research_inputs/azo_gate3_public_input.json": "6c578e6e7d3929415a6cf62f156b54c61f55b606db7c1eb93f4131067ddd3b97",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/v1_0_0_validation.json": "838ad89c100df6eaf00a2ca493e606cd3b93addebd7ba7c2dc082b5094928eeb",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/investment_layer.json": "a5770431ae7d03c99ef6ba22f52d4f87b4580d3b160dda76da9ffdf35526c6b9",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/step3_data.json": "a5770431ae7d03c99ef6ba22f52d4f87b4580d3b160dda76da9ffdf35526c6b9",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json": "a5770431ae7d03c99ef6ba22f52d4f87b4580d3b160dda76da9ffdf35526c6b9",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/v1_0_0_validation.json": "143bab4ae20148fa19697da12781044988eb33909c8b1573b17f11004ca5ccee",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/investment_layer.json": "95b2efc692cea800287b45c015b16d3c8d22fcdbc095f65fa32e42b6d467ea1e",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/step3_data.json": "95b2efc692cea800287b45c015b16d3c8d22fcdbc095f65fa32e42b6d467ea1e",
+    "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/underwriting_output_contract.json": "95b2efc692cea800287b45c015b16d3c8d22fcdbc095f65fa32e42b6d467ea1e",
+    "user-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py": "ba1b694fa4babd4418ba214d8e389da05010ab3010750e36b954bb935dc74254",
+    "user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py": "7f246626fb1c01df18db7f2065911f5478f5554c2eb145e12d9a30af774fd17d",
+    "user-demo/investment_decision_v2/scripts/underwriting_contract.py": "34dc7eaa36c0ff5cdf50d70f5359424bba27ffb534241ad6cc69d3120b8d4e3e",
+    "user-demo/investment_decision_v2/scripts/render_public_company_artifacts.py": "58d2bbd41a596f3357f651ed1508a60c737ff99af9d83f6511ad622109142baa",
+    "user-demo/investment_decision_v2/scripts/validate_v1_delivery.py": "348ae7f768eac3c37df40cc93a1356c0e6486b9d0421c9c535d5be8904e14004",
+    "public-firm-credit-liquidity-skill/SKILL.md": "96b98bc908a659cd58d4bf9f6b398e058e1c104439e8df0e04ba0ef9ba9af17d",
+    "public-firm-credit-liquidity-skill/references/v1_0_0_output_standard.md": "a2a4b02f2664748e2ebd8e50c2fa5feb5b211634a1911cdb1c063c4f8bc5b0a8",
+    "examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.html": "13db3b6d3e4b671d72e8d3238067970c104e04fd422a92cba908cb018673da27",
+    "examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.pdf": "cd30b99514b8f7e747fa252c93852934d91f30d46e3129c146206edd97a4d923",
+    "examples/crox/CROX_V1_0_0_QA_Summary_Bilingual.html": "6edc81d320fce3777ec0bc822f7c9915be7adef3fc4d3714c6e0d1b2dabe2506",
+    "examples/crox/CROX_V1_0_0_QA_Summary_Bilingual.pdf": "2962962f1baf892275558d5662c53e98de5a81cb4084673b4cbf1dda0af83ad9",
+    "examples/crox/CROX_Full_Report_Bilingual.html": "48e2697487226fe057107b4db72d6587f97ba57a6457eec4e5740cef07563605",
+    "examples/crox/CROX_Full_Report_Bilingual.pdf": "925528745c878cf463227e5c3893201d9108af1e3558982f84e2c49c67b1111a",
+    "examples/crox/CROX_One_Page_Summary_Bilingual.html": "6e49b8b003e55813d500ef01ca1b28cf14f3847ae9ca18a89a04df8c86383677",
+    "examples/crox/CROX_One_Page_Summary_Bilingual.pdf": "a6afaff495dc4544397571081e5edc31fbe0f992f2ec9fe7a911359d6459a68d",
+    "examples/crox/render_manifest.json": "25105d11dc9ed9540bb67b9303fc4b9e5824b74a66eaacf4cb0d678bd7c6d103",
+    "examples/crox/validation_report.json": "15fd05bf861602b5e02d132fe89fd4087cc65bc25bcc1513bb084a505ea6676b",
+    "examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.html": "82143900e7aaee53a4e068a05e03671cb39e88d97c63cff27dbd7bda160694db",
+    "examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.pdf": "f84609f4bcdb12702d3b2c53fb59ed8d0d8a43daa4c36203f05c2f251c595e6a",
+    "examples/autozone/AZO_V1_0_0_QA_Summary_Bilingual.html": "ffa7b65d421dd2f556d5d91fcc5bf382f7430de91dbac58a86afc2773b6d1609",
+    "examples/autozone/AZO_V1_0_0_QA_Summary_Bilingual.pdf": "b8b1dc2be9f3a46ef22a56c5856eb61613d36b064f8542f8eb2e8b086937ad76",
+    "examples/autozone/AZO_Full_Report_Bilingual.html": "53ea9219c83a96432bef8dbc0cf51a9f13fbda39b7de4ba59b5fbcb4f8aab267",
+    "examples/autozone/AZO_One_Page_Summary_Bilingual.html": "b4ded484369b73489826355d17e71c3024f6ad6eb63f49ea3aaf2e79fbe0c4ef",
+    "examples/autozone/AZO_One_Page_Summary_Bilingual.pdf": "e3315e68a3e350375723afb3ef6cde49475c6391ccf1300b5a2053bfcc35fdbc",
+    "examples/autozone/AZO_Full_Report_Bilingual.pdf": "f9a3f54ca317a9f2250a25a59f5dc0ae0862373f08c9ea34fab8b2756242a502",
+    "examples/autozone/render_manifest.json": "90d540ed3cbe99f15da8a04666173c15fa7017d203a5171b63edf6bfd9a9e29d",
+    "examples/autozone/validation_report.json": "fb99e3062ec25b8a67684a7940e85fe0d73c65f334bdca717d0501f8fc13b269"
+  }
+}

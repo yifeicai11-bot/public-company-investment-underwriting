@@ -1,0 +1,499 @@
+{
+  "contract_version": "1.2.0",
+  "requirement_classes": [
+    "CORE_REQUIRED",
+    "CONDITIONAL",
+    "OPTIONAL",
+    "REVIEWER_CONFIRMED_NOT_APPLICABLE"
+  ],
+  "schema_required_default_class": "CORE_REQUIRED",
+  "mode_document_requirements": {
+    "EXPOSURE_ONLY": {
+      "required_documents": [
+        "policy",
+        "exposures",
+        "opportunities",
+        "constraints",
+        "approval",
+        "freshness"
+      ],
+      "optional_documents": [],
+      "prohibited_documents": ["holdings"]
+    },
+    "AGGREGATED_PORTFOLIO": {
+      "required_documents": [
+        "policy",
+        "exposures",
+        "holdings",
+        "opportunities",
+        "constraints",
+        "approval",
+        "freshness"
+      ],
+      "optional_documents": [],
+      "prohibited_documents": []
+    },
+    "FULL_HOLDINGS": {
+      "required_documents": [
+        "policy",
+        "holdings",
+        "opportunities",
+        "constraints",
+        "approval",
+        "freshness"
+      ],
+      "optional_documents": ["exposures"],
+      "prohibited_documents": []
+    }
+  },
+  "field_rules": [
+    {
+      "document": "manifest",
+      "field_path": "data_classification",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema enum and cross-document consistency."
+    },
+    {
+      "document": "manifest",
+      "field_path": "workspace_id",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema validation."
+    },
+    {
+      "document": "manifest",
+      "field_path": "as_of_date",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "ISO date and cross-document consistency."
+    },
+    {
+      "document": "manifest",
+      "field_path": "input_mode",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema enum."
+    },
+    {
+      "document": "manifest",
+      "field_path": "base_currency",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "ISO currency code and cross-document consistency."
+    },
+    {
+      "document": "manifest",
+      "field_path": "weight_reconciliation_tolerance",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema range."
+    },
+    {
+      "document": "manifest",
+      "field_path": "portfolio_nav",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Positive numeric NAV used for row reconciliation."
+    },
+    {
+      "document": "manifest",
+      "field_path": "portfolio_nav",
+      "modes": ["EXPOSURE_ONLY"],
+      "requirement_class": "REVIEWER_CONFIRMED_NOT_APPLICABLE",
+      "validation_method": "Provide NAV or record a dated reviewer-confirmed not-applicable exception."
+    },
+    {
+      "document": "policy",
+      "field_path": "target_return",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema range; no default value."
+    },
+    {
+      "document": "policy",
+      "field_path": "downside_tolerance",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema range; no default value."
+    },
+    {
+      "document": "policy",
+      "field_path": "country_concentration_limit",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required when country_limit_status is APPLICABLE."
+    },
+    {
+      "document": "policy",
+      "field_path": "country_limit_rationale",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required when country_limit_status is NOT_APPLICABLE."
+    },
+    {
+      "document": "policy",
+      "field_path": "permitted_hedge_instruments",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "At least one instrument is required when maximum_hedge_ratio is positive."
+    },
+    {
+      "document": "exposures",
+      "field_path": "data_classification",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema enum and bundle consistency."
+    },
+    {
+      "document": "exposures",
+      "field_path": "as_of_date",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "ISO date and bundle consistency."
+    },
+    {
+      "document": "exposures",
+      "field_path": "exposure_id",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Stable unique row identifier."
+    },
+    {
+      "document": "exposures",
+      "field_path": "exposure_type",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema enum."
+    },
+    {
+      "document": "exposures",
+      "field_path": "exposure_key",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Non-empty exposure bucket."
+    },
+    {
+      "document": "exposures",
+      "field_path": "exposure_weight",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Finite signed ratio."
+    },
+    {
+      "document": "exposures",
+      "field_path": "measurement_basis",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Dimension rows must use GROSS_LONG_WEIGHT; aggregate rows use their controlled aggregate basis."
+    },
+    {
+      "document": "exposures",
+      "field_path": "market_value_base_currency",
+      "modes": ["AGGREGATED_PORTFOLIO"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Numeric value reconciled to NAV and exposure weight."
+    },
+    {
+      "document": "exposures",
+      "field_path": "market_value_base_currency",
+      "modes": ["EXPOSURE_ONLY"],
+      "requirement_class": "REVIEWER_CONFIRMED_NOT_APPLICABLE",
+      "validation_method": "Provide market value or a dated reviewer-confirmed not-applicable exception for the row."
+    },
+    {
+      "document": "exposures",
+      "field_path": "market_value_base_currency",
+      "modes": ["FULL_HOLDINGS"],
+      "requirement_class": "OPTIONAL",
+      "validation_method": "Optional independent reconciliation when an exposure file is supplied."
+    },
+    {
+      "document": "exposures",
+      "field_path": "source_locator",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "OPTIONAL",
+      "validation_method": "Optional local locator; never emitted in privacy-safe diagnostics."
+    },
+    {
+      "document": "holdings",
+      "field_path": "position_granularity",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must match the manifest input mode."
+    },
+    {
+      "document": "holdings",
+      "field_path": "position_id",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Stable unique row identifier."
+    },
+    {
+      "document": "holdings",
+      "field_path": "security_identifier",
+      "modes": ["FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Required for security-level rows."
+    },
+    {
+      "document": "holdings",
+      "field_path": "security_identifier",
+      "modes": ["AGGREGATED_PORTFOLIO"],
+      "requirement_class": "REVIEWER_CONFIRMED_NOT_APPLICABLE",
+      "validation_method": "Provide an aggregate identifier or a dated reviewer-confirmed not-applicable exception."
+    },
+    {
+      "document": "holdings",
+      "field_path": "issuer_identifier",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Schema validation."
+    },
+    {
+      "document": "holdings",
+      "field_path": "position_weight",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Finite signed ratio and portfolio reconciliation."
+    },
+    {
+      "document": "holdings",
+      "field_path": "market_value_base_currency",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Numeric value reconciled to NAV and weight."
+    },
+    {
+      "document": "holdings",
+      "field_path": "average_daily_value_traded",
+      "modes": ["FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Required for security-level liquidity assessment."
+    },
+    {
+      "document": "holdings",
+      "field_path": "average_daily_value_traded",
+      "modes": ["AGGREGATED_PORTFOLIO"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only when aggregate liquidity is claimed as evaluated."
+    },
+    {
+      "document": "holdings",
+      "field_path": "estimated_days_to_exit",
+      "modes": ["FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Required for security-level liquidity assessment."
+    },
+    {
+      "document": "holdings",
+      "field_path": "estimated_days_to_exit",
+      "modes": ["AGGREGATED_PORTFOLIO"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only when aggregate liquidity is claimed as evaluated."
+    },
+    {
+      "document": "holdings",
+      "field_path": "existing_hedge_identifier",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "OPTIONAL",
+      "validation_method": "Optional when hedge_ratio is zero."
+    },
+    {
+      "document": "holdings",
+      "field_path": "hedge_ratio",
+      "modes": ["AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "A positive ratio requires a hedge identifier or HEDGE row."
+    },
+    {
+      "document": "opportunities",
+      "field_path": "opportunity_id",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Stable unique row identifier."
+    },
+    {
+      "document": "opportunities",
+      "field_path": "expected_return",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required when return_status is VALIDATED."
+    },
+    {
+      "document": "opportunities",
+      "field_path": "bear_case_downside",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required when return_status is VALIDATED."
+    },
+    {
+      "document": "opportunities",
+      "field_path": "source_contract_hash",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required when return_status is VALIDATED."
+    },
+    {
+      "document": "constraints",
+      "field_path": "gate3_binding.report_id",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must match the exact Gate 3 freshness attestation and consumed contract."
+    },
+    {
+      "document": "constraints",
+      "field_path": "gate3_binding.contract_hash",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must match the exact Gate 3 freshness attestation and consumed contract."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.issuer_identifier",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Stable identifier used to measure existing issuer exposure."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.sector",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed sector key used by the concentration engine."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.country",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed country key used when the country limit applies."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.correlation_bucket",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact reviewed correlated-exposure bucket."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.expected_return.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state; missing or provisional values remain visible but cannot unlock a complete constraint result."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.downside_return.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit formal-return state; price sensitivity is prohibited."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.liquidity.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for dated ADVT evidence."
+    },
+    {
+      "document": "constraints",
+      "field_path": "candidate.proposed_hedge.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit NONE or PROPOSED status; no hedge benefit is inferred."
+    },
+    {
+      "document": "constraints",
+      "field_path": "portfolio_state.current_risk_budget_usage.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for current downside-loss budget usage."
+    },
+    {
+      "document": "constraints",
+      "field_path": "portfolio_state.current_liquid_portfolio_weight.status",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Explicit validation state for the current policy-defined liquid weight."
+    },
+    {
+      "document": "approval",
+      "field_path": "automatic_trade_execution",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must remain false."
+    },
+    {
+      "document": "approval",
+      "field_path": "external_transmission_policy",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Must remain DENY."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.assessment_hash",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required for an approval or modification and must match the current deterministic S14 assessment hash."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.approved_by",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only for a completed named User decision."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.approved_position_basis",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only for APPROVED or MODIFIED and fixed to TOTAL_ISSUER_GROSS_LONG_WEIGHT."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.approved_position_min",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only for APPROVED or MODIFIED."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.approved_position_max",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CONDITIONAL",
+      "validation_method": "Required only for APPROVED or MODIFIED."
+    },
+    {
+      "document": "approval",
+      "field_path": "partner_decision.acknowledged_escalation_ids",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Always present; APPROVED or MODIFIED must acknowledge every active S14 escalation."
+    },
+    {
+      "document": "freshness",
+      "field_path": "gate3_contract_hash",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Exact Gate 3 contract binding."
+    },
+    {
+      "document": "freshness",
+      "field_path": "subsequent_events_checked_through",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "Freshness chronology."
+    },
+    {
+      "document": "freshness",
+      "field_path": "warning_escalations",
+      "modes": ["EXPOSURE_ONLY", "AGGREGATED_PORTFOLIO", "FULL_HOLDINGS"],
+      "requirement_class": "CORE_REQUIRED",
+      "validation_method": "The array is required, may be empty, and every named exception record is schema validated."
+    }
+  ]
+}

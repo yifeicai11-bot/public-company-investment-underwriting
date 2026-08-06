@@ -1,6 +1,6 @@
 # Output Templates
 
-For a concise partner-ready front page, use `one_page_partner_summary.md`.
+For a concise user-ready front page, use `one_page_user_summary.md`.
 
 When the output is intended to support investment judgment, also read `investment_decision_upgrade.md`. The one-page should lead with decision usefulness, not source mechanics.
 
@@ -8,7 +8,7 @@ When the output should help an investor decide what to do, also read `investment
 
 ## Investment-Support One-Page / 投资判断支持版一页摘要
 
-Use this template when the partner asks whether the work helps investment judgment. Follow `friday_v1_output_standard.md` and the Data Gate in `system_architecture_and_contract.md`. Below Gate 3, suppress scenario implied prices rather than filling them with provisional automated assumptions. At Gate 3, use `Scenario Price Sensitivity` and `Price Change vs Current Price` when no explicit horizon exists. Formal probability-weighted output remains `Not Evaluated / 未评估` unless both probability governance and return-context validation pass.
+Use this template when the user asks whether the work helps investment judgment. Follow `v1_0_0_output_standard.md` and the Data Gate in `system_architecture_and_contract.md`. Below Gate 3, suppress scenario implied prices rather than filling them with provisional automated assumptions. At Gate 3, use `Scenario Price Sensitivity` and `Price Change vs Current Price` when no explicit horizon exists. Formal probability-weighted output remains `Not Evaluated / 未评估` unless both probability governance and return-context validation pass.
 
 ```markdown
 ## Header / Decision Strip / 判断栏
@@ -106,7 +106,7 @@ Use this template when the partner asks whether the work helps investment judgme
 
 ## Data Integrity Appendix / 数据校验附录
 
-For any partner-ready memo, attach or reference a validation appendix:
+For any user-ready memo, attach or reference a validation appendix:
 
 ```markdown
 ## Data Integrity Appendix
@@ -322,7 +322,7 @@ Next Decision Trigger:
 
 ## Follow-Up Questions / 需要进一步确认的问题
 
-Follow-up questions should explain what cannot be fully confirmed from public data and what the analyst or partner may want to verify next.
+Follow-up questions should explain what cannot be fully confirmed from public data and what the analyst or user may want to verify next.
 
 ```markdown
 ## Follow-Up Questions / 需要进一步确认的问题

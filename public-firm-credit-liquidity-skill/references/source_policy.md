@@ -31,7 +31,7 @@ For each material conclusion or number, record:
 - Evidence class: FACT, CALC, INFERENCE, JUDGMENT, or MISSING
 - Formula and input evidence IDs for calculations
 
-For partner-ready evidence tables, follow the detailed structure in `source_log_standard.md`.
+For user-ready evidence tables, follow the detailed structure in `source_log_standard.md`.
 
 ## Source Hierarchy
 
@@ -40,7 +40,7 @@ Use these levels:
 0. Analyst-owned assumption or judgment. This is not an external source and requires reviewer ownership plus linked evidence where applicable.
 1. Primary regulatory and filed company materials.
 2. Official company investor materials.
-3. Partner-approved market and reference-data feeds.
+3. User-approved market and reference-data feeds.
 4. Institutional third-party research, consensus, and ratings.
 5. Other public websites, news, summaries, and unapproved aggregators.
 

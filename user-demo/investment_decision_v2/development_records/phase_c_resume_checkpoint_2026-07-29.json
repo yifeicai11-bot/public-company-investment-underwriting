@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_resume_checkpoint",
+  "checkpoint_date": "2026-07-29",
+  "status": "READY_TO_RESUME",
+  "repository": "/Users/caiyifei/Documents/public-company-investment-underwriting",
+  "branch": "codex/phase-c-equity-valuation",
+  "head_before_checkpoint": "5e0f59740e7af59ffb98266ab2873039ee7ccce3",
+  "main_baseline": "8156f5d168f897054822fd54be7b39a97a62543d",
+  "completed_scope": [
+    {
+      "phase": "A",
+      "sessions": "S01-S04",
+      "status": "COMPLETE_AND_MERGED_TO_MAIN"
+    },
+    {
+      "phase": "B",
+      "sessions": "S05-S08",
+      "status": "COMPLETE_AND_MERGED_TO_MAIN"
+    },
+    {
+      "phase": "C",
+      "session": "S09",
+      "name": "Shared Valuation Contract",
+      "status": "ACCEPTED",
+      "implementation_commit": "625dc8c89a5681a546e68d8971095a0db026de1d",
+      "acceptance_commit": "5e0f59740e7af59ffb98266ab2873039ee7ccce3"
+    }
+  ],
+  "s09_acceptance_summary": {
+    "underwriting_schema_version": "5.1.0",
+    "valuation_contract_version": "1.0.0",
+    "contract_scope": [
+      "Valuation as-of date",
+      "Target date and holding period",
+      "Forecast and metric periods",
+      "Dividend basis and timing",
+      "Current and target-date forward share bases",
+      "Exit basis"
+    ],
+    "separate_outputs": [
+      "Price Sensitivity",
+      "Base-Case Return",
+      "Probability-Weighted Return",
+      "User Internal Return"
+    ],
+    "partner_internal_return_status": "DISABLED_PRIVATE_GATE_4_ONLY",
+    "stored_demo_status": "CROX, AZO, and CRM validate Price Sensitivity only because the stored public inputs do not contain a complete formal horizon and target-date forward share bridge.",
+    "verification": {
+      "s09_tests": "35 passed",
+      "complete_test_suite": "211 passed",
+      "frozen_v1_0_0_baseline": "82 passed",
+      "crox_delivery_qa": "40 passed",
+      "cross_company_migrations": "CROX, AZO, and CRM passed",
+      "privacy_and_structure_checks": "passed"
+    },
+    "authoritative_record": "user-demo/investment_decision_v2/development_records/s09_completion_2026-07-29.json"
+  },
+  "not_started": [
+    {
+      "session": "S10",
+      "name": "Modular Forward Operating Bridges"
+    },
+    {
+      "session": "S11",
+      "name": "Valuation Cross-Checks and Governance"
+    },
+    {
+      "session": "S12",
+      "name": "Valuation Cross-Company Acceptance"
+    }
+  ],
+  "tomorrow_start": {
+    "session": "S10",
+    "name": "Modular Forward Operating Bridges",
+    "first_action": "Freeze the shared forward-valuation driver interface and supported driver-module registry before implementing any driver.",
+    "required_fallback": "DRIVER_MODEL_NOT_AVAILABLE",
+    "initial_files_to_read": [
+      "public-firm-credit-liquidity-skill/SKILL.md",
+      "public-firm-credit-liquidity-skill/references/shared_valuation_contract.md",
+      "user-demo/investment_decision_v2/development_records/s09_completion_2026-07-29.json",
+      "user-demo/investment_decision_v2/scripts/equity_valuation_contract.py"
+    ],
+    "resume_commands": [
+      "git switch codex/phase-c-equity-valuation",
+      "git status --short --branch",
+      "python3 -m unittest discover -s user-demo/investment_decision_v2/tests"
+    ]
+  },
+  "implementation_constraints": [
+    "Do not add ticker-specific or company-name-specific analytical branches.",
+    "Do not infer forward projections mechanically from historical growth.",
+    "Do not fabricate precision when no suitable business-model driver exists.",
+    "Do not alter Gate 4 or private portfolio behavior during S10.",
+    "Treat the accepted S09 shared valuation contract as the authoritative downstream interface.",
+    "Keep data, analysis, and rendering responsibilities separated."
+  ],
+  "publish_status": {
+    "main_updated_with_phase_c": false,
+    "remote_push_performed_for_phase_c": false,
+    "instruction": "Do not merge or push Phase C until its required acceptance work is complete and the user approves publication."
+  },
+  "stop_boundary": "Checkpoint only. S10 implementation has not started."
+}

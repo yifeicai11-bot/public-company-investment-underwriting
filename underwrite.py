@@ -13,7 +13,7 @@ from typing import Any, Callable, Optional
 
 
 ROOT = Path(__file__).resolve().parent
-SCRIPT_DIR = ROOT / "partner-demo" / "investment_decision_v2" / "scripts"
+SCRIPT_DIR = ROOT / "user-demo" / "investment_decision_v2" / "scripts"
 RELEASE_SCRIPT_DIR = ROOT / "scripts"
 for path in (SCRIPT_DIR, RELEASE_SCRIPT_DIR):
     if str(path) not in sys.path:
@@ -122,7 +122,7 @@ def delivery_eligibility(contract: dict[str, Any]) -> dict[str, Any]:
     if render_blockers:
         blockers.append(f"render_blockers={len(render_blockers)}")
     if gate < 3:
-        blockers.append(f"data_gate={gate:g}; Gate 3 required for partner-ready formal delivery")
+        blockers.append(f"data_gate={gate:g}; Gate 3 required for user-ready formal delivery")
     return {
         "eligible": not blockers,
         "data_gate": gate,
@@ -200,7 +200,7 @@ def run_analyze(
 
         renderer = render
     if validator is None:
-        from validate_friday_v1_delivery import validate_delivery
+        from validate_v1_delivery import validate_delivery
 
         validator = validate_delivery
 
@@ -269,8 +269,8 @@ def run_analyze(
     else:
         diagnostic = {
             "status": "FORMAL_DELIVERY_BLOCKED",
-            "reason": "The shared contract is preserved, but partner-ready reports require Gate 3 and passing validation.",
-            "reason_zh": "共享 contract 已保存，但正式 Partner 报告必须达到 Gate 3 并通过验证。",
+            "reason": "The shared contract is preserved, but user-ready reports require Gate 3 and passing validation.",
+            "reason_zh": "共享 contract 已保存，但正式 User 报告必须达到 Gate 3 并通过验证。",
             "eligibility": eligibility,
             "analyst_input_template": portable_path(step3_dir / "analyst_input_template.json", output_root),
             "next_command": f"python underwrite.py analyze {shlex.quote(company)} --output-root <OUTPUT_ROOT> --research-input <COMPLETED_PUBLIC_RESEARCH_INPUT.json>",
@@ -309,7 +309,7 @@ def run_analyze(
 
 def run_render(contract_path: Path, out_dir: Path, *, pdf: bool = False) -> tuple[int, dict[str, Any]]:
     from render_public_company_artifacts import render
-    from validate_friday_v1_delivery import validate_delivery
+    from validate_v1_delivery import validate_delivery
 
     contract = read_json(contract_path)
     eligibility = delivery_eligibility(contract)
@@ -357,7 +357,7 @@ def run_render(contract_path: Path, out_dir: Path, *, pdf: bool = False) -> tupl
 
 
 def run_validate(contract_path: Path, html_dir: Path | None, output: Path | None) -> tuple[int, dict[str, Any]]:
-    from validate_friday_v1_delivery import validate_delivery
+    from validate_v1_delivery import validate_delivery
 
     report = validate_delivery(read_json(contract_path), html_dir)
     portable_root = html_dir or (output.parent if output else ROOT)

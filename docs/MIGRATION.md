@@ -1,6 +1,6 @@
 # Migration to v1.1.0
 
-This release adds a supported delivery interface around the existing shared engines. It does not alter the frozen Friday V1 tag. The final version also includes S17 true held-out acceptance and the shared facility-parser correction identified during that process.
+This release adds a supported delivery interface around the existing shared engines. It does not alter the frozen v1.0.0 tag. The final version also includes S17 true held-out acceptance and the shared facility-parser correction identified during that process.
 
 ## Recommended command change
 
@@ -23,7 +23,7 @@ The entry point calls the shared builder, checks the shared contract, independen
 
 ## Delivery behavior change
 
-The recommended entry point intentionally withholds partner-ready One-Page and Full Report files below Gate 3. Lower-gate contracts and their evidence remain available, together with a pipeline diagnostic and analyst-input template. Existing direct renderer commands retain their historical behavior for controlled regression use.
+The recommended entry point intentionally withholds user-ready One-Page and Full Report files below Gate 3. Lower-gate contracts and their evidence remain available, together with a pipeline diagnostic and analyst-input template. Existing direct renderer commands retain their historical behavior for controlled regression use.
 
 ## Dependency change
 
@@ -60,6 +60,6 @@ Do not pass portfolio data through `underwrite.py analyze`. Gate 4 continues to 
 ## Compatibility and rollback
 
 - Contract schema `5.0.0` and `5.1.0` remain recognized by current Gate 4 eligibility rules.
-- Frozen partner artifacts remain reproducible from tag `v1.0.0-friday`.
-- To inspect the old baseline without changing the current branch, run `python release-baselines/friday-v1/verify_baseline.py`.
-- Do not overwrite Friday V1 examples with release-candidate output.
+- Frozen v1.0.0 artifacts remain reproducible from the recorded baseline commit.
+- To inspect the old baseline without changing the current branch, run `python release-baselines/v1.0.0/verify_baseline.py`.
+- Do not overwrite v1.0.0 examples with release-candidate output.

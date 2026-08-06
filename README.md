@@ -6,44 +6,61 @@ An auditable, bilingual public-company issuer-underwriting skill and research-su
 - **Current scope:** SEC-reporting, US GAAP, non-financial public companies
 - **Positioning:** issuer-level research and IC pre-read support, not an automated trading system
 
-> This repository contains public-data research demonstrations only. It contains no fund holdings, client information, live position sizes, or partner-specific portfolio constraints. Portfolio Overlay is disabled in the included examples. / 本仓库只包含公开资料研究示例，不包含基金持仓、客户信息、真实仓位或组合约束；示例中的组合叠加层均未启用。
+> This repository contains public-data research demonstrations only. It contains no fund holdings, client information, live position sizes, or user-specific portfolio constraints. Portfolio Overlay is disabled in the included examples. / 本仓库只包含公开资料研究示例，不包含基金持仓、客户信息、真实仓位或组合约束；示例中的组合叠加层均未启用。
 
-## Partner Demo / 演示文件
+## Choose Your Output / 选择输出路径
+
+**No portfolio provided -> Gate 3. Portfolio provided locally -> Gate 4.**
+
+| Input | Output | Boundary |
+|---|---|---|
+| Company ticker/name plus public information only | Gate 3 issuer underwriting, valuation/scenario review, bilingual One-Page Summary, Full Report, Evidence Appendix, and Validation Report | `Portfolio Overlay: Disabled`; no position sizing or portfolio action |
+| The same Gate 3 contract plus a locally completed private portfolio workspace | Gate 4 constraint matrix, system assessment, and bilingual Gate 4 reports | Private inputs stay outside GitHub and hosted chats; human approval remains separate from system assessment |
+
+Gate 4 does not replace Gate 3. It first checks that the exact Gate 3 contract is
+fresh and eligible, then evaluates portfolio constraints. Without a valid local
+portfolio workspace, Gate 4 returns a diagnostic and does not invent limits,
+holdings, or a position. See [`docs/AGENT_INSTRUCTIONS.md`](docs/AGENT_INSTRUCTIONS.md)
+for copy-ready instructions for both paths. / Gate 4 不会替代 Gate 3，而是在确认
+Gate 3 contract 最新且合格后，再分析组合约束。没有有效的本地 portfolio workspace
+时，Gate 4 只返回诊断，不会虚构限制、持仓或仓位。
+
+## User Demo / 演示文件
 
 | Company | One-Page Summary | Full Report | Evidence Appendix | QA Summary | Validation |
 |---|---|---|---|---|---|
-| Crocs (CROX) | [PDF](examples/crox/CROX_One_Page_Summary_Bilingual.pdf) | [PDF](examples/crox/CROX_Full_Report_Bilingual.pdf) | [PDF](examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.pdf) | [PDF](examples/crox/CROX_Friday_V1_QA_Summary_Bilingual.pdf) | [JSON](examples/crox/validation_report.json) |
-| AutoZone (AZO) | [PDF](examples/autozone/AZO_One_Page_Summary_Bilingual.pdf) | [PDF](examples/autozone/AZO_Full_Report_Bilingual.pdf) | [PDF](examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.pdf) | [PDF](examples/autozone/AZO_Friday_V1_QA_Summary_Bilingual.pdf) | [JSON](examples/autozone/validation_report.json) |
+| Crocs (CROX) | [PDF](examples/crox/CROX_One_Page_Summary_Bilingual.pdf) | [PDF](examples/crox/CROX_Full_Report_Bilingual.pdf) | [PDF](examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.pdf) | [PDF](examples/crox/CROX_V1_0_0_QA_Summary_Bilingual.pdf) | [JSON](examples/crox/validation_report.json) |
+| AutoZone (AZO) | [PDF](examples/autozone/AZO_One_Page_Summary_Bilingual.pdf) | [PDF](examples/autozone/AZO_Full_Report_Bilingual.pdf) | [PDF](examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.pdf) | [PDF](examples/autozone/AZO_V1_0_0_QA_Summary_Bilingual.pdf) | [JSON](examples/autozone/validation_report.json) |
 
 The One-Page Summary presents the investment question, public-data view, what is priced in, scenario price sensitivity, key debates, decision boundaries, and the next evidence required. The Full Report expands the same validated contract into issuer underwriting, earnings quality, working capital, cash conversion, liquidity, debt and refinancing, valuation, scenarios, decision rules, and source records.
 
 一页摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。两者来自同一个 validated contract，不独立重算数字或结论。
 
-## Frozen Friday V1 Baseline / 已冻结的 Friday V1 基线
+## Frozen v1.0.0 Baseline / 已冻结的 v1.0.0 基线
 
-The Partner-submitted Friday V1 is preserved at Git tag `v1.0.0-friday` and commit
+The v1.0.0 baseline is preserved at immutable commit
 `15b328137d615ca85e84cb997f3acfc2b15ca03b`. The baseline manifest records the
 runtime, contract and renderer versions, source dates, frozen-input hashes,
 submitted-output hashes, rounding rules, and regeneration command.
 
-已提交给 Partner 的 Friday V1 已冻结在 Git tag `v1.0.0-friday`。后续开发不会静默改变该版本；
+v1.0.0 基线已冻结在不可变 commit `15b328137d615ca85e84cb997f3acfc2b15ca03b`。后续开发不会静默改变该版本；
 基线文件保存了运行环境、contract 和 renderer 版本、来源日期、输入与输出 hash、显示舍入规则和复现命令。
 
 Verify the frozen files without network access:
 
 ```bash
-python3 release-baselines/friday-v1/verify_baseline.py
+python3 release-baselines/v1.0.0/verify_baseline.py
 ```
 
 Regenerate CROX and AZO from the frozen contracts and compare HTML, PDF page
 counts, and rendered pixels:
 
 ```bash
-python3 release-baselines/friday-v1/verify_baseline.py \
+python3 release-baselines/v1.0.0/verify_baseline.py \
   --render --pdf --pixel-compare
 ```
 
-See [`release-baselines/friday-v1/baseline_manifest.json`](release-baselines/friday-v1/baseline_manifest.json)
+See [`release-baselines/v1.0.0/baseline_manifest.json`](release-baselines/v1.0.0/baseline_manifest.json)
 for the authoritative baseline record.
 
 ## Quick Start / 快速开始
@@ -65,7 +82,7 @@ python underwrite.py doctor --live
 python underwrite.py analyze AAPL --output-root outputs
 ```
 
-The first run builds the Data and Evidence Layer and issuer contract. If it remains below Gate 3, the command saves `analyst_input_template.json` and `delivery/pipeline_diagnostic.json` but withholds partner-ready reports. Complete a sourced public research-input JSON, then rerun:
+The first run builds the Data and Evidence Layer and issuer contract. If it remains below Gate 3, the command saves `analyst_input_template.json` and `delivery/pipeline_diagnostic.json` but withholds user-ready reports. Complete a sourced public research-input JSON, then rerun:
 
 ```bash
 python underwrite.py analyze AAPL \
@@ -82,9 +99,9 @@ Exit codes are: `0` delivery or environment check passed, `1` environment comman
 
 ## Use with Codex / 在 Codex 中使用
 
-GitHub hosts the files but does not run the analysis by itself. Download the entire repository, open the repository root in Codex, replace `[公司名称或股票代码]` in the prompt below, and submit it in the Codex chat. Do not open or install only the `public-firm-credit-liquidity-skill` subfolder because the full analysis engine is stored under `partner-demo/`.
+GitHub hosts the files but does not run the analysis by itself. Download the entire repository, open the repository root in Codex, replace `[公司名称或股票代码]` in the prompt below, and submit it in the Codex chat. Do not open or install only the `public-firm-credit-liquidity-skill` subfolder because the full analysis engine is stored under `user-demo/`.
 
-GitHub 页面本身不会自动运行分析。请下载整个 repository，在 Codex 中打开仓库根目录，将下面 Prompt 中的 `[公司名称或股票代码]` 替换为目标公司后发送。不要只打开或安装 `public-firm-credit-liquidity-skill` 子文件夹，因为完整分析引擎位于 `partner-demo/`。
+GitHub 页面本身不会自动运行分析。请下载整个 repository，在 Codex 中打开仓库根目录，将下面 Prompt 中的 `[公司名称或股票代码]` 替换为目标公司后发送。不要只打开或安装 `public-firm-credit-liquidity-skill` 子文件夹，因为完整分析引擎位于 `user-demo/`。
 
 Download with Git:
 
@@ -118,7 +135,7 @@ Copy this prompt into Codex:
 13. 最终在聊天框中列出所有生成文件的路径、Data Gate、Decision Confidence、Hard Stop 数量、Warning 数量和 validation 结果。
 ```
 
-The initial public-only run may stop below Gate 3 when analyst-owned research inputs are incomplete. A partner-ready report requires sourced public research and human review of the Investment Question, Key Debates, FCF normalization, market expectations, valuation assumptions, and scenarios. / 当分析师输入尚不完整时，首次 public-only 运行可能停在 Gate 3 以下。Partner-ready 报告仍需要对投资问题、核心争议、FCF 标准化、市场预期、估值假设和情景进行公开资料研究与人工复核。
+The initial public-only run may stop below Gate 3 when analyst-owned research inputs are incomplete. A user-ready report requires sourced public research and human review of the Investment Question, Key Debates, FCF normalization, market expectations, valuation assumptions, and scenarios. / 当分析师输入尚不完整时，首次 public-only 运行可能停在 Gate 3 以下。User-ready 报告仍需要对投资问题、核心争议、FCF 标准化、市场预期、估值假设和情景进行公开资料研究与人工复核。
 
 ## What the System Does / 系统能力
 
@@ -128,7 +145,7 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 - Prevents quarter/YTD mixing and CFO/FCF or liquidity double counting.
 - Underwrites receivables, bad-debt evidence, working capital, cash conversion, liquidity, debt, leases, covenants, refinancing, capital allocation, and subsequent events.
 - Connects issuer fundamentals to reverse valuation and Bear/Base/Bull price sensitivities.
-- Separates Price Sensitivity, Base-Case Return, Probability-Weighted Return, and Partner Internal Return under one dated, reproducible valuation contract.
+- Separates Price Sensitivity, Base-Case Return, Probability-Weighted Return, and User Internal Return under one dated, reproducible valuation contract.
 - Suppresses each return class independently when its required horizon, forward share basis, exit basis, probability approval, or private portfolio context is missing.
 - Produces a bilingual One-Page, Full Report, Evidence Appendix, and QA Summary from one shared output contract.
 
@@ -137,18 +154,18 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 | Layer | Main component | Responsibility |
 |---|---|---|
 | Skill | [`public-firm-credit-liquidity-skill/`](public-firm-credit-liquidity-skill/) | Reusable Codex/Claude-style workflow, source policy, risk framework, sector overlays, and output standards |
-| Data and Evidence | [`build_public_company_decision_pack.py`](partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
-| Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
-| Shared Equity Valuation | [`equity_valuation_contract.py`](partner-demo/investment_decision_v2/scripts/equity_valuation_contract.py) | Dated horizon, price sensitivity, Base-Case Return, Probability-Weighted Return, and public/private return boundaries |
-| Forward Operating Model | [`forward_operating_model.py`](partner-demo/investment_decision_v2/scripts/forward_operating_model.py) | Controlled business-model drivers, forward FCF, and target-date share bridge |
-| Valuation Cross-Checks | [`valuation_cross_checks.py`](partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py) | Controlled peers, historical valuation, reverse valuation, independent DCF, method agreement, and probability governance |
-| Cross-Company Valuation QA | [`run_s12_valuation_cross_company_acceptance.py`](partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py) | Offline six-model and five-contract acceptance, status-boundary checks, return-language controls, and anti-hardcoding scan |
-| Shared Contract | [`underwriting_contract.py`](partner-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
-| Gate 4 Local Entry | [`run_gate4_local_entry.py`](partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
-| Gate 4 Constraints | [`gate4_constraint_engine.py`](partner-demo/investment_decision_v2/scripts/gate4_constraint_engine.py) | Reproducible policy ceilings, formulas, missing inputs, escalations, and binding constraints |
-| Gate 4 Assessment | [`gate4_assessment_engine.py`](partner-demo/investment_decision_v2/scripts/gate4_assessment_engine.py) | Five-state System Assessment, separately owned Partner Decision, stable hash binding, and no-trade controls |
-| Rendering | [`render_public_company_artifacts.py`](partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
-| Independent QA | [`validate_friday_v1_delivery.py`](partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py) | Reproduces market cap, FCF bridge, reverse valuation, scenarios, dates, contract identity, and output boundaries |
+| Data and Evidence | [`build_public_company_decision_pack.py`](user-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py) | SEC ingestion, period normalization, evidence IDs, source registry, market-date controls, and validation |
+| Issuer and Investment Analysis | [`build_public_company_investment_layer.py`](user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py) | Investment Question, Key Debates, FCF, liquidity, credit, reverse valuation, scenarios, and decision rules |
+| Shared Equity Valuation | [`equity_valuation_contract.py`](user-demo/investment_decision_v2/scripts/equity_valuation_contract.py) | Dated horizon, price sensitivity, Base-Case Return, Probability-Weighted Return, and public/private return boundaries |
+| Forward Operating Model | [`forward_operating_model.py`](user-demo/investment_decision_v2/scripts/forward_operating_model.py) | Controlled business-model drivers, forward FCF, and target-date share bridge |
+| Valuation Cross-Checks | [`valuation_cross_checks.py`](user-demo/investment_decision_v2/scripts/valuation_cross_checks.py) | Controlled peers, historical valuation, reverse valuation, independent DCF, method agreement, and probability governance |
+| Cross-Company Valuation QA | [`run_s12_valuation_cross_company_acceptance.py`](user-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py) | Offline six-model and five-contract acceptance, status-boundary checks, return-language controls, and anti-hardcoding scan |
+| Shared Contract | [`underwriting_contract.py`](user-demo/investment_decision_v2/scripts/underwriting_contract.py) | Data Gates, output suppression, confidence, evidence lineage, and hard-stop rules |
+| Gate 4 Local Entry | [`run_gate4_local_entry.py`](user-demo/investment_decision_v2/scripts/run_gate4_local_entry.py) | Local private-input validation, immutable Gate 3 freshness/eligibility checks, and privacy-safe diagnostics |
+| Gate 4 Constraints | [`gate4_constraint_engine.py`](user-demo/investment_decision_v2/scripts/gate4_constraint_engine.py) | Reproducible policy ceilings, formulas, missing inputs, escalations, and binding constraints |
+| Gate 4 Assessment | [`gate4_assessment_engine.py`](user-demo/investment_decision_v2/scripts/gate4_assessment_engine.py) | Five-state System Assessment, separately owned User Decision, stable hash binding, and no-trade controls |
+| Rendering | [`render_public_company_artifacts.py`](user-demo/investment_decision_v2/scripts/render_public_company_artifacts.py) | Formatting-only bilingual HTML/PDF rendering |
+| Independent QA | [`validate_v1_delivery.py`](user-demo/investment_decision_v2/scripts/validate_v1_delivery.py) | Reproduces market cap, FCF bridge, reverse valuation, scenarios, dates, contract identity, and output boundaries |
 
 ## Data Gates / 数据门槛
 
@@ -163,6 +180,55 @@ The initial public-only run may stop below Gate 3 when analyst-owned research in
 
 The system never places a trade. Gate 4 requires real fund constraints and explicit human approval.
 
+## Choose the Analysis Path / 选择分析路径
+
+There are two separate operating paths. A user does **not** need to provide a
+portfolio to run the public-company Gate 3 workflow.
+
+### Path A: Public-only Gate 3 / 公开资料 Gate 3
+
+Use this path when the user wants issuer underwriting and public-data valuation
+support without sharing portfolio information:
+
+```bash
+python underwrite.py doctor --live
+python underwrite.py analyze AAPL --output-root outputs --pdf
+```
+
+This path can produce the Data and Evidence Layer, issuer underwriting,
+valuation/scenario analysis where the required public research inputs are
+validated, and bilingual One-Page, Full Report, Evidence Appendix, and
+Validation Report files. It keeps `Portfolio Overlay: Disabled`,
+`Portfolio Decision: Not Evaluated`, and position sizing disabled. If the
+public research inputs are not sufficient for Gate 3, the system produces a
+diagnostic and `analyst_input_template.json` instead of inventing assumptions.
+
+### Path B: Private local Gate 4 / 本地私有 Gate 4
+
+Use this path only when the user wants to test a candidate against a specific
+fund or portfolio. Gate 4 requires private, locally completed policy,
+exposure/holdings, candidate constraint, opportunity-set, freshness, and
+approval inputs. These inputs stay outside the repository and are never pasted
+into Codex, Claude, GitHub, or another hosted service.
+
+The input mode controls the resolution of the result:
+
+| Mode | What it can evaluate | Limitation |
+|---|---|---|
+| `EXPOSURE_ONLY` | Aggregate issuer/sector/country/correlation constraints | No holdings reconciliation or security-level liquidity |
+| `AGGREGATED_PORTFOLIO` | Aggregate portfolio constraints and issuer-level holdings | No security-level liquidity |
+| `FULL_HOLDINGS` | Full NAV, holdings, exposure, and security-level checks | Still requires User-owned approval for a final decision |
+
+Without the required private inputs, Gate 4 returns a diagnostic such as
+`GATE_4_PRIVATE_INPUTS_REQUIRED` or `GATE_4_CONSTRAINTS_INCOMPLETE`; it does not
+fill in default limits or produce a portfolio conclusion. A calculated
+constraint ceiling is not a system recommendation. System Assessment and
+User Decision remain separate, and automatic trade execution is disabled.
+
+The committed Gate 4 package is synthetic interface material only. It shows
+the report shape and state transitions, not a real fund portfolio or an
+approved position.
+
 ### Gate 4 Local Entry / Gate 4 本地接入
 
 Gate 4 does not accept a ticker or rebuild issuer analysis. Install the local
@@ -170,7 +236,7 @@ parsers and create an empty private workspace outside Git:
 
 ```bash
 python3 -m pip install -r requirements-gate4.txt
-python3 partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
+python3 user-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
   --input-mode EXPOSURE_ONLY
 ```
 
@@ -180,7 +246,7 @@ another hosted model, or the GitHub repository. Then validate the exact Gate 3
 contract and local manifest:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_local_entry.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
@@ -206,14 +272,14 @@ freshness, valuation status, Hard Stops, and issuer Warnings.
 `GATE_4_INPUTS_VALIDATED`。S13 计算的是约束上限，不是仓位意见。完成 S13 后，可运行：
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
 
-S14 将 System Portfolio Assessment 与 Partner Decision 分开：系统状态为
+S14 将 System Portfolio Assessment 与 User Decision 分开：系统状态为
 `ELIGIBLE`、`ELIGIBLE_WITH_ESCALATION`、`REVIEW_REQUIRED`、`NOT_ELIGIBLE` 或
-`NOT_EVALUATED`；Partner 决定为 `PENDING`、`APPROVED`、`MODIFIED`、`REJECTED`
+`NOT_EVALUATED`；User 决定为 `PENDING`、`APPROVED`、`MODIFIED`、`REJECTED`
 或 `DEFERRED`。所有非 `PENDING` 决定必须绑定当前 assessment hash；批准或修改还
 必须使用发行人总 gross-long 口径、不超过约束上限，并确认全部有效升级项。系统不会
 自动执行交易。
@@ -221,8 +287,8 @@ S14 将 System Portfolio Assessment 与 Partner Decision 分开：系统状态�
 Build and validate the public synthetic S14 demonstration package:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
-python3 partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
+python3 user-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
+python3 user-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
   examples/gate4-synthetic
 ```
 
@@ -240,12 +306,12 @@ dates. The system thesis assessment is provisional; formal thesis status stays
 
 Start from:
 
-`partner-demo/investment_decision_v2/monitoring/templates/monitoring_policy.template.yaml`
+`user-demo/investment_decision_v2/monitoring/templates/monitoring_policy.template.yaml`
 
 Then run:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_monitoring_update.py \
+python3 user-demo/investment_decision_v2/scripts/run_monitoring_update.py \
   --previous /path/to/prior/underwriting_output_contract.json \
   --current /path/to/current/underwriting_output_contract.json \
   --policy /path/to/monitoring_policy.yaml \
@@ -289,21 +355,21 @@ export SEC_USER_AGENT="Your Name your.email@example.com"
 Build a public-only underwriting contract for a supported company:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py AAPL
+python3 user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py AAPL
 ```
 
 Build a reviewed research fixture:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py CROX \
-  --research-input partner-demo/investment_decision_v2/research_inputs/crox_gate3_public_input.json
+python3 user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py CROX \
+  --research-input user-demo/investment_decision_v2/research_inputs/crox_gate3_public_input.json
 ```
 
 Render bilingual artifacts:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/render_public_company_artifacts.py \
-  partner-demo/investment_decision_v2/friday_v1_outputs/crox_crocs_inc/step3/underwriting_output_contract.json \
+python3 user-demo/investment_decision_v2/scripts/render_public_company_artifacts.py \
+  user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json \
   --out-dir examples/crox \
   --pdf
 ```
@@ -311,8 +377,8 @@ python3 partner-demo/investment_decision_v2/scripts/render_public_company_artifa
 Validate the contract and rendered files:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/validate_friday_v1_delivery.py \
-  partner-demo/investment_decision_v2/friday_v1_outputs/crox_crocs_inc/step3/underwriting_output_contract.json \
+python3 user-demo/investment_decision_v2/scripts/validate_v1_delivery.py \
+  user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json \
   --html-dir examples/crox
 ```
 
@@ -320,7 +386,7 @@ Run the shared test suite:
 
 ```bash
 python3 -m unittest discover \
-  -s partner-demo/investment_decision_v2/tests \
+  -s user-demo/investment_decision_v2/tests \
   -p 'test_*.py' \
   -v
 ```
@@ -328,19 +394,19 @@ python3 -m unittest discover \
 Run the frozen S12 valuation acceptance matrix:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
+python3 user-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
 ```
 
 Validate the cross-industry matrix and safe-failure taxonomy:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
+python3 user-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
 ```
 
 Run all active public-only regression cases:
 
 ```bash
-python3 partner-demo/investment_decision_v2/tests/run_company_regression.py \
+python3 user-demo/investment_decision_v2/tests/run_company_regression.py \
   --out-root /tmp/public-company-regression/builder \
   --report /tmp/public-company-regression/report.json
 ```

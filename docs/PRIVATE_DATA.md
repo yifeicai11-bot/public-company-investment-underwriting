@@ -7,7 +7,7 @@ The GitHub repository, public ticker workflow, examples, fixtures, and CI are pu
 - Fund NAV, holdings, security identifiers tied to positions, or position sizes
 - Current issuer, sector, country, factor, correlated, or hedge exposures
 - Internal target return, downside tolerance, risk budget, limits, or liquidity needs
-- Opportunity sets, internal rankings, Partner approvals, or trade instructions
+- Opportunity sets, internal rankings, User approvals, or trade instructions
 - Broker statements, client information, transaction history, or private diagnostics
 
 Redaction is not enough when remaining rows can reconstruct a portfolio. Use the least-granular Gate 4 mode that supports the decision.
@@ -24,7 +24,7 @@ Redaction is not enough when remaining rows can reconstruct a portfolio. Use the
 Example initialization:
 
 ```bash
-python partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
+python user-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py \
   --input-mode EXPOSURE_ONLY
 ```
 
@@ -41,7 +41,7 @@ git config core.hooksPath .githooks
 Scan staged files before committing:
 
 ```bash
-python partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged
+python user-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged
 ```
 
 CI separately scans every Git-tracked file with `--tracked`. The scanner is a guardrail, not permission to upload a file that happens to pass.

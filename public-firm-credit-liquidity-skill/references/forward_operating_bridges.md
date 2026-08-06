@@ -14,7 +14,7 @@ fields. Do not add a ticker, company-name, or renderer-specific calculation.
 
 The authoritative implementation is:
 
-`partner-demo/investment_decision_v2/scripts/forward_operating_model.py`
+`user-demo/investment_decision_v2/scripts/forward_operating_model.py`
 
 Contract version: `1.0.0`
 

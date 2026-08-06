@@ -7,7 +7,7 @@ also requires the complete S09 context in `shared_valuation_contract.md`.
 
 Authoritative implementation:
 
-`partner-demo/investment_decision_v2/scripts/valuation_cross_checks.py`
+`user-demo/investment_decision_v2/scripts/valuation_cross_checks.py`
 
 Valuation cross-check contract version: `1.0.0`
 
@@ -125,7 +125,7 @@ Suppress automatic comparison or ranking when any of these applies:
 
 Require at least three comparable peers before calculating a median, quartile,
 percentile, or ranking. Preserve excluded rows and their flags in the audit
-contract, but suppress their numerical value in partner-facing reports.
+contract, but suppress their numerical value in user-facing reports.
 The minimum means three distinct tickers for the metric. Duplicate ticker and
 metric rows, missing ticker identity, or a missing/invalid business-model-fit
 classification cannot increase the peer count.

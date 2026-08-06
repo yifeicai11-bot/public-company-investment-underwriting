@@ -54,6 +54,6 @@ Missing disclosure normally constrains research through a Warning. A selected or
 Completion requires:
 
 1. Dedicated positive and negative tests for every control above.
-2. Existing unit and Friday V1 regressions passing.
+2. Existing unit and v1.0.0 regressions passing.
 3. Cross-company runs covering calendar, non-calendar, 52-week, 53-week, and missing/non-comparable XBRL patterns.
 4. No company-specific analytical branch.

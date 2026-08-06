@@ -1,19 +1,19 @@
 {
-  "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
+  "assessment_hash": "39c7f59e7b37b1390d71dbb810c71f6d4b1db5609cc2e233513e9700a207cad0",
   "automatic_trade_execution": false,
   "company": "Crocs, Inc.",
   "data_classification": "SYNTHETIC_PUBLIC_EXAMPLE",
   "document_type": "gate4_synthetic_delivery_manifest",
   "file_hashes": {
-    "CROX_SYNTHETIC_Gate4_Assessment_Contract.json": "1c430143d7c7f670b756fd4653f8274b05867151552fc98c3b537e68c5250b25",
-    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.html": "abd91d13b4c2ffa6eaff3735312e361a48d25f384fe2c8a64f66b46582523d28",
-    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.pdf": "e7119a12e92f0769583585fd6bbdde5359385aa92f1f9fb3bb842e0afb370a9d",
-    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.html": "f23a048c5f7ebfe2653379a44de0df0091f72320e54093fbb6dbb3ceac5c7402",
-    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.pdf": "110ef60bdeb4c508b7f3453dd014a847dbc03dd6c3204f1253fa0baf1b3a765e",
-    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.html": "2bde3b177735af7c09fca7233dd5e919562d8ee4053f39fd404fe3047336de9f",
-    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.pdf": "4f2019bad339f98520f34163b9644aa07a4d7cdfcc3a6ec5f6cf47c6282043ad",
-    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.html": "cd47c8a8fe57db6feaf1bb7780836ea114c0427f18b519c0883b476e962d7ad7",
-    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.pdf": "fca9fbebfc506d4103ec294363faa4fdbc2ec3ebc6be820506f2396881df97ba"
+    "CROX_SYNTHETIC_Gate4_Assessment_Contract.json": "c114b52283e9424373e151d38af5361a39a5dca9bb07a50055cfcf08f3a56567",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.html": "15bdaa19726482d3f9e85503fd31e20adf6793d98b7bc7b6411d8ba94ac903d9",
+    "CROX_SYNTHETIC_Gate4_Evidence_Appendix_Bilingual.pdf": "ceb2155df2d6be237493c25174141ece1b6cb6e1d72c2a5e4c2e5422d9f052a4",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.html": "0fe0ed0057e56dc7a50bfdca9fd01bee88b76e3b24ea5ebfcd45c3454e9677fe",
+    "CROX_SYNTHETIC_Gate4_Full_Report_Bilingual.pdf": "eb47e4f6a9a86e26fa96a12e73eebb0f8aeb6a2b8f086c1eff12bcb1d063fcdb",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.html": "3225b0738fe56ea5fc4406cbab010dcbcef1161fe7d67c3e06bed4bca65749f1",
+    "CROX_SYNTHETIC_Gate4_One_Page_Summary_Bilingual.pdf": "e0ff0bd541b7ebb3ded93293295576326279ca87760e3c04325b7581fea2fa14",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.html": "f496857e64bff3aded9dab6b0af6ed2159ea8d5f0906c8230b34127bfe53fd08",
+    "CROX_SYNTHETIC_Gate4_Validation_Report_Bilingual.pdf": "fdc7a383b713df2585c8790a786705ea12a7d9864fd17cc2214fa6dfc83d5e8d"
   },
   "public_files": [
     "CROX_SYNTHETIC_Gate4_Assessment_Contract.json",

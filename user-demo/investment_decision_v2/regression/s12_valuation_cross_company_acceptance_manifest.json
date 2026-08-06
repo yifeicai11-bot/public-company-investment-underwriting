@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "s12_valuation_cross_company_acceptance_manifest",
+  "phase": "C",
+  "session": "S12",
+  "selection_date": "2026-07-31",
+  "pre_run_commit": "2a3eeaee1abb2d536f4f36001dc7ef5f0caee229",
+  "source_scope": "OFFLINE_CONTROLLED_ACCEPTANCE",
+  "purpose": "Verify shared S09-S11 valuation behavior across business models without creating real-company investment conclusions or ticker-specific logic.",
+  "controlled_business_model_cases": [
+    {
+      "case_id": "S12-MODULE-RETAIL",
+      "business_model": "RETAIL",
+      "role": "driver_contract_acceptance"
+    },
+    {
+      "case_id": "S12-MODULE-CONSUMER-BRAND",
+      "business_model": "CONSUMER_BRAND",
+      "role": "driver_contract_acceptance"
+    },
+    {
+      "case_id": "S12-MODULE-SUBSCRIPTION-SOFTWARE",
+      "business_model": "SUBSCRIPTION_SOFTWARE",
+      "role": "driver_contract_acceptance"
+    },
+    {
+      "case_id": "S12-MODULE-INDUSTRIAL",
+      "business_model": "INDUSTRIAL",
+      "role": "driver_contract_acceptance"
+    },
+    {
+      "case_id": "S12-MODULE-ACQUISITION-HEAVY",
+      "business_model": "ACQUISITION_HEAVY",
+      "role": "driver_contract_acceptance"
+    },
+    {
+      "case_id": "S12-MODULE-DISTRIBUTION",
+      "business_model": "DISTRIBUTION",
+      "role": "driver_contract_acceptance"
+    }
+  ],
+  "valuation_status_cases": [
+    {
+      "case_id": "S12-RANGE-CONSUMER-BRAND",
+      "business_model": "CONSUMER_BRAND",
+      "expected_status": "RANGE_ONLY",
+      "evidence_path": "Scenario price sensitivity is reproducible, but the driver forecast and independent cross-check are incomplete.",
+      "allowed_return_language": [
+        "PRICE_SENSITIVITY_ONLY"
+      ]
+    },
+    {
+      "case_id": "S12-PARTIAL-RETAIL",
+      "business_model": "RETAIL",
+      "expected_status": "PARTIALLY_VALIDATED",
+      "evidence_path": "A validated driver-based forecast and at least one validated independent cross-check are both present.",
+      "allowed_return_language": [
+        "PRICE_SENSITIVITY",
+        "BASE_CASE_RETURN_IF_S09_HORIZON_VALIDATED"
+      ]
+    },
+    {
+      "case_id": "S12-MULTI-INDUSTRIAL",
+      "business_model": "INDUSTRIAL",
+      "expected_status": "MULTI_METHOD_VALIDATED",
+      "evidence_path": "The explicit horizon, driver forecast, forward share bridge, reverse valuation, multiple independent methods, and human review are validated.",
+      "allowed_return_language": [
+        "PRICE_SENSITIVITY",
+        "BASE_CASE_RETURN",
+        "PROBABILITY_WEIGHTED_RETURN_IF_PROBABILITY_GOVERNANCE_VALIDATED"
+      ]
+    }
+  ],
+  "real_contract_observation_cases": [
+    {
+      "ticker": "CROX",
+      "business_model": "CONSUMER_BRAND",
+      "role": "existing_regression_contract"
+    },
+    {
+      "ticker": "AZO",
+      "business_model": "RETAIL",
+      "role": "existing_regression_contract"
+    },
+    {
+      "ticker": "CRM",
+      "business_model": "SUBSCRIPTION_SOFTWARE",
+      "role": "existing_regression_contract"
+    },
+    {
+      "ticker": "ODFL",
+      "business_model": "TRANSPORTATION",
+      "role": "preserved_blind_contract"
+    },
+    {
+      "ticker": "ITT",
+      "business_model": "INDUSTRIAL",
+      "role": "preserved_blind_contract"
+    }
+  ],
+  "status_definitions": {
+    "RANGE_ONLY": {
+      "required": [
+        "Reproducible scenario price sensitivity."
+      ],
+      "insufficient_for_upgrade": [
+        "Driver forecast without an independent cross-check.",
+        "Independent cross-check without a driver forecast.",
+        "Multi-method S11 context without a validated S09 horizon."
+      ]
+    },
+    "PARTIALLY_VALIDATED": {
+      "required": [
+        "Validated driver-based forward forecast.",
+        "Validated forward share-count bridge.",
+        "At least one validated independent valuation cross-check."
+      ]
+    },
+    "MULTI_METHOD_VALIDATED": {
+      "required": [
+        "Validated S09 valuation horizon and base-case return contract.",
+        "Validated driver-based forward forecast.",
+        "Validated forward share-count bridge.",
+        "Validated reverse valuation.",
+        "Validated independent cross-check.",
+        "S11 multi-method validation.",
+        "Named human review."
+      ]
+    }
+  },
+  "return_language_rules": [
+    "Price sensitivity is not a target price.",
+    "Base-Case Return is displayed only when the S09 horizon and exit basis validate.",
+    "Probability-Weighted Return is displayed only when S09 and probability governance both validate.",
+    "User Internal Return, position sizing, portfolio action, and trade execution remain disabled outside Gate 4.",
+    "Rounded presentation values are allowed, but authoritative calculations must remain reproducible.",
+    "No status label may create a precise return that its underlying evidence does not support."
+  ],
+  "real_contract_rules": [
+    "Existing public-company contracts are inspected offline and are not backfilled with synthetic valuation assumptions.",
+    "Missing S10 or S11 analyst inputs must remain NOT_PROVIDED, DRIVER_MODEL_NOT_AVAILABLE, RANGE_ONLY, or another explicit safe state.",
+    "Synthetic acceptance fixtures must be labeled SYNTHETIC_ACCEPTANCE_ONLY and must never be represented as public-company research."
+  ],
+  "anti_overfitting_acceptance": [
+    "No ticker, company name, hard-coded company value, or fixture ID may control analytical status or output language.",
+    "All status cases must run through the shared S09, S10, S11, share-bridge, and valuation-scope components.",
+    "A failure may only be fixed in shared valuation logic or shared validation logic.",
+    "After any shared fix, all controlled business-model cases, all status cases, the complete test suite, and the frozen v1.0.0 baseline must be rerun."
+  ],
+  "first_run_policy": {
+    "preserve_first_output": true,
+    "do_not_replace_case_after_failure": true,
+    "record_all_failures": true,
+    "fix_only_shared_logic": true,
+    "rerun_entire_matrix_after_any_fix": true
+  }
+}

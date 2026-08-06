@@ -8,7 +8,7 @@
   },
   "report_id": "RPT-0F80FD1B28CD0F",
   "contract_hash": "66aa84cd69284a1d79de398ac27cf06c63905427f03f04113adb50abe122c0cd",
-  "check_count": 36,
+  "check_count": 37,
   "failure_count": 0,
   "checks": [
     {
@@ -49,7 +49,7 @@
     {
       "check_id": "market-cap-reproduction",
       "status": "PASS",
-      "detail": "market_cap=48495610918.341064; price=2970.570068359375; shares=16325355.0"
+      "detail": "market_cap=48495610918.341064; price=2970.570068359375; current_reported_shares=16325355.0"
     },
     {
       "check_id": "market-price-date-alignment",
@@ -59,12 +59,17 @@
     {
       "check_id": "share-date-alignment",
       "status": "PASS",
-      "detail": "basis=2026-06-05; valuation=2026-06-05; registry=2026-06-05"
+      "detail": "reported_basis=2026-06-05; valuation=2026-06-05; registry=2026-06-05"
+    },
+    {
+      "check_id": "current-share-basis-reconciliation",
+      "status": "PASS",
+      "detail": "reported_basis=16325355.0; valuation_current_shares=16325355.0"
     },
     {
       "check_id": "share-proxy",
       "status": "PASS",
-      "detail": "proxy_required=True; proxy_status=PROXY"
+      "detail": "current_market_cap_proxy_required=True; scenario_forward_basis_complete=False; scenario_proxy_status=PROXY"
     },
     {
       "check_id": "fcf-bridge-reproduction",
@@ -154,17 +159,17 @@
     {
       "check_id": "artifact-one-page-exists",
       "status": "PASS",
-      "detail": "examples/autozone/AZO_One_Page_Summary_Bilingual.html"
+      "detail": "AZO_One_Page_Summary_Bilingual.html"
     },
     {
       "check_id": "artifact-full-report-exists",
       "status": "PASS",
-      "detail": "examples/autozone/AZO_Full_Report_Bilingual.html"
+      "detail": "AZO_Full_Report_Bilingual.html"
     },
     {
       "check_id": "artifact-evidence-appendix-exists",
       "status": "PASS",
-      "detail": "examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.html"
+      "detail": "AZO_Evidence_Audit_Appendix_Bilingual.html"
     },
     {
       "check_id": "one-page-no-raw-evidence",

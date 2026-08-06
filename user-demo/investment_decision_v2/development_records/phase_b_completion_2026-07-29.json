@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.1.0",
+  "document_type": "phase_completion_record",
+  "phase": "B",
+  "name": "Arbitrary-Company Stability and Data Layer",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "sessions": [
+    {
+      "session": "S05",
+      "name": "Reproducible Blind-Test Baseline",
+      "status": "ACCEPTED",
+      "implementation_commit": "839e513b85ee25466247eb67dd264e6ca2661401",
+      "evidence": "user-demo/investment_decision_v2/blind_tests/s05_odfl"
+    },
+    {
+      "session": "S06",
+      "name": "Period, XBRL and Accounting Controls",
+      "status": "ACCEPTED",
+      "implementation_commit": "52d1a3e3346d42b1038d4df1061f6b5e5f5cdd65",
+      "evidence": "user-demo/investment_decision_v2/development_records/s06_completion_2026-07-29.json"
+    },
+    {
+      "session": "S07",
+      "name": "Notes, Sources and Subsequent Events",
+      "status": "ACCEPTED",
+      "implementation_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034",
+      "evidence": "user-demo/investment_decision_v2/development_records/s07_completion_2026-07-29.json"
+    },
+    {
+      "session": "S08",
+      "name": "Cross-Company Acceptance",
+      "status": "ACCEPTED",
+      "implementation_commit": "ae097ace87173caa17b6e3e386367a8dffbf1cb0",
+      "evidence": "user-demo/investment_decision_v2/regression/s08_cross_company_acceptance_final_2026-07-29.json"
+    }
+  ],
+  "phase_requirement_check": [
+    {
+      "requirement": "Freeze a reproducible blind-test baseline before execution and preserve the first output, errors, warnings, and diagnostics without replacing the issuer.",
+      "status": "PASS",
+      "evidence": "ODFL remains the deterministic S05 issuer; its 22 first-run artifacts pass the immutable SHA256 registry."
+    },
+    {
+      "requirement": "Harden quarter, YTD, FY, LTM, instant/flow, units, currency, shares, non-calendar years, 53-week years, negative denominators, and missing XBRL tags in the shared Data Layer.",
+      "status": "PASS",
+      "evidence": "S06 owns these rules in build_public_company_decision_pack.py; the Investment Layer delegates to the shared selectors instead of recreating them. Nineteen dedicated tests pass."
+    },
+    {
+      "requirement": "Harden debt maturity, revolver, covenant, lease, receivable, bad debt, supplier finance, acquisition, amendment, restatement, and subsequent events without silently resolving source conflicts or stale information.",
+      "status": "PASS",
+      "evidence": "S07 exposes eleven modules through one shared version 1.1.0 contract. Twenty-five dedicated tests and the ITT forward-test history pass."
+    },
+    {
+      "requirement": "Rerun CROX, AZO, first blind companies, and a newly selected unfamiliar company; verify safe outcomes and absence of company-specific analytical branches.",
+      "status": "PASS",
+      "evidence": "CROX, AZO, ODFL, and ITT all pass the final live acceptance with zero Hard Stops; synthetic safe failures and AST anti-hardcoding checks pass."
+    }
+  ],
+  "latest_verification": {
+    "complete_test_suite": {
+      "passed": 176,
+      "failed": 0
+    },
+    "v1_0_0_baseline": {
+      "passed": 82,
+      "failed": 0
+    },
+    "s08_live_cases": {
+      "passed": 4,
+      "failed": 0
+    },
+    "tracked_file_privacy_scan": {
+      "files_checked": 327,
+      "violations": 0
+    },
+    "anti_hardcoding_findings": 0,
+    "skill_validation": "PASS"
+  },
+  "scope_boundary": [
+    "Phase B acceptance applies to the current SEC-reporting, US-GAAP, non-financial public-company core.",
+    "MISSING and WARNING are accepted only as explicit constrained outcomes, not as evidence that the missing disclosure exists.",
+    "Future live fixtures for distressed, restated, material-event, and complex-capital-structure issuers remain additional coverage."
+  ],
+  "exact_next_starting_point": "Read and freeze the approved S09 definition before implementing Phase C."
+}

@@ -1,7 +1,7 @@
 {
   "assessment_engine_version": "1.0.0",
-  "assessment_hash": "4a67339c4e7e3ece380d4ae51c8611fa9d18f0012ed337f0d92d7c864b4fca9e",
-  "assessment_input_fingerprint": "e11d5abb321888e3a24a58905c669d0e2ba36826e8d148ace6b70789f8e6363b",
+  "assessment_hash": "39c7f59e7b37b1390d71dbb810c71f6d4b1db5609cc2e233513e9700a207cad0",
+  "assessment_input_fingerprint": "8bb7f5c03a06fcb5393b838d771554a8e1eedca018eff9edbe0841247fd260fb",
   "assessment_output_contract_version": "1.0.0",
   "automatic_trade_execution": false,
   "candidate_identity": {
@@ -454,14 +454,14 @@
     {
       "evidence_class": "CONTROL",
       "evidence_id": "G4-EV-BUNDLE",
-      "label_en": "Assessment-input fingerprint excluding the Partner decision",
-      "label_zh": "不含 Partner 决策的评估输入指纹",
+      "label_en": "Assessment-input fingerprint excluding the User decision",
+      "label_zh": "不含 User 决策的评估输入指纹",
       "source_fields": [
         "manifest",
         "referenced_input_files"
       ],
       "source_object": "local_private_workspace",
-      "value": "e11d5abb321888e3a24a58905c669d0e2ba36826e8d148ace6b70789f8e6363b"
+      "value": "8bb7f5c03a06fcb5393b838d771554a8e1eedca018eff9edbe0841247fd260fb"
     },
     {
       "evidence_class": "CALC",
@@ -788,9 +788,9 @@
     },
     {
       "evidence_class": "CONTROL",
-      "evidence_id": "G4-EV-PARTNER-DECISION",
-      "label_en": "Separately owned Partner decision",
-      "label_zh": "独立归属的 Partner 决策",
+      "evidence_id": "G4-EV-USER-DECISION",
+      "label_en": "Separately owned User decision",
+      "label_zh": "独立归属的 User 决策",
       "source_fields": [
         "partner_decision"
       ],
@@ -814,11 +814,11 @@
     "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
     "report_id": "RPT-D12C3A257792FC"
   },
-  "generated_at": "2026-08-03T06:00:53Z",
+  "generated_at": "2026-08-06T07:18:11Z",
   "input_mode": "FULL_HOLDINGS",
   "local_private_output_only": false,
-  "next_action_en": "The designated Partner should review the assessment and record a dated decision locally.",
-  "next_action_zh": "应由指定 Partner 在本地复核评估并记录带日期的决定。",
+  "next_action_en": "The designated User should review the assessment and record a dated decision locally.",
+  "next_action_zh": "应由指定 User 在本地复核评估并记录带日期的决定。",
   "partner_decision": {
     "acknowledged_escalation_ids": [],
     "approved_at": null,
@@ -962,8 +962,8 @@
         "evidence_ids": [
           "G4-EV-SYSTEM-ASSESSMENT"
         ],
-        "message_en": "Active escalation requires Partner acknowledgement: constraint:downside.",
-        "message_zh": "有效升级项需要 Partner 明确认可：constraint:downside。",
+        "message_en": "Active escalation requires User acknowledgement: constraint:downside.",
+        "message_zh": "有效升级项需要 User 明确认可：constraint:downside。",
         "severity": "WARNING",
         "status": "WARNING"
       },
@@ -972,8 +972,8 @@
         "evidence_ids": [
           "G4-EV-SYSTEM-ASSESSMENT"
         ],
-        "message_en": "Active escalation requires Partner acknowledgement: constraint:sector.",
-        "message_zh": "有效升级项需要 Partner 明确认可：constraint:sector。",
+        "message_en": "Active escalation requires User acknowledgement: constraint:sector.",
+        "message_zh": "有效升级项需要 User 明确认可：constraint:sector。",
         "severity": "WARNING",
         "status": "WARNING"
       },
@@ -982,8 +982,8 @@
         "evidence_ids": [
           "G4-EV-SYSTEM-ASSESSMENT"
         ],
-        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-peer-valuation-context.",
-        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-peer-valuation-context。",
+        "message_en": "Active escalation requires User acknowledgement: gate3:G3-peer-valuation-context.",
+        "message_zh": "有效升级项需要 User 明确认可：gate3:G3-peer-valuation-context。",
         "severity": "WARNING",
         "status": "WARNING"
       },
@@ -992,8 +992,8 @@
         "evidence_ids": [
           "G4-EV-SYSTEM-ASSESSMENT"
         ],
-        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-probability-methodology.",
-        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-probability-methodology。",
+        "message_en": "Active escalation requires User acknowledgement: gate3:G3-probability-methodology.",
+        "message_zh": "有效升级项需要 User 明确认可：gate3:G3-probability-methodology。",
         "severity": "WARNING",
         "status": "WARNING"
       },
@@ -1002,8 +1002,8 @@
         "evidence_ids": [
           "G4-EV-SYSTEM-ASSESSMENT"
         ],
-        "message_en": "Active escalation requires Partner acknowledgement: gate3:G3-probability-validation.",
-        "message_zh": "有效升级项需要 Partner 明确认可：gate3:G3-probability-validation。",
+        "message_en": "Active escalation requires User acknowledgement: gate3:G3-probability-validation.",
+        "message_zh": "有效升级项需要 User 明确认可：gate3:G3-probability-validation。",
         "severity": "WARNING",
         "status": "WARNING"
       }

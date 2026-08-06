@@ -1,21 +1,22 @@
 {
   "report_id": "RPT-0F80FD1B28CD0F",
   "contract_hash": "66aa84cd69284a1d79de398ac27cf06c63905427f03f04113adb50abe122c0cd",
-  "contract_path": "partner-demo/investment_decision_v2/friday_v1_outputs/azo_autozone_inc/step3/underwriting_output_contract.json",
+  "contract_path": "user-demo/investment_decision_v2/v1_0_0_outputs/azo_autozone_inc/step3/underwriting_output_contract.json",
   "formal_report_blocked": false,
   "outputs": {
-    "one_page_html": "examples/autozone/AZO_One_Page_Summary_Bilingual.html",
-    "full_report_html": "examples/autozone/AZO_Full_Report_Bilingual.html",
-    "evidence_appendix_html": "examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.html",
-    "qa_summary_html": "examples/autozone/AZO_Friday_V1_QA_Summary_Bilingual.html",
-    "one_page_pdf": "examples/autozone/AZO_One_Page_Summary_Bilingual.pdf",
-    "full_report_pdf": "examples/autozone/AZO_Full_Report_Bilingual.pdf",
-    "evidence_appendix_pdf": "examples/autozone/AZO_Evidence_Audit_Appendix_Bilingual.pdf",
-    "qa_summary_pdf": "examples/autozone/AZO_Friday_V1_QA_Summary_Bilingual.pdf"
+    "one_page_html": "AZO_One_Page_Summary_Bilingual.html",
+    "full_report_html": "AZO_Full_Report_Bilingual.html",
+    "evidence_appendix_html": "AZO_Evidence_Audit_Appendix_Bilingual.html",
+    "qa_summary_html": "AZO_V1_0_0_QA_Summary_Bilingual.html",
+    "one_page_pdf": "AZO_One_Page_Summary_Bilingual.pdf",
+    "full_report_pdf": "AZO_Full_Report_Bilingual.pdf",
+    "evidence_appendix_pdf": "AZO_Evidence_Audit_Appendix_Bilingual.pdf",
+    "qa_summary_pdf": "AZO_V1_0_0_QA_Summary_Bilingual.pdf"
   },
   "renderer_rule": "Formatting only; no analytical recalculation.",
   "contract_validation": "PASS",
   "data_gate": 3,
   "hard_stop_count": 0,
-  "warning_count": 4
+  "warning_count": 4,
+  "manifest": "render_manifest.json"
 }

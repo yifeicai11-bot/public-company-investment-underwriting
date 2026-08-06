@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CROX v1.0.0 QA Summary / 质量检查摘要</title>
+<style>
+@page { size: A4; margin: 7mm 8mm 9mm; }
+* { box-sizing: border-box; }
+:root { --ink:#172026; --muted:#637078; --line:#d8dee1; --soft:#f3f5f4; --teal:#176c72;
+--teal-soft:#e8f2f1; --gold:#9a6a16; --gold-soft:#fbf4e6; --red:#9c3f3a; --red-soft:#faeeee;
+--green:#2c6d4f; --green-soft:#edf6f0; }
+html,body { margin:0; background:#fff; color:var(--ink); }
+body { font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; font-size:9.5px; line-height:1.42; letter-spacing:0; }
+main { width:100%; margin:0 auto; }
+h1,h2,h3,p { overflow-wrap:anywhere; }
+h1 { margin:0; font-size:22px; line-height:1.14; letter-spacing:0; }
+h2 { margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; break-after:avoid; page-break-after:avoid; }
+h3 { margin:8px 0 4px; font-size:10.5px; line-height:1.3; letter-spacing:0; }
+p { margin:4px 0; } ul { margin:4px 0 7px; padding-left:17px; } li { margin:2px 0; }
+a { color:var(--teal); text-decoration:none; }
+table { width:100%; margin:5px 0 9px; border-collapse:collapse; table-layout:fixed; font-variant-numeric:tabular-nums; }
+th,td { padding:4px 5px; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+tr { break-inside:avoid; page-break-inside:avoid; }
+th { background:var(--soft); color:#334047; text-align:left; font-size:8px; font-weight:700; }
+.num { text-align:right; font-variant-numeric:tabular-nums; } .muted { color:var(--muted); } .small { font-size:8px; }
+.eyebrow { margin-bottom:2px; color:var(--teal); font-size:8px; font-weight:700; text-transform:uppercase; }
+.header { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding-bottom:8px; border-bottom:3px solid var(--teal); }
+.header-meta { text-align:right; color:var(--muted); font-size:7.8px; line-height:1.45; }
+.decision-strip { display:grid; grid-template-columns:1.1fr .85fr .48fr .52fr .72fr; gap:1px; margin:8px 0; background:var(--line); border:1px solid var(--line); }
+.decision-cell { min-width:0; padding:6px 7px; background:#fff; }
+.decision-cell .kicker { display:block; color:var(--muted); font-size:7px; text-transform:uppercase; }
+.decision-cell strong { display:block; margin-top:1px; color:var(--teal); font-size:9.3px; line-height:1.25; }
+.workflow-disclosure { margin:2px 0 5px; color:var(--muted); font-size:7px; }
+.answer-box { margin:9px 0; padding:8px 10px; border-left:4px solid var(--teal); background:var(--teal-soft); }
+.answer-box.warning { border-color:var(--gold); background:var(--gold-soft); }
+.answer-box strong { color:var(--teal); } .answer-box.warning strong { color:var(--gold); }
+.metric-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:7px 0 9px; }
+.metric { min-height:52px; padding:6px 7px; border:1px solid var(--line); background:#fff; }
+.metric-label { color:var(--muted); font-size:7.3px; line-height:1.2; }
+.metric-value { margin-top:2px; font-size:14px; font-weight:700; line-height:1.05; }
+.metric-note { margin-top:3px; color:var(--muted); font-size:6.9px; }
+.evidence-id { display:inline-block; color:#5f6b72; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6.6px; line-height:1.25; }
+.bundle-id { display:inline-block; margin:2px 0; padding:1px 4px; border:1px solid #a9c5c5; color:var(--teal); background:var(--teal-soft); font-size:6.5px; font-weight:700; line-height:1.25; }
+.bundle-tail { break-inside:avoid; page-break-inside:avoid; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+.scenario-band { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:7px 0 9px; }
+.scenario-card { min-height:76px; padding:7px; border-top:3px solid var(--gold); background:var(--gold-soft); }
+.scenario-card.bear { border-color:var(--red); background:var(--red-soft); }
+.scenario-card.bull { border-color:var(--green); background:var(--green-soft); }
+.scenario-card h3 { margin-top:0; } .scenario-price { font-size:16px; font-weight:700; }
+.scenario-return { font-size:10px; font-weight:700; } .negative { color:var(--red); } .positive { color:var(--green); }
+.module { margin:7px 0; padding:7px 9px; border-left:3px solid #aeb9bd; background:#fafbfa; break-inside:avoid; }
+.module-head { display:flex; justify-content:space-between; gap:10px; } .module-head h3 { margin:0; }
+.status { color:var(--teal); font-size:7.5px; font-weight:700; }
+.debate { margin:8px 0; padding:7px 9px; border:1px solid var(--line); break-inside:avoid; }
+.debate h3 { margin-top:0; color:var(--teal); }
+.tag { display:inline-block; margin-right:4px; padding:1px 4px; border:1px solid var(--line); color:var(--muted); font-size:6.8px; font-weight:700; }
+.portfolio-disabled { margin:8px 0; padding:7px 9px; border:1px solid #d8b66c; background:var(--gold-soft); }
+.page-break { break-before:page; } .keep { break-inside:avoid; } .section-intro { margin-bottom:6px; color:#334047; }
+.formula { color:#4e5c63; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:7px; }
+.audit-table { font-size:7.2px; } .audit-table th,.audit-table td { padding:3px 4px; }
+.selected-evidence { font-size:6.5px; } .selected-evidence th,.selected-evidence td { padding:2px 3px; }
+.source-list { font-size:7.3px; } .source-list td { padding:3px 4px; } .source-level { width:7%; text-align:center; }
+.source-ids { color:#66727a; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6px; }
+.contract-identity { display:none; }
+.running-footer { display:flex; justify-content:space-between; gap:10px; margin-top:8px; padding-top:3px; border-top:1px solid var(--line); color:#7a858b; font-size:6.5px; break-inside:avoid; }
+.one-page-root { font-size:8.5px; line-height:1.3; } .one-page-root h1 { font-size:18px; }
+.one-page-root h2 { margin:7px 0 3px; padding-bottom:2px; font-size:10.4px; }
+.one-page-root h3 { margin:3px 0 2px; font-size:8.8px; } .one-page-root .header { padding-bottom:5px; }
+.one-page-root .decision-strip { margin:5px 0; } .one-page-root .decision-cell { padding:4px 5px; }
+.one-page-root .decision-cell strong { font-size:8.2px; } .one-page-root .answer-box { margin:5px 0; padding:5px 7px; }
+.one-page-root .workflow-disclosure { margin:1px 0 4px; font-size:7.2px; }
+.one-page-root .metric-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:3px; margin:4px 0 5px; }
+.one-page-root .metric { min-height:44px; padding:4px; } .one-page-root .metric-label { font-size:6.7px; }
+.one-page-root .metric-value { font-size:11.2px; } .one-page-root .metric-note { font-size:6.2px; }
+.one-page-root table { margin:3px 0 5px; } .one-page-root th,.one-page-root td { padding:2.5px 3px; font-size:7.1px; line-height:1.2; }
+.one-page-root .small { font-size:7.5px; }
+.one-page-root .debate { margin:3px 0; padding:4px 5px; } .one-page-root ul { margin:2px 0 3px; padding-left:13px; }
+.one-page-root li { margin:1px 0; } .one-page-root .portfolio-disabled { margin:4px 0; padding:4px 6px; }
+</style></head><body><main class="one-page-root">
+<header class="header"><div><div class="eyebrow">Public-Data Issuer Underwriting and IC Pre-Read System - v1.0.0</div>
+<h1>Crocs, Inc. (CROX)</h1></div>
+<div class="header-meta">v1.0.0 QA Summary / v1.0.0质量检查摘要<br>Report ID: RPT-D12C3A257792FC<br>
+Financials: 2026-03-31 | Market: 2026-07-15<br>
+Subsequent-event review: 2026-07-16</div></header>
+<div class="decision-strip">
+<div class="decision-cell"><span class="kicker">Research workflow / 研究流程</span><strong>Ready for Human Review / 可供人工审阅</strong></div>
+<div class="decision-cell"><span class="kicker">Public-data view / 公开数据观点</span><strong>Watch</strong></div>
+<div class="decision-cell"><span class="kicker">Data Gate / 数据门禁</span><strong>Gate 3 / 数据门禁 3</strong></div>
+<div class="decision-cell"><span class="kicker">Confidence / 可信度</span><strong>Medium / 中</strong></div>
+<div class="decision-cell"><span class="kicker">Valuation status / 估值状态</span><strong>RANGE_ONLY</strong></div>
+</div><p class="workflow-disclosure">Research readiness measures whether issuer-level analysis is ready for human review; it does not measure investment attractiveness or authorize a trade. / 研究就绪仅表示发行人层面分析可供人工审阅，不代表投资吸引力，也不授权交易。</p><div class="answer-box"><strong>QA conclusion / 质量检查结论</strong><p>Schema 5.0.0; contract hash eb20dfccfd27d71a; One-Page, Full Report, and Evidence Appendix are rendered from this same validated object. / 一页摘要、完整报告及证据附录均由同一个已验证对象生成。</p></div><div class="two-col"><section><h2>Date and Period Boundary / 日期与期间边界</h2><p><b>Financial statement date:</b> 2026-03-31<br><b>Market price date:</b> 2026-07-15<br><b>Share-count date:</b> 2026-04-23<br><b>Subsequent-event review through:</b> 2026-07-16</p><p>The 2026-04-23 cover-page share count is used. Public subsequent-event review through 2026-07-16 did not produce a validated quantified later share count; future repurchases or equity-plan activity are not incorporated. / 采用2026-04-23封面页股数；截至2026-07-16的公开后续事项复核未获得经验证的后续量化股数，未来回购或股权计划活动未纳入。</p></section><section><h2>Control Status / 控制状态</h2><table><tbody><tr><td>Contract validation / 合同验证</td><td><b>PASS</b></td></tr><tr><td>Data validation / 数据验证</td><td><b>PASS_WITH_WARNINGS</b></td></tr><tr><td>Hard Stops / 强制停止</td><td><b>0</b></td></tr><tr><td>Warnings / 警告</td><td><b>4</b></td></tr><tr><td>FCF source data / FCF源数据</td><td><b>VALIDATED</b></td></tr><tr><td>FCF calculation / FCF计算</td><td><b>VALIDATED</b></td></tr><tr><td>FCF normalization / FCF标准化</td><td><b>PARTIALLY_NORMALIZED</b></td></tr><tr><td>Share-count basis / 股数口径</td><td><b>PROXY</b></td></tr><tr><td>Forward share bridge / 前瞻股数桥</td><td><b>NOT_COMPLETED</b></td></tr><tr><td>Valuation scope / 估值范围</td><td><b>RANGE_ONLY</b></td></tr><tr><td>Probability governance / 概率治理</td><td><b>ILLUSTRATIVE</b></td></tr><tr><td>Formal weighted outcome / 正式概率加权结果</td><td><b>NOT_EVALUATED</b></td></tr><tr><td>Return context / 回报语境</td><td><b>NOT_DEFINED</b></td></tr><tr><td>Price sensitivity / 价格敏感性</td><td><b></b></td></tr><tr><td>Base-case return / 基准情景回报</td><td><b></b></td></tr><tr><td>Probability-weighted return / 概率加权回报</td><td><b></b></td></tr><tr><td>User internal return / User内部回报</td><td><b></b></td></tr><tr><td>Portfolio overlay / 组合叠加</td><td><b>DISABLED</b></td></tr></tbody></table></section></div><div class="two-col"><section><h2>Decision Boundaries / 决策边界</h2><ul><li>Whether the fund should buy or sell the security. / 基金是否应买入或卖出该证券。</li><li>A formal expected return, total return, annualized return, or validated fair-value target. / 正式预期回报、总回报、年化回报或经验证的公允价值目标。</li><li>Position size, portfolio weight, risk budget, or opportunity-cost ranking. / 仓位、组合权重、风险预算或机会成本排名。</li></ul></section><section><h2>Active Warnings / 当前警告</h2><ul><li>G3-probability-validation: Probability status=ILLUSTRATIVE; method=SCENARIO_JUDGMENT; freshness=CURRENT; approval=NOT_APPROVED.</li><li>G3-peer-valuation-context: Peer valuation status=UNAVAILABLE; comparable rows=0.</li><li>G4-portfolio-context: Portfolio context=DISABLED.</li><li>G3-probability-methodology: Probability status=ILLUSTRATIVE; method=SCENARIO_JUDGMENT; freshness=CURRENT.</li></ul></section></div><div class="portfolio-disabled"><b>Renderer integrity / 渲染完整性:</b> Formatting only; no independent valuation, financial-period construction, share bridge, or investment conclusion is recalculated in the renderer. / 渲染器仅负责格式，不独立重算估值、财务期间、股数桥或投资结论。</div><div class="running-footer"><span>CROX | Public-data underwriting | RPT-D12C3A257792FC | Hash eb20dfccfd27</span><span class="contract-identity">Contract hash: eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d</span><span>Validated contract identity / 已验证合同标识</span></div></main></body></html>

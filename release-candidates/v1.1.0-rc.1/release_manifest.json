@@ -5,7 +5,7 @@
   "status": "S16_LOCAL_RELEASE_CANDIDATE",
   "publication_status": "UNPUBLISHED",
   "base_commit": "4962a74cc1c41d10da41293981ea073dfe9586f0",
-  "candidate_commit_record": "partner-demo/investment_decision_v2/development_records/s16_completion_2026-08-03.json",
+  "candidate_commit_record": "user-demo/investment_decision_v2/development_records/s16_completion_2026-08-03.json",
   "python_versions": [
     "3.11",
     "3.12"

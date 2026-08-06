@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "phase_c_promotion_audit",
+  "phase": "C",
+  "scope": [
+    "S09 Shared Valuation Contract",
+    "S10 Modular Forward Operating Bridges",
+    "S11 Valuation Cross-Checks and Governance",
+    "S12 Valuation Cross-Company Acceptance"
+  ],
+  "audit_timestamp_utc": "2026-07-31T09:05:17Z",
+  "branch": "codex/phase-c-equity-valuation",
+  "main_baseline_commit": "8156f5d168f897054822fd54be7b39a97a62543d",
+  "audited_implementation_commit": "422abed3a001d6cfbc4e4b9489c24d68eb196169",
+  "status": "PASS",
+  "promotion_recommendation": "READY_FOR_MAIN_AFTER_USER_APPROVAL",
+  "requirements_trace": [
+    {
+      "session": "S09",
+      "status": "PASS",
+      "requirements": {
+        "dated_horizon": [
+          "valuation_as_of_date",
+          "target_date",
+          "holding_period",
+          "forecast_period",
+          "metric_period"
+        ],
+        "valuation_bases": [
+          "dividend_assumption",
+          "share_basis",
+          "exit_basis"
+        ],
+        "separate_output_classes": [
+          "price_sensitivity",
+          "base_case_return",
+          "probability_weighted_return",
+          "partner_internal_return"
+        ]
+      },
+      "acceptance_evidence": [
+        "The shared schema contains every required dated horizon and valuation-basis field.",
+        "Each output class has an independent status and permission boundary.",
+        "User Internal Return remains DISABLED_PRIVATE_GATE_4_ONLY.",
+        "Legacy target-price and return scalars remain null in schema 5.1.0."
+      ]
+    },
+    {
+      "session": "S10",
+      "status": "PASS",
+      "requirements": {
+        "shared_contract": "forward_valuation_contract",
+        "controlled_driver_modules": [
+          "RETAIL",
+          "CONSUMER_BRAND",
+          "SUBSCRIPTION_SOFTWARE",
+          "INDUSTRIAL",
+          "ACQUISITION_HEAVY",
+          "DISTRIBUTION"
+        ],
+        "common_bridges": [
+          "forward FCF bridge",
+          "target-date forward diluted share-count bridge"
+        ],
+        "unsupported_status": "DRIVER_MODEL_NOT_AVAILABLE"
+      },
+      "acceptance_evidence": [
+        "All six controlled modules produce the same shared output contract.",
+        "Forward FCF and forward shares are recalculated by validators.",
+        "Unsupported or unselected modules do not fall back to manual forward FCF.",
+        "Schema 5.1 production migration now materializes DRIVER_MODEL_NOT_AVAILABLE instead of silently omitting S10."
+      ]
+    },
+    {
+      "session": "S11",
+      "status": "PASS",
+      "requirements": {
+        "valuation_methods": [
+          "controlled peer comparison",
+          "historical valuation",
+          "reverse valuation",
+          "independent cross-check"
+        ],
+        "probability_governance": [
+          "method type and methodology",
+          "evidence",
+          "as-of date",
+          "sensitivity",
+          "expiration review date",
+          "independent research approval"
+        ]
+      },
+      "acceptance_evidence": [
+        "Incomparable peer rows are suppressed for negative denominators, period mismatch, currency mismatch, definition mismatch, source mismatch, or failed recalculation.",
+        "Historical observations reject look-ahead evidence.",
+        "Reverse valuation uses dated authoritative capital evidence.",
+        "Independent DCF inputs and sensitivity are evidence-bound and reproducible.",
+        "Probability-weighted return remains unavailable unless both probability governance and S09 return eligibility validate."
+      ]
+    },
+    {
+      "session": "S12",
+      "status": "PASS",
+      "requirements": {
+        "business_model_coverage": 6,
+        "aggregate_status_paths": [
+          "RANGE_ONLY",
+          "PARTIALLY_VALIDATED",
+          "MULTI_METHOD_VALIDATED"
+        ],
+        "real_contract_production_migration_cases": [
+          "CROX",
+          "AZO",
+          "CRM",
+          "ODFL",
+          "ITT"
+        ]
+      },
+      "acceptance_evidence": [
+        "Controlled business-model cases validate driver models, forward shares, scenarios, and valuation-language boundaries.",
+        "One-sided method support cannot upgrade RANGE_ONLY.",
+        "S11 multi-method support without a complete S09 horizon cannot exceed PARTIALLY_VALIDATED.",
+        "Five preserved public-company contracts pass the actual schema 5.1 production semantic and final-validation path without synthetic valuation backfill.",
+        "No formal target price, portfolio action, or position size is produced from incomplete evidence."
+      ]
+    }
+  ],
+  "promotion_fix": {
+    "finding": "A legacy public-company contract upgraded through the shared schema 5.1 semantic path could omit forward_valuation_contract instead of stating the unsupported-model outcome.",
+    "root_cause": "The shared migration function materialized S09 and S11 contracts but assumed S10 had already been built by the fresh-company builder.",
+    "system_wide_fix": "The shared migration function now builds the S10 contract when it is absent or lacks a contract version.",
+    "ticker_specific_patch": false,
+    "regression_coverage": "Five public-company contracts across consumer brand, retail, software, transportation, and industrial fixtures now exercise the production migration and finalizer."
+  },
+  "verification": {
+    "runtime": {
+      "python": "3.12.13",
+      "os": "macOS Darwin 24.6.0 arm64"
+    },
+    "dedicated_tests": {
+      "s09": {
+        "status": "PASS",
+        "passed": 35,
+        "failed": 0
+      },
+      "s10": {
+        "status": "PASS",
+        "passed": 35,
+        "failed": 0
+      },
+      "s11": {
+        "status": "PASS",
+        "passed": 43,
+        "failed": 0
+      },
+      "s12": {
+        "status": "PASS",
+        "passed": 9,
+        "failed": 0
+      }
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 299,
+      "failed": 0
+    },
+    "v1_0_0_frozen_render_pdf_pixel_baseline": {
+      "status": "PASS",
+      "passed": 82,
+      "failed": 0,
+      "tag": "v1.0.0",
+      "commit": "15b328137d615ca85e84cb997f3acfc2b15ca03b"
+    },
+    "s12_acceptance_runner": {
+      "status": "PASS",
+      "driver_cases": 6,
+      "valuation_status_cases": 3,
+      "negative_status_guards": 3,
+      "real_contract_no_backfill_cases": 5,
+      "failed_cases": 0
+    },
+    "anti_hardcoding_scan": {
+      "status": "PASS",
+      "shared_production_files_scanned": 10,
+      "active_fixture_values": 14,
+      "findings": 0
+    },
+    "phase_c_privacy_scan": {
+      "status": "PASS",
+      "files_checked": 32,
+      "violations": 0
+    },
+    "python_compile_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "skill_structure_validation": "PASS"
+  },
+  "scope_boundaries": [
+    "Full MULTI_METHOD_VALIDATED acceptance cases use clearly labeled synthetic fixtures to validate shared mechanics; they are not public-company research or investment conclusions.",
+    "The five preserved public-company contracts validate safe production migration and no-input fallback. They do not contain newly invented analyst forecasts, peer sets, probabilities, or independent DCF assumptions.",
+    "The initial S10 registry does not cover every business model. Unsupported models must return DRIVER_MODEL_NOT_AVAILABLE until a shared module is designed and tested.",
+    "Gate 4 portfolio context, User Internal Return, position sizing, portfolio action, and trade execution remain disabled or separately governed.",
+    "Phase C infrastructure validation does not claim that stored CROX, AZO, CRM, ODFL, or ITT market data is current for a new investment decision."
+  ],
+  "upload_status": "NOT_PUSHED_PENDING_USER_APPROVAL"
+}

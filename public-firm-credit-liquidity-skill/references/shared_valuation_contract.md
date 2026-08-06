@@ -86,11 +86,11 @@ Use probability-weighted scenario proceeds, including the same explicit dividend
 
 Probability sensitivity without a complete horizon is a weighted implied-price sensitivity, not a return. Gate 4 must not use Bear/Bull price sensitivities as downside/upside return inputs.
 
-### Partner Internal Return
+### User Internal Return
 
-Keep this output `DISABLED_PRIVATE_GATE_4_ONLY` in every public issuer contract. Do not store partner hurdle rates, internal expected returns, portfolio weights, or sizing in the public repository or issuer artifact.
+Keep this output `DISABLED_PRIVATE_GATE_4_ONLY` in every public issuer contract. Do not store user hurdle rates, internal expected returns, portfolio weights, or sizing in the public repository or issuer artifact.
 
-Gate 4 may consume the public return outputs, but partner internal return must be calculated only from repo-external validated private inputs.
+Gate 4 may consume the public return outputs, but user internal return must be calculated only from repo-external validated private inputs.
 
 ## Status and Suppression
 

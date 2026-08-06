@@ -1,7 +1,7 @@
 # Gate 4 S14 Assessment, Approval, and Reports
 
 Read this reference whenever converting a validated S13 constraint result into
-a portfolio assessment, recording a Partner decision, or rendering Gate 4
+a portfolio assessment, recording a User decision, or rendering Gate 4
 reports.
 
 ## Required Sequence
@@ -13,9 +13,9 @@ reports.
 4. Validate the S13 schema, S13 output validation, Gate 3 eligibility, final
    ceiling, and binding-constraint reproducibility.
 5. Produce the System Portfolio Assessment.
-6. Compute a deterministic assessment hash that excludes the mutable Partner
+6. Compute a deterministic assessment hash that excludes the mutable User
    decision record.
-7. Validate the separately owned Partner decision against that hash and the
+7. Validate the separately owned User decision against that hash and the
    total-issuer constraint ceiling.
 8. Render the One-Page, Full Report, Evidence Appendix, and Validation Report
    from the same S14 contract without recalculation.
@@ -23,7 +23,7 @@ reports.
 Run locally:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
+python3 user-demo/investment_decision_v2/scripts/run_gate4_assessment.py \
   path/to/step3/underwriting_output_contract.json \
   --manifest ~/investment_private/gate4_private_workspace_manifest.json
 ```
@@ -47,12 +47,12 @@ Apply this priority order:
    capacity and no unresolved review or escalation item.
 
 `ELIGIBLE` and `ELIGIBLE_WITH_ESCALATION` mean only that the candidate can
-proceed to a Partner decision under the tested policy. They are not buy/sell
+proceed to a User decision under the tested policy. They are not buy/sell
 instructions and do not create a system-owned position range.
 
-## Partner Decision State Machine
+## User Decision State Machine
 
-The allowed Partner decisions are:
+The allowed User decisions are:
 
 - `PENDING`
 - `APPROVED`
@@ -72,20 +72,20 @@ decision cannot silently carry forward after substantive inputs change.
 
 - a current `ELIGIBLE` or `ELIGIBLE_WITH_ESCALATION` assessment;
 - the exact current assessment hash;
-- the designated Partner's name, dated timestamp, and rationale;
+- the designated User's name, dated timestamp, and rationale;
 - a total-issuer gross-long position basis;
 - a minimum and maximum range no greater than the total-issuer constraint
   ceiling; and
 - exact acknowledgement of every active escalation ID.
 
 `REJECTED` and `DEFERRED` never carry a position range. The system never
-creates, modifies, or executes the Partner decision.
+creates, modifies, or executes the User decision.
 
 ## Hash Boundary
 
 The assessment-input fingerprint includes the manifest, policy, exposure or
 holdings data, opportunity set, constraint inputs, freshness attestation, and
-approval-policy configuration. It excludes `partner_decision` so the Partner
+approval-policy configuration. It excludes `partner_decision` so the User
 can bind a later decision to a stable assessment hash.
 
 Any change to an assessment input produces a new assessment hash. A completed
@@ -95,7 +95,7 @@ decision with a missing or old hash is blocked.
 
 All four reports consume one `gate4_assessment_output` object.
 
-- One-Page: System Assessment, Partner Decision, constraint ceiling, binding
+- One-Page: System Assessment, User Decision, constraint ceiling, binding
   constraint, escalations, and next action.
 - Full Report: the complete constraint matrix, formula audit, assessment logic,
   approval record, and decision boundaries.
@@ -116,7 +116,7 @@ Call the S13 maximum only:
 - `maximum constraint-based position`.
 
 Never call it a suggested, recommended, target, approved, or optimal position.
-Only a validated Partner record may display an approved range.
+Only a validated User record may display an approved range.
 
 Real reports remain local. Direct private PDF writes are prohibited; use the
 tested sanitizer. Public HTML and PDF demos must use only
@@ -126,12 +126,12 @@ trade execution disabled.
 Build and validate the public synthetic report package with:
 
 ```bash
-python3 partner-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
-python3 partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
+python3 user-demo/investment_decision_v2/scripts/build_gate4_synthetic_demo.py
+python3 user-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py \
   examples/gate4-synthetic
 ```
 
 The delivery validator checks the manifest hashes, assessment contract,
 automatic-trade boundary, A4 page geometry, exact one-page summary length,
-bilingual content, rendered System/Partner states, and prohibited position
+bilingual content, rendered System/User states, and prohibited position
 recommendation terms.

@@ -12,7 +12,7 @@ body { font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif; font-size:9
 main { width:100%; margin:0 auto; }
 h1,h2,h3,p { overflow-wrap:anywhere; }
 h1 { margin:0; font-size:22px; line-height:1.14; letter-spacing:0; }
-h2 { margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; }
+h2 { margin:17px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.25; letter-spacing:0; break-after:avoid; page-break-after:avoid; }
 h3 { margin:8px 0 4px; font-size:10.5px; line-height:1.3; letter-spacing:0; }
 p { margin:4px 0; } ul { margin:4px 0 7px; padding-left:17px; } li { margin:2px 0; }
 a { color:var(--teal); text-decoration:none; }
@@ -39,6 +39,7 @@ th { background:var(--soft); color:#334047; text-align:left; font-size:8px; font
 .metric-note { margin-top:3px; color:var(--muted); font-size:6.9px; }
 .evidence-id { display:inline-block; color:#5f6b72; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:6.6px; line-height:1.25; }
 .bundle-id { display:inline-block; margin:2px 0; padding:1px 4px; border:1px solid #a9c5c5; color:var(--teal); background:var(--teal-soft); font-size:6.5px; font-weight:700; line-height:1.25; }
+.bundle-tail { break-inside:avoid; page-break-inside:avoid; }
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
 .scenario-band { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:7px 0 9px; }
 .scenario-card { min-height:76px; padding:7px; border-top:3px solid var(--gold); background:var(--gold-soft); }
@@ -75,7 +76,7 @@ th { background:var(--soft); color:#334047; text-align:left; font-size:8px; font
 .one-page-root .debate { margin:3px 0; padding:4px 5px; } .one-page-root ul { margin:2px 0 3px; padding-left:13px; }
 .one-page-root li { margin:1px 0; } .one-page-root .portfolio-disabled { margin:4px 0; padding:4px 6px; }
 </style></head><body><main class="full-report-root">
-<header class="header"><div><div class="eyebrow">Public-Data Issuer Underwriting and IC Pre-Read System - Friday V1</div>
+<header class="header"><div><div class="eyebrow">Public-Data Issuer Underwriting and IC Pre-Read System - v1.0.0</div>
 <h1>AUTOZONE INC (AZO)</h1></div>
 <div class="header-meta">Evidence Audit Appendix / 证据审计附录<br>Report ID: RPT-0F80FD1B28CD0F<br>
 Financials: 2026-05-09 | Market: 2026-07-15<br>

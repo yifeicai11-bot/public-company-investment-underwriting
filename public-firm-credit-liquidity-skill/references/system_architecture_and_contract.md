@@ -85,7 +85,7 @@ It must:
 
 It must not fetch data, hard-code facts, calculate ratios, select scenarios, or change a conclusion.
 
-`build_crox_partner_ready_artifacts.py` is only a thin regression wrapper.
+`build_crox_user_artifacts.py` is only a thin regression wrapper.
 
 ### Monitoring Engine
 
@@ -127,7 +127,7 @@ Calculated values must be reproducible from their linked input IDs.
 | 0 | Analyst-owned assumption or judgment; not external evidence and always requires reviewer ownership |
 | 1 | Regulatory and filed company materials, including 10-K, 10-Q, filed debt agreements, and official regulatory filings |
 | 2 | Official company investor materials, releases, presentations, guidance, and official transcripts |
-| 3 | Partner-approved market and reference-data feeds |
+| 3 | User-approved market and reference-data feeds |
 | 4 | Institutional research, consensus, ratings, and specialist databases |
 | 5 | Other public websites, news, summaries, and unapproved aggregators |
 
@@ -165,7 +165,7 @@ Formal return validation must bind every displayed value to authoritative market
 
 ### Gate 4: Portfolio Inputs and Human Review Complete
 
-Require target return, downside tolerance, horizon, liquidity, limits, existing exposure, opportunity cost, partner-owned assumptions, and explicit human approval. Display only the approved position range and portfolio action. Never place a trade.
+Require target return, downside tolerance, horizon, liquidity, limits, existing exposure, opportunity cost, user-owned assumptions, and explicit human approval. Display only the approved position range and portfolio action. Never place a trade.
 
 #### Gate 4 Entry Contract and Freshness
 
@@ -198,7 +198,7 @@ When Gate 3 is stale or ineligible, suppress Gate 4 return, risk, sizing, and ac
 
 Real fund policy, holdings, opportunity-set, approval, and sizing data must stay
 in a local workspace outside every Git worktree. Use the schemas and empty
-templates under `partner-demo/investment_decision_v2/gate4/`, initialize
+templates under `user-demo/investment_decision_v2/gate4/`, initialize
 `~/investment_private` with `initialize_gate4_private_workspace.py`, and run the
 entry check with `run_gate4_local_entry.py`. Do not paste real portfolio data
 into chat or send it to an external model/API.
@@ -220,8 +220,8 @@ calculate each limit from the shared engine. A missing required ceiling returns
 `GATE_4_CONSTRAINTS_INCOMPLETE` and keeps the final maximum null. A complete
 result returns `GATE_4_CONSTRAINTS_CALCULATED`, but the maximum is only a
 constraint ceiling. Until S14, keep System Portfolio Assessment
-`NOT_EVALUATED`, Partner Decision `PENDING`, and approved range null.
-The legacy `build_partner_portfolio_overlay.py` path is restricted to
+`NOT_EVALUATED`, User Decision `PENDING`, and approved range null.
+The legacy `build_user_portfolio_overlay.py` path is restricted to
 `SYNTHETIC_PUBLIC_EXAMPLE` demos and must reject real inputs.
 
 Direct private PDF writes are prohibited. A private PDF may be written only by
@@ -323,7 +323,7 @@ One-Page and Full Report must consume the same versioned object. Required fields
 - catalysts, thesis breaks, decision rules
 - evidence records, source registry, Hard Stops, and Warnings
 
-Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless the complete S09 dated horizon, forward share basis, and exit basis validate. Base-Case Return is independent of scenario probability. Probability-Weighted Return remains null unless probability governance and the S09 horizon both pass. Partner Internal Return remains disabled in the public issuer contract. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated. A stale or ineligible Gate 3 contract must also suppress all Gate 4 calculations.
+Below Gate 3, scenario implied prices and price changes must be null. At Gate 3, scenario outputs are `Implied Price` and `Price Change vs Current Price` unless the complete S09 dated horizon, forward share basis, and exit basis validate. Base-Case Return is independent of scenario probability. Probability-Weighted Return remains null unless probability governance and the S09 horizon both pass. User Internal Return remains disabled in the public issuer contract. Below Gate 4, position sizing must be null and portfolio action must be Not Evaluated. A stale or ineligible Gate 3 contract must also suppress all Gate 4 calculations.
 
 ## Required Testing
 

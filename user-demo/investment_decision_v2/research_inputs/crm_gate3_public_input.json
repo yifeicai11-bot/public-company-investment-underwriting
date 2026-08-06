@@ -1,0 +1,648 @@
+{
+  "company": {
+    "cik": "0001108524",
+    "name": "Salesforce, Inc.",
+    "ticker": "CRM",
+    "exchange": "NYSE"
+  },
+  "external_evidence": [
+    {
+      "status": "VALIDATED",
+      "external_key": "business_model",
+      "metric_name": "subscription_business_model",
+      "value": "Salesforce provides enterprise cloud software, including sales, service, marketing, commerce, integration, analytics, data and AI offerings. Subscription and support revenue was USD 10.593 billion of USD 11.133 billion total Q1 FY2027 revenue. / Salesforce提供企业云软件，覆盖销售、服务、营销、商务、集成、分析、数据与AI；2027财年第一季度总收入111.33亿美元，其中订阅与支持收入105.93亿美元。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-02-01",
+      "period_end": "2026-04-30",
+      "period_type": "quarter",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Part I, Item 1 and Item 2, revenue disaggregation and business discussion",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "q1_operating_results",
+      "metric_name": "q1_fy2027_growth_and_margin",
+      "value": "Q1 FY2027 revenue was USD 11.133 billion, up 13%. Informatica contributed USD 444 million. GAAP operating margin was 21.1% and company-defined non-GAAP operating margin was 34.8%. / 2027财年第一季度收入111.33亿美元，同比增长13%，其中Informatica贡献4.44亿美元；GAAP经营利润率21.1%，公司定义的非GAAP经营利润率34.8%。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-02-01",
+      "period_end": "2026-04-30",
+      "period_type": "quarter",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_and_company_adjusted",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Salesforce Q1 FY2027 results",
+        "source_url": "https://investor.salesforce.com/news/news-details/2026/Salesforce-Delivers-Record-First-Quarter-Fiscal-2027-Results/default.aspx",
+        "source_locator": "Q1 FY2027 highlights, financial results and non-GAAP reconciliation",
+        "publication_date": "2026-05-27",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Non-GAAP measures are company-defined and do not replace GAAP or cash-flow analysis. / 非GAAP指标由公司定义，不能替代GAAP或现金流分析。"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "rpo_and_crpo",
+      "metric_name": "remaining_performance_obligations",
+      "value": "At April 30, 2026, current remaining performance obligation was approximately USD 33.6 billion and total remaining performance obligation was approximately USD 67.9 billion. / 截至2026年4月30日，当前剩余履约义务约336亿美元，总剩余履约义务约679亿美元。",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-04-30",
+      "period_type": "instant",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Salesforce Q1 FY2027 results",
+        "source_url": "https://investor.salesforce.com/news/news-details/2026/Salesforce-Delivers-Record-First-Quarter-Fiscal-2027-Results/default.aspx",
+        "source_locator": "Q1 FY2027 highlights, cRPO and RPO",
+        "publication_date": "2026-05-27",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "fy27_guidance",
+      "metric_name": "fy2027_management_guidance",
+      "value": "FY2027 revenue guidance was USD 45.9-46.2 billion, GAAP operating margin 20.6%, non-GAAP operating margin 34.3%, free-cash-flow growth 4%-5%, and capex approximately 1.5% of revenue. / 2027财年收入指引为459亿至462亿美元，GAAP经营利润率20.6%，非GAAP经营利润率34.3%，自由现金流增长4%-5%，资本开支约占收入1.5%。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-02-01",
+      "period_end": "2027-01-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-05-27",
+      "measurement_basis": "management_guidance",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 2,
+        "source_type": "official_earnings_release",
+        "source_name": "Salesforce Q1 FY2027 results",
+        "source_url": "https://investor.salesforce.com/news/news-details/2026/Salesforce-Delivers-Record-First-Quarter-Fiscal-2027-Results/default.aspx",
+        "source_locator": "FY2027 guidance table and assumptions",
+        "publication_date": "2026-05-27",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "cash_flow_quality",
+      "metric_name": "q1_cash_flow_seasonality_and_sbc",
+      "value": "Q1 FY2027 operating cash flow was USD 6.701 billion and cash capex was USD 145 million. Salesforce states that Q1 is generally its seasonally strongest quarter for collections and operating cash flow. Q1 stock-based compensation was USD 857 million. / 2027财年第一季度经营现金流67.01亿美元、现金资本开支1.45亿美元；公司披露第一季度通常是回款与经营现金流最强的季节性季度；当季股权激励费用8.57亿美元。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-02-01",
+      "period_end": "2026-04-30",
+      "period_type": "quarter",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Condensed statement of cash flows; stock-based compensation note; Item 2, operating cash-flow seasonality",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "SBC is non-cash in CFO but economically dilutive; it is analyzed as an FCF-quality limitation rather than deducted twice from CFO-based FCF. / SBC在CFO中为非现金项目但具有经济稀释性，本报告将其作为FCF质量限制分析，而不从CFO基础FCF中重复扣除。"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "liquidity_and_maturities",
+      "metric_name": "april_2026_liquidity_and_debt_maturities",
+      "value": "At April 30, 2026, cash and marketable securities totaled USD 11.837 billion. Salesforce had a USD 5.0 billion revolving facility maturing October 2029 with no borrowings. Debt principal was USD 39.5 billion, with no scheduled principal in the remainder of FY2027 or FY2028, USD 6.0 billion in FY2029, USD 4.25 billion in FY2030 and USD 29.25 billion thereafter. The company reported covenant compliance. / 截至2026年4月30日，现金及有价证券合计118.37亿美元；公司拥有50亿美元、2029年10月到期且无借款的循环授信。债务本金395亿美元，2027财年余下期间及2028财年无计划本金到期，2029财年60亿美元、2030财年42.5亿美元，其后292.5亿美元；公司披露符合契约要求。",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-04-30",
+      "period_type": "instant",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_principal_and_contractual_maturity",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Balance sheet; Notes, debt; Item 2, liquidity and debt maturities",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Debt principal is kept separate from the USD 39.280 billion carrying amount. / 债务本金与392.80亿美元账面值分开呈现。"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "informatica_term_loan",
+      "metric_name": "informatica_financing_and_term_loan",
+      "value": "Salesforce used a USD 6.0 billion term loan maturing March 2031 to refinance the bridge financing associated with the Informatica acquisition. / Salesforce使用一笔60亿美元、2031年3月到期的定期贷款，为Informatica收购相关过桥融资再融资。",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2026-04-30",
+      "period_type": "instant",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_contract_terms",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Notes, debt and Informatica acquisition financing",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "debt_funded_asr",
+      "metric_name": "debt_funded_accelerated_share_repurchase",
+      "value": "In March 2026, Salesforce issued USD 25.0 billion of senior notes maturing from 2028 through 2066 and used the proceeds for a USD 25.0 billion accelerated share-repurchase agreement. The initial delivery was 103 million shares at an initial reference price of USD 198.34 and represented approximately 80% of the estimated shares; final settlement is expected in the second half of FY2027. / 2026年3月，公司发行250亿美元、到期分布于2028至2066年的优先票据，并将所得资金用于250亿美元加速股份回购；初始交付1.03亿股，初始参考价198.34美元，约占估计股份的80%，最终结算预计在2027财年下半年。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-03-01",
+      "period_end": "2026-04-30",
+      "period_type": "transaction",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_transaction_terms",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Notes, debt and accelerated share-repurchase agreement",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "The ASR changes share count and leverage; it is not operating FCF. / ASR会改变股数与杠杆，不属于经营FCF。"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "q1_repurchases",
+      "metric_name": "q1_fy2027_share_repurchases",
+      "value": "Q1 FY2027 open-market share repurchases were USD 2.145 billion and total common-stock repurchases, including the ASR, were USD 27.248 billion. / 2027财年第一季度公开市场回购21.45亿美元；包括ASR在内的普通股回购合计272.48亿美元。",
+      "unit": "text",
+      "currency": "USD",
+      "period_start": "2026-02-01",
+      "period_end": "2026-04-30",
+      "period_type": "quarter",
+      "as_of_date": "2026-04-30",
+      "measurement_basis": "reported_cash_financing_activity",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce Q1 FY2027 Form 10-Q",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm",
+        "source_locator": "Condensed statement of cash flows and share-repurchase note",
+        "publication_date": "2026-05-28",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "june_1_8k_review",
+      "metric_name": "subsequent_event_june_1_8k_review",
+      "value": "The June 1, 2026 Form 8-K was reviewed. It addressed an officer/compensation matter and did not disclose a material change to the financial, liquidity or valuation facts used in this report. / 已复核2026年6月1日8-K；该文件涉及高管或薪酬事项，未披露会实质改变本报告财务、流动性或估值事实的事项。",
+      "unit": "text",
+      "period_end": "2026-06-01",
+      "period_type": "event",
+      "as_of_date": "2026-06-01",
+      "measurement_basis": "reviewed_subsequent_filing",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "subsequent_event_status": "REVIEWED_NO_MATERIAL_FINANCIAL_CHANGE",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce June 1, 2026 Form 8-K",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000131/crm-20260528.htm",
+        "source_locator": "Items 5.02 and 9.01",
+        "publication_date": "2026-06-01",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "june_2_8k_review",
+      "metric_name": "subsequent_event_june_2_8k_review",
+      "value": "The June 2, 2026 Form 8-K was reviewed. It addressed an officer/compensation matter and did not disclose a material change to the financial, liquidity or valuation facts used in this report. / 已复核2026年6月2日8-K；该文件涉及高管或薪酬事项，未披露会实质改变本报告财务、流动性或估值事实的事项。",
+      "unit": "text",
+      "period_end": "2026-06-02",
+      "period_type": "event",
+      "as_of_date": "2026-06-02",
+      "measurement_basis": "reviewed_subsequent_filing",
+      "evidence_class": "FACT",
+      "confidence": "High",
+      "subsequent_event_status": "REVIEWED_NO_MATERIAL_FINANCIAL_CHANGE",
+      "source": {
+        "source_level": 1,
+        "source_type": "regulatory_filing",
+        "source_name": "Salesforce June 2, 2026 Form 8-K",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000138/crm-20260527.htm",
+        "source_locator": "Item 5.02",
+        "publication_date": "2026-06-02",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "status": "VALIDATED",
+      "external_key": "factset_consensus",
+      "metric_name": "factset_consensus_fy2027_and_target",
+      "value": "FactSet consensus displayed on July 16, 2026 showed revenue of USD 46.104 billion and EPS of USD 14.10 for the provider's 2027 forecast column, with a median analyst target of USD 242.08. / 2026年7月16日页面显示的FactSet一致预期中，供应商标注的2027预测列收入为461.04亿美元、EPS为14.10美元，分析师目标价中位数242.08美元。",
+      "unit": "text",
+      "currency": "USD",
+      "period_end": "2027-01-31",
+      "period_type": "forecast",
+      "as_of_date": "2026-07-16",
+      "measurement_basis": "institutional_consensus",
+      "evidence_class": "FACT",
+      "confidence": "Medium",
+      "source": {
+        "source_level": 4,
+        "source_type": "institutional_consensus",
+        "source_name": "FactSet Research Systems consensus via Boursorama",
+        "source_url": "https://www.boursorama.com/cours/consensus/CRM/",
+        "source_locator": "2027 earnings/results forecast column and analyst target table viewed July 16, 2026",
+        "publication_date": "2026-07-16",
+        "retrieval_date": "2026-07-16"
+      },
+      "reviewed_by": "Codex public-data research QA (human review pending)",
+      "notes": "Provider period labels are preserved; consensus is context, not a guaranteed forecast. / 保留供应商期间标签；一致预期仅作背景，并非保证预测。"
+    }
+  ],
+  "investment_question": {
+    "status": "ANALYST_DEFINED",
+    "text": "Does Salesforce's dated valuation understate durable subscription FCF and AI/Data growth, or is the discount justified by collection seasonality, stock-based compensation, Informatica integration and the balance-sheet cost of the debt-funded ASR? / Salesforce当前估值是否低估了订阅业务FCF及AI/数据增长的可持续性，还是回款季节性、股权激励、Informatica整合及债务融资ASR的资产负债表成本足以解释这一折价？",
+    "decision_supported": "Public-data Continue Research / Watch / Stop decision and evidence required for a human investment decision; no fund-specific sizing. / 支持基于公开资料的继续研究、观察或停止研究判断，并列明人工投资决策所需证据；不涉及基金仓位。",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "key_debates": [
+    {
+      "title": "How much of reported FCF is durable economic cash generation? / 报告FCF中有多少是可持续的经济现金流？",
+      "market_view": "LTM FCF is high and the share price implies a low trailing P/FCF, but Q1 is seasonally collection-heavy and SBC remains economically dilutive. / LTM FCF较高且股价对应较低历史P/FCF，但第一季度回款季节性偏强，SBC仍具有经济稀释性。",
+      "alternative_view": "Recurring subscription revenue, large RPO and management's 4%-5% FY2027 FCF growth guidance may support durable cash generation beyond quarterly seasonality. / 经常性订阅收入、较大RPO及管理层4%-5%的2027财年FCF增长指引，可能支持超越季度季节性的可持续现金生成。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["cash_flow_quality"],
+      "market_evidence_metrics": ["latest_quarter_fcf", "reported_ltm_fcf"],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["business_model", "rpo_and_crpo", "fy27_guidance"],
+      "alternative_evidence_metrics": ["valuation_basis_revenue"],
+      "missing_evidence": "A multi-quarter normalized FCF bridge after SBC dilution economics, billing seasonality, acquisition effects and restructuring cash. / 尚缺在SBC稀释经济、开票季节性、收购影响及重组现金支出后构建的多季度标准化FCF桥接。",
+      "resolution_kpi_or_event": "LTM normalized FCF remains above USD 14.661 billion through weaker collection quarters while revenue and cRPO remain within or above guidance. / 在回款较弱季度后，LTM标准化FCF仍高于146.61亿美元，且收入与cRPO达到或超过指引。",
+      "decision_impact": "This determines whether the low trailing multiple represents undervaluation or a misleading cash-flow snapshot. / 该争议决定较低历史倍数代表低估，还是具有误导性的现金流快照。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "title": "Does the debt-funded ASR create value after balance-sheet cost? / 债务融资ASR在计入资产负债表成本后是否创造价值？",
+      "market_view": "The ASR materially reduced shares and may support per-share metrics, but it added USD 25 billion of long-dated debt and fixed interest obligations. / ASR显著减少股数并可能支持每股指标，但同时增加250亿美元长期债务与固定利息义务。",
+      "alternative_view": "If durable FCF remains well above debt service and the repurchase price proves attractive, the transaction may enhance long-term per-share value without creating near-term refinancing pressure. / 若可持续FCF显著覆盖偿债，且回购价格事后具有吸引力，该交易可能提升长期每股价值而不造成近期再融资压力。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["debt_funded_asr", "q1_repurchases", "liquidity_and_maturities"],
+      "market_evidence_metrics": ["long_term_debt", "shares_outstanding_point_in_time"],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["liquidity_and_maturities", "fy27_guidance"],
+      "alternative_evidence_metrics": ["reported_ltm_fcf", "available_liquidity_before_facility_notes"],
+      "missing_evidence": "Final ASR settlement, realized average repurchase price, incremental cash-interest bridge and user-required leverage tolerance. / 尚缺ASR最终结算、实际平均回购价、增量现金利息桥接及user要求的杠杆容忍度。",
+      "resolution_kpi_or_event": "Final ASR economics are disclosed and FCF covers interest, maturities and reinvestment without weakening minimum liquidity. / ASR最终经济结果披露，且FCF在不削弱最低流动性的情况下覆盖利息、到期债务与再投资。",
+      "decision_impact": "The answer affects both normalized per-share value and the appropriate valuation discount for leverage. / 该问题同时影响标准化每股价值及杠杆应适用的估值折价。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    {
+      "title": "Is AI/Data growth incremental to consensus and valuation? / AI与数据业务增长是否超出一致预期并形成估值差异？",
+      "market_view": "Management and FactSet already expect revenue near USD 46.1 billion, while the median target is well above the dated price; a recovery narrative is already conventional. / 管理层与FactSet均预期收入接近461亿美元，目标价中位数也明显高于当前时点价格，因此复苏叙事已是常规观点。",
+      "alternative_view": "If Data/AI adoption and Informatica integration sustain growth while margins and FCF remain durable, current pricing may still understate the cash outcome. / 若数据与AI采用及Informatica整合持续支持增长，同时利润率与FCF保持韧性，当前定价仍可能低估现金结果。",
+      "market_evidence_ids": [],
+      "market_evidence_keys": ["factset_consensus", "fy27_guidance"],
+      "market_evidence_metrics": ["market_price_unadjusted_close", "trailing_p_fcf"],
+      "alternative_evidence_ids": [],
+      "alternative_evidence_keys": ["q1_operating_results", "rpo_and_crpo"],
+      "alternative_evidence_metrics": ["reported_ltm_fcf"],
+      "missing_evidence": "Product-level AI monetization, renewal cohorts, Informatica organic contribution, controlled peer valuation and a sourced 2028 cash-flow path. / 尚缺产品层AI变现、续约批次、Informatica有机贡献、受控同业估值及有来源的2028年现金流路径。",
+      "resolution_kpi_or_event": "Revenue and cRPO exceed the public base while normalized FCF reaches the Bull path without additional leverage or dilution. / 收入与cRPO超过公开基准，同时标准化FCF达到Bull路径且不增加杠杆或稀释。",
+      "decision_impact": "A differentiated long thesis requires results beyond consensus, not merely delivery of management guidance. / 差异化做多逻辑需要超越一致预期的结果，而不仅是兑现管理层指引。",
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    }
+  ],
+  "issuer_underwriting": {
+    "business_and_industry": {
+      "status": "VALIDATED",
+      "conclusion": "Salesforce is a recurring-subscription enterprise software issuer with broad CRM, data, integration and AI exposure. Revenue visibility is supported by RPO, while Informatica integration and AI monetization are the key incremental growth variables. / Salesforce是以经常性订阅为主的企业软件公司，覆盖CRM、数据、集成与AI；RPO支持收入可见性，Informatica整合及AI变现是主要增量增长变量。",
+      "evidence_keys": ["business_model", "rpo_and_crpo", "q1_operating_results"],
+      "evidence_metrics": ["valuation_basis_revenue"],
+      "limitations": ["Product-level AI revenue and renewal cohorts are not separately validated.", "No independent software-industry share data is used."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "earnings_quality": {
+      "status": "VALIDATED",
+      "conclusion": "Reported FCF is strong, but its economic quality is qualified by high SBC, acquisition integration and a large difference between GAAP and company-defined non-GAAP margin. SBC is not deducted twice from CFO-based FCF; its dilution and per-share effects are analyzed separately. / 报告FCF强劲，但高SBC、收购整合以及GAAP与公司定义非GAAP利润率的显著差异，使其经济质量需要保留意见；SBC不从CFO基础FCF中重复扣除，其稀释和每股影响单独分析。",
+      "evidence_keys": ["q1_operating_results", "cash_flow_quality"],
+      "evidence_metrics": ["valuation_basis_cfo", "reported_ltm_fcf", "valuation_basis_net_income"],
+      "limitations": ["A complete economic normalization for SBC is not universally defined.", "Acquisition and restructuring cash effects require continued reconciliation."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "working_capital_and_cash_conversion": {
+      "status": "VALIDATED",
+      "conclusion": "Q1 DSO was approximately 77.6 days using comparable opening and closing receivables, but Q1 is seasonally collection-heavy. The disclosed accounts-payable balance combines accrued liabilities, so DPO and CCC are deliberately suppressed rather than calculated from a non-comparable denominator. / 使用可比期初期末应收计算的第一季度DSO约77.6天，但第一季度回款季节性偏强；披露的应付账款余额包含应计负债，因此本报告主动压制DPO与CCC，不使用不可比口径计算。",
+      "evidence_keys": ["cash_flow_quality"],
+      "evidence_metrics": ["accounts_receivable_net", "prior_accounts_receivable_net", "dso_avg_ar", "accounts_payable", "latest_quarter_fcf"],
+      "limitations": ["Trade accounts payable is not separately tagged, so DPO and CCC are unavailable.", "One quarter cannot establish normalized collection behavior."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "liquidity_sources_and_uses": {
+      "status": "VALIDATED",
+      "conclusion": "April 30 cash and current marketable securities were USD 11.837 billion and the USD 5.0 billion revolver was undrawn. This supports near-term liquidity, but the USD 25 billion ASR and Informatica financing make a forward sources-and-uses bridge more decision-relevant than the static balance alone. / 4月30日现金及当期有价证券118.37亿美元，50亿美元循环授信未使用；这支持近期流动性，但250亿美元ASR与Informatica融资使前瞻资金来源与用途桥接比静态余额更重要。",
+      "evidence_keys": ["liquidity_and_maturities", "debt_funded_asr", "informatica_term_loan"],
+      "evidence_metrics": ["unrestricted_cash", "short_term_investments", "available_liquidity_before_facility_notes", "current_debt"],
+      "limitations": ["No user minimum-liquidity threshold is supplied.", "A complete forward cash-interest, tax, maturity and capital-allocation bridge is not provided."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "debt_leases_covenants_refinancing": {
+      "status": "VALIDATED",
+      "conclusion": "Debt principal was USD 39.5 billion and carrying value USD 39.280 billion at April 30, with no principal due in the remainder of FY2027 or FY2028. The 2031 term loan and long-dated ASR notes reduce immediate refinancing pressure, but fixed obligations and leverage are materially higher. Reported compliance is not numerical headroom. / 4月30日债务本金395亿美元、账面值392.80亿美元，2027财年余下期间及2028财年无本金到期；2031年定期贷款及长期ASR票据降低即时再融资压力，但固定义务与杠杆显著上升；已披露合规不等于数值余量。",
+      "evidence_keys": ["liquidity_and_maturities", "informatica_term_loan", "debt_funded_asr"],
+      "evidence_metrics": ["current_debt", "long_term_debt", "operating_lease_current", "operating_lease_noncurrent", "covenant_note_snippet"],
+      "limitations": ["Numerical covenant headroom is unavailable.", "Incremental annual cash interest and final ASR economics require a dedicated bridge."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "capital_allocation": {
+      "status": "VALIDATED",
+      "conclusion": "Capital allocation is the central balance-sheet issue: Salesforce combined a USD 25 billion debt-funded ASR with USD 2.145 billion of open-market Q1 repurchases. The transaction may enhance per-share value but also transfers operating flexibility into fixed financing obligations. / 资本配置是核心资产负债表问题：公司实施250亿美元债务融资ASR，并在第一季度进行21.45亿美元公开市场回购；该交易可能提升每股价值，但也将部分经营灵活性转换为固定融资义务。",
+      "evidence_keys": ["debt_funded_asr", "q1_repurchases", "liquidity_and_maturities"],
+      "evidence_metrics": ["latest_quarter_share_repurchases", "long_term_debt", "shares_outstanding_point_in_time"],
+      "limitations": ["Final ASR settlement is not yet known.", "No user preference among buybacks, debt reduction and reinvestment is provided."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "management_guidance_and_subsequent_events": {
+      "status": "VALIDATED",
+      "conclusion": "Management guides to FY2027 revenue of USD 45.9-46.2 billion and 4%-5% FCF growth. Both post-quarter 8-Ks in the SEC index were reviewed and did not change the financial facts used here. Guidance still requires later reported evidence, especially after seasonally weaker cash-flow quarters. / 管理层指引2027财年收入459亿至462亿美元、FCF增长4%-5%；SEC索引中的两份季度后8-K均已复核，未改变本报告所用财务事实；指引仍需后续报告验证，尤其是回款季节性较弱季度。",
+      "evidence_keys": ["fy27_guidance", "june_1_8k_review", "june_2_8k_review"],
+      "evidence_metrics": ["subsequent_event_filing_1", "subsequent_event_filing_2"],
+      "limitations": ["Guidance credibility requires subsequent results.", "Later material filings must be reviewed before live use."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    },
+    "stress_test": {
+      "status": "VALIDATED",
+      "conclusion": "Public data does not show an immediate funding wall, but a useful downside test must combine slower subscription growth, weaker renewal/AI monetization, seasonally lower collections, integration costs, cash interest and ASR-related leverage. Static cash and Q1 FCF alone are not sufficient. / 公开资料未显示即时融资墙，但有效下行测试必须同时考虑订阅增长放缓、续约或AI变现偏弱、季节性回款下降、整合成本、现金利息及ASR相关杠杆；静态现金与第一季度FCF并不足够。",
+      "evidence_keys": ["cash_flow_quality", "liquidity_and_maturities", "debt_funded_asr", "fy27_guidance"],
+      "evidence_metrics": ["reported_ltm_fcf", "available_liquidity_before_facility_notes", "long_term_debt", "current_lease_obligations_total"],
+      "limitations": ["No company-disclosed downside covenant calculation is available.", "Scenario FCF and multiples remain analyst judgments."],
+      "reviewed_by": "Codex public-data research QA (human review pending)"
+    }
+  },
+  "normalized_fcf": {
+    "status": "VALIDATED",
+    "normalization_status": "UNADJUSTED_PUBLIC_BASE",
+    "normalization_scope": "Reported LTM CFO less reported cash capex retained as a public-data underwriting base; no complete economic normalization bridge is claimed. / 保留报告LTM CFO减报告现金资本开支作为公开数据分析基准，不主张已完成完整经济标准化桥接。",
+    "normalization_unresolved_items": [
+      "Collection seasonality, SBC economic dilution, acquisition integration, restructuring cash, incremental financing costs, and final ASR economics remain unresolved. / 回款季节性、SBC经济稀释、收购整合、重组现金、增量融资成本及ASR最终经济结果尚未解决。"
+    ],
+    "value": 14661000000.0,
+    "period_end": "2026-04-30",
+    "base_evidence_metric": "reported_ltm_fcf",
+    "bridge_lines": [],
+    "no_adjustments_rationale": "Reported LTM CFO less reported cash capex is retained because no universally accepted audited cash adjustment for SBC or acquisition integration was validated. Cash interest, cash taxes, working capital and operating lease cash flows already embedded in CFO are not deducted again. SBC dilution and collection seasonality remain explicit quality limitations rather than unsupported numerical add-backs or deductions. / 保留报告LTM CFO减报告现金资本开支，因为尚未验证对SBC或收购整合进行现金调整的统一审计口径。CFO中已包含的现金利息、现金税、营运资金及经营租赁现金流不再重复扣除；SBC稀释与回款季节性作为明确质量限制，而非无依据的数值加减项。",
+    "confidence": "Medium",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "share_count_basis": {
+    "share_count_type": "COMMON_SHARES_OUTSTANDING",
+    "forward_share_count_bridge_status": "NOT_COMPLETED",
+    "known_subsequent_event_status": "REVIEWED_CHANGE_NOT_INCORPORATED",
+    "known_subsequent_event_note": "A known ASR-related share-count change remains subject to final settlement and is not incorporated into a validated forward share-count bridge. / 已知ASR相关股数变化仍取决于最终结算，未纳入经验证的前瞻股数桥接。",
+    "limitations": [
+      "Per-share sensitivities remain a point-in-time PROXY until the ASR and other dilution items are bridged. / 在ASR及其他稀释项目完成桥接前，每股敏感性仍为时点PROXY。"
+    ]
+  },
+  "valuation_completion": {
+    "dcf_cross_check": "NOT_COMPLETED",
+    "driver_based_forward_forecast": "NOT_COMPLETED"
+  },
+  "what_is_priced_in": {
+    "risk_interpretation": "The conditional FCF comparison must be tested against collection seasonality, SBC dilution, Informatica integration, incremental financing costs, and final ASR economics; it is not a fair-value claim. / 条件性FCF比较必须结合回款季节性、SBC稀释、Informatica整合、增量融资成本及ASR最终经济结果检验，并非公允价值判断。"
+  },
+  "market_data_approval": {
+    "status": "APPROVED_FOR_RESEARCH",
+    "provider": "Yahoo Finance chart endpoint",
+    "scope": "Public-data research demo: dated unadjusted close for valuation and adjusted closes on exact common dates for CRM/SPY return comparison; not approved for live fund reporting or Gate 4.",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "market_expectations": {
+    "status": "SOURCED",
+    "summary": "FactSet consensus viewed July 16, 2026 displayed revenue of USD 46.104 billion and EPS of USD 14.10 in its 2027 forecast column, with a median target of USD 242.08. This is close to management's FY2027 revenue range, so continued growth is conventional rather than a variant view. / 2026年7月16日查看的FactSet一致预期在2027预测列显示收入461.04亿美元、EPS 14.10美元，目标价中位数242.08美元；该收入与管理层2027财年指引接近，因此持续增长属于常规观点，而非差异化观点。",
+    "variant_question": "Is the market discounting the durability of FCF too heavily after the debt-funded ASR and Informatica integration? / 市场是否因债务融资ASR与Informatica整合而过度折价FCF的可持续性？",
+    "variant_perception": "A potential favorable variant exists but is not yet fully proven. At a 10x equity FCF reference, the dated market cap requires about USD 13.677 billion of FCF, below validated LTM FCF of USD 14.661 billion; however, seasonality, SBC economics and new leverage must be validated through later quarters. / 潜在有利差异化观点存在但尚未完全证明。按10倍股权FCF参考倍数，当前市值要求约136.77亿美元FCF，低于已验证LTM FCF的146.61亿美元；但仍需后续季度验证季节性、SBC经济影响及新增杠杆。",
+    "current_public_evidence": "Recurring revenue, RPO and reported FCF are strong, while Q1 collection seasonality, SBC, acquisition integration and the USD 25 billion debt-funded ASR reduce confidence in simply capitalizing trailing FCF. / 经常性收入、RPO与报告FCF较强，但第一季度回款季节性、SBC、收购整合及250亿美元债务融资ASR降低了直接资本化历史FCF的可信度。",
+    "potential_variant": "The upside variant requires normalized FCF to remain at or above the current base through seasonally weaker quarters while AI/Data and Informatica contribution exceed consensus without additional leverage. / 上行差异要求标准化FCF在回款季节性较弱季度后仍不低于当前基准，同时AI/数据与Informatica贡献超越一致预期且不增加杠杆。",
+    "disconfirming_evidence": "The variant would weaken if FCF falls below USD 12 billion, cRPO or revenue misses guidance, SBC dilution rises materially, or leverage constrains reinvestment. / 若FCF低于120亿美元、cRPO或收入未达指引、SBC稀释显著上升，或杠杆限制再投资，则差异化观点被削弱。",
+    "market_evidence_keys": ["factset_consensus", "fy27_guidance"],
+    "public_evidence_keys": ["business_model", "rpo_and_crpo", "cash_flow_quality", "debt_funded_asr"],
+    "public_evidence_metrics": ["reported_ltm_fcf", "trailing_p_fcf"],
+    "variant_evidence_keys": ["rpo_and_crpo", "fy27_guidance"],
+    "variant_evidence_metrics": ["public_data_fcf_underwriting_base", "reverse_valuation_required_metric_value"],
+    "disconfirming_evidence_keys": ["cash_flow_quality", "debt_funded_asr"],
+    "disconfirming_evidence_metrics": ["latest_quarter_fcf", "long_term_debt"],
+    "source": {
+      "source_level": 4,
+      "source_type": "institutional_consensus",
+      "source_name": "FactSet Research Systems consensus via Boursorama",
+      "source_url": "https://www.boursorama.com/cours/consensus/CRM/",
+      "source_locator": "2027 forecast column and analyst target table viewed July 16, 2026",
+      "publication_date": "2026-07-16",
+      "retrieval_date": "2026-07-16"
+    },
+    "as_of_date": "2026-07-16",
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "valuation_framework": {
+    "status": "VALIDATED",
+    "method": "EQUITY_FCF_MULTIPLE",
+    "reverse_valuation": {
+      "status": "VALIDATED",
+      "formula": "required_metric_value = market_cap / selected_multiple",
+      "selected_multiple": 10.0,
+      "required_metric_value": 13677300000.0,
+      "assumptions": [
+        "10.0x is a round reverse-valuation reference near the observed trailing P/FCF of approximately 9.33x; it is not asserted as fair value.",
+        "The metric is equity FCF after cash capex, so debt is not subtracted again in the price formula.",
+        "The reverse calculation asks what FCF the dated market cap requires; it does not claim the market explicitly uses this method.",
+        "Point-in-time cover-page shares reflect the large ASR better than diluted weighted-average shares but do not capture final ASR settlement."
+      ],
+      "evidence_keys": ["factset_consensus", "debt_funded_asr"],
+      "evidence_metrics": ["market_cap_point_in_time", "trailing_p_fcf", "reported_ltm_fcf", "shares_outstanding_point_in_time"]
+    },
+    "sensitivity_completed": true,
+    "sensitivity_table": [
+      {"metric_value": 12000000000.0, "multiple": 8.0, "implied_price": 117.21611721611721},
+      {"metric_value": 12000000000.0, "multiple": 10.0, "implied_price": 146.5201465201465},
+      {"metric_value": 12000000000.0, "multiple": 12.0, "implied_price": 175.82417582417582},
+      {"metric_value": 14661000000.0, "multiple": 8.0, "implied_price": 143.2087912087912},
+      {"metric_value": 14661000000.0, "multiple": 10.0, "implied_price": 179.01098901098902},
+      {"metric_value": 14661000000.0, "multiple": 12.0, "implied_price": 214.8131868131868},
+      {"metric_value": 17000000000.0, "multiple": 8.0, "implied_price": 166.05616605616606},
+      {"metric_value": 17000000000.0, "multiple": 10.0, "implied_price": 207.57020757020757},
+      {"metric_value": 17000000000.0, "multiple": 12.0, "implied_price": 249.08424908424908}
+    ],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "scenario_model": {
+    "status": "ANALYST_VALIDATED",
+    "metric": "Normalized FCF",
+    "reviewed_by": "Codex public-data research QA (human review pending)",
+    "scenarios": [
+      {
+        "name": "Bear",
+        "metric_value_total": 12000000000.0,
+        "growth_assumption": -0.18150194393288321,
+        "exit_multiple": 8.0,
+        "key_driver": "Revenue/cRPO slow, integration costs and seasonally weaker collections reduce cash conversion, while leverage limits flexibility. / 收入与cRPO放缓、整合成本及季节性较弱回款降低现金转化，杠杆限制灵活性。",
+        "falsification_trigger": "Normalized FCF remains above USD 14.661 billion through weaker collection quarters and revenue stays within guidance. / 若标准化FCF在回款较弱季度后仍高于146.61亿美元且收入保持在指引内，则Bear情景被推翻。",
+        "assumption_sources": ["cash_flow_quality", "debt_funded_asr", "fy27_guidance", "reported_ltm_fcf"],
+        "confidence": "Low",
+        "notes": "USD 12.0 billion is an 18.1502% decline from the validated base; 8x is an analyst downside multiple, not a peer fact. / 120亿美元较已验证基准下降18.1502%；8倍为分析师下行倍数，并非同业事实。"
+      },
+      {
+        "name": "Base",
+        "metric_value_total": 14661000000.0,
+        "growth_assumption": 0.0,
+        "exit_multiple": 10.0,
+        "key_driver": "Subscription growth and RPO support the current FCF base, but seasonality, SBC and financing costs prevent an immediate durability upgrade. / 订阅增长与RPO支持当前FCF基准，但季节性、SBC与融资成本使可持续性尚不能立即上调。",
+        "falsification_trigger": "Normalized FCF falls below USD 13.677 billion, revenue misses guidance or leverage constrains operating investment. / 若标准化FCF低于136.77亿美元、收入未达指引或杠杆限制经营投入，则Base情景被推翻。",
+        "assumption_sources": ["business_model", "rpo_and_crpo", "fy27_guidance", "public_data_fcf_underwriting_base"],
+        "confidence": "Medium",
+        "notes": "The base retains validated LTM FCF and applies the disclosed 10x reverse-valuation reference. / Base保留已验证LTM FCF，并采用已披露的10倍反向估值参考。"
+      },
+      {
+        "name": "Bull",
+        "metric_value_total": 17000000000.0,
+        "growth_assumption": 0.1595389127617488,
+        "exit_multiple": 12.0,
+        "key_driver": "AI/Data and Informatica lift growth beyond consensus while margins, collections and capital allocation remain disciplined. / AI、数据与Informatica推动增长超越一致预期，同时利润率、回款与资本配置保持纪律。",
+        "falsification_trigger": "Revenue and cRPO merely match or miss consensus, normalized FCF remains below USD 16 billion, or leverage/dilution increases. / 若收入与cRPO仅达到或低于一致预期、标准化FCF低于160亿美元，或杠杆与稀释上升，则Bull情景被推翻。",
+        "assumption_sources": ["q1_operating_results", "rpo_and_crpo", "factset_consensus", "reverse_valuation_required_metric_value"],
+        "confidence": "Low",
+        "notes": "USD 17.0 billion is 15.9539% above the validated base; 12x requires evidence beyond current consensus. / 170亿美元较已验证基准高15.9539%；12倍要求超越当前一致预期的证据。"
+      }
+    ]
+  },
+  "peer_valuation_context": {
+    "status": "UNAVAILABLE",
+    "as_of_date": "2026-07-16",
+    "selection_rationale": "No period-aligned peer set with consistent FCF and SBC definitions was validated. / 尚未验证期间对齐且FCF与SBC定义一致的同业集合。",
+    "peers": [],
+    "reviewed_by": "Codex public-data research QA (human review pending)",
+    "interpretation": "No peer ranking or peer-derived fair value is permitted. / 不得进行同业自动排名或推导同业公允价值。"
+  },
+  "fcf_quality_assessment": {
+    "status": "VALIDATED",
+    "rating": "Medium",
+    "cash_conversion_confidence": "Medium",
+    "source_of_fcf": [
+      "Positive LTM reported CFO after cash interest, cash taxes and working-capital movements / 正的LTM报告CFO，已包含现金利息、现金税与营运资金变动",
+      "Low reported cash capex relative to a subscription software model / 相对于订阅软件模式较低的报告现金资本开支"
+    ],
+    "sustainability_assessment": "The amount is reproducible, but durability must be tested through seasonally weaker collection quarters and against SBC dilution, acquisition integration and higher financing costs. / 该金额可复算，但可持续性必须在回款季节性较弱季度中验证，并考虑SBC稀释、收购整合及更高融资成本。",
+    "conclusion": "FCF quality is adequate for scenario construction, but trailing cash cannot yet be treated as a fully normalized economic run-rate. / FCF质量足以用于情景构建，但历史现金流尚不能视为完全标准化的经济运行率。",
+    "dimensions": [
+      {"dimension": "Reported-to-normalized bridge / 报告至标准化桥接", "assessment": "Reproducible / 可复算", "implication": "No unsupported add-backs or CFO double counting. / 不作无依据加回，也不重复计算CFO项目。"},
+      {"dimension": "Collection seasonality / 回款季节性", "assessment": "Material / 重要", "implication": "Q1 is unusually strong; durability requires later-quarter evidence. / 第一季度通常较强，可持续性需要后续季度证据。"},
+      {"dimension": "SBC and capital allocation / SBC与资本配置", "assessment": "Qualified / 有保留", "implication": "SBC is dilutive and the debt-funded ASR changes per-share and leverage economics. / SBC具有稀释性，债务融资ASR改变每股与杠杆经济。"}
+    ],
+    "evidence_keys": ["cash_flow_quality", "debt_funded_asr", "q1_repurchases", "fy27_guidance"],
+    "evidence_metrics": ["valuation_basis_cfo", "reported_ltm_fcf", "public_data_fcf_underwriting_base", "latest_quarter_fcf"],
+    "limitations": ["No multi-quarter economic FCF normalization after SBC is validated.", "Final ASR settlement and incremental cash-interest bridge remain unavailable."],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "investment_decision_summary": {
+    "status": "VALIDATED",
+    "current_action": "Continue Research",
+    "current_view": "Salesforce's dated market cap requires about USD 13.677 billion of FCF at the selected 10x reference, below validated LTM FCF of USD 14.661 billion, so public data supports continued valuation work. A stronger action is not yet justified because Q1 collections are seasonally strong, SBC remains material, Informatica integration is incomplete and the USD 25 billion debt-funded ASR materially changed leverage. / 按选定10倍参考，Salesforce当前市值要求约136.77亿美元FCF，低于已验证LTM FCF的146.61亿美元，因此公开资料支持继续估值研究；但第一季度回款季节性较强、SBC规模重要、Informatica整合未完成且250亿美元债务融资ASR显著改变杠杆，尚不足以支持更强判断。",
+    "what_would_make_attractive": [
+      "Normalized FCF remains above USD 14.661 billion through seasonally weaker quarters while revenue and cRPO meet or exceed guidance. / 在回款季节性较弱季度后，标准化FCF仍高于146.61亿美元，且收入与cRPO达到或超过指引。",
+      "Final ASR economics and incremental financing costs are disclosed without weakening minimum liquidity or reinvestment capacity. / ASR最终经济结果与增量融资成本披露，且不削弱最低流动性或再投资能力。"
+    ],
+    "what_would_invalidate": [
+      "Normalized FCF falls below USD 12 billion without a clearly temporary collection-timing cause. / 若不存在明确且暂时的回款时点原因，标准化FCF低于120亿美元。",
+      "Revenue/cRPO miss guidance while SBC dilution or leverage rises and constrains product investment. / 收入或cRPO未达指引，同时SBC稀释或杠杆上升并限制产品投入。"
+    ],
+    "what_to_monitor_next": [
+      "Revenue, cRPO, GAAP margin, SBC, quarterly collections and normalized LTM FCF. / 收入、cRPO、GAAP利润率、SBC、季度回款及标准化LTM FCF。",
+      "Final ASR settlement, share count, cash interest, debt maturities, minimum liquidity and Informatica contribution. / ASR最终结算、股数、现金利息、债务到期、最低流动性及Informatica贡献。"
+    ],
+    "evidence_keys": ["factset_consensus", "fy27_guidance", "cash_flow_quality", "debt_funded_asr", "liquidity_and_maturities"],
+    "evidence_metrics": ["market_price_unadjusted_close", "reported_ltm_fcf", "public_data_fcf_underwriting_base", "reverse_valuation_required_metric_value", "long_term_debt"],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "decision_rules": {
+    "status": "VALIDATED",
+    "upgrade_conditions": [
+      "Upgrade valuation confidence if normalized FCF remains above USD 14.661 billion after seasonally weaker quarters. / 若标准化FCF在回款较弱季度后仍高于146.61亿美元，则上调估值可信度。",
+      "Upgrade the operating view if revenue and cRPO exceed guidance while GAAP margin and SBC discipline do not weaken. / 若收入与cRPO超过指引，同时GAAP利润率与SBC纪律不转弱，则上调经营判断。",
+      "Upgrade balance-sheet confidence when final ASR economics, incremental cash interest and numerical covenant headroom are reproducible. / 当ASR最终经济结果、增量现金利息及契约数值余量可复算时，上调资产负债表可信度。"
+    ],
+    "downgrade_conditions": [
+      "Downgrade if normalized FCF falls below USD 13.677 billion or management reduces FY2027 FCF-growth guidance below 4%. / 若标准化FCF低于136.77亿美元，或管理层将2027财年FCF增长指引下调至4%以下，则下调判断。",
+      "Downgrade if revenue or cRPO misses guidance for two comparable periods. / 若收入或cRPO连续两个可比期间未达指引，则下调判断。",
+      "Downgrade if SBC dilution, integration spending or cash interest materially weakens per-share cash economics. / 若SBC稀释、整合支出或现金利息显著削弱每股现金经济，则下调判断。"
+    ],
+    "thesis_invalidation_conditions": [
+      "Invalidate the FCF valuation thesis if normalized FCF is below USD 12 billion without a clearly reversible collection-timing cause. / 若标准化FCF低于120亿美元且不存在明确可逆的回款时点原因，则FCF估值逻辑失效。",
+      "Invalidate the differentiated growth thesis if AI/Data and Informatica results merely match or miss consensus while leverage remains elevated. / 若AI、数据与Informatica结果仅达到或低于一致预期且杠杆仍高，则差异化增长逻辑失效。",
+      "Invalidate the no-immediate-credit-constraint conclusion upon material liquidity loss, covenant breach or inability to refinance maturities on acceptable terms. / 若流动性大幅下降、违反契约，或无法以可接受条件再融资到期债务，则“无即时信用约束”结论失效。"
+    ],
+    "reviewed_by": "Codex public-data research QA (human review pending)"
+  },
+  "catalysts": [
+    "Normalized FCF remaining above USD 14.661 billion after seasonally weaker quarters. / 标准化FCF在回款较弱季度后仍高于146.61亿美元。",
+    "Revenue and cRPO exceeding guidance with stable GAAP margin and SBC discipline. / 收入与cRPO超过指引，同时GAAP利润率与SBC纪律稳定。",
+    "Final ASR settlement and a reproducible financing-cost/liquidity bridge. / ASR最终结算及可复算的融资成本与流动性桥接。"
+  ],
+  "credit_constraint_status": {
+    "status": "NO_IMMEDIATE_CREDIT_CONSTRAINT_QUALIFIED",
+    "as_of_date": "2026-06-02",
+    "basis": "Cash and marketable securities, an undrawn revolver and no principal due in the remainder of FY2027 or FY2028 do not show an immediate funding wall. The conclusion remains qualified because debt-funded capital allocation materially increased fixed obligations and numerical covenant headroom is unavailable. / 现金及有价证券、未使用循环授信及2027财年余下期间与2028财年无本金到期，未显示即时融资墙；但债务融资资本配置显著增加固定义务，且契约数值余量不可得，因此结论仍为有条件。"
+  },
+  "portfolio_context": {
+    "status": "DISABLED",
+    "note": "Portfolio Overlay: Disabled - fund-specific target return, downside tolerance, horizon, current exposure, liquidity, concentration and opportunity cost were not provided. / 组合叠加层未启用：尚未提供基金特定的目标回报、下行容忍度、期限、当前敞口、流动性、集中度及机会成本。"
+  },
+  "human_approval": {
+    "status": "NOT_REVIEWED",
+    "reviewed_by": ""
+  }
+}

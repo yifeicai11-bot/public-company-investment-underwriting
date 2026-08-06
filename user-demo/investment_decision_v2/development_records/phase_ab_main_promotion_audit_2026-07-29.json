@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "main_promotion_readiness_audit",
+  "audit_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "overall_status": "PASS_AWAITING_USER_APPROVAL",
+  "promotion_target": "main",
+  "promotion_performed": false,
+  "requirements": [
+    {
+      "session": "S01",
+      "name": "Freeze v1.0.0",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Create a V1 Git tag.",
+          "status": "PASS",
+          "evidence": "Annotated tag v1.0.0 resolves to 15b328137d615ca85e84cb997f3acfc2b15ca03b."
+        },
+        {
+          "requirement": "Record commit, Python, dependencies, OS, browser, fonts, locale, timezone, rounding, contract and renderer versions.",
+          "status": "PASS",
+          "evidence": "release-baselines/v1.0.0/baseline_manifest.json"
+        },
+        {
+          "requirement": "Record inputs, sources, hashes, and regeneration command.",
+          "status": "PASS",
+          "evidence": "The baseline manifest binds CROX and AZO contract paths, research inputs, source_registry sections, frozen file SHA256 values, and an offline regeneration command."
+        },
+        {
+          "requirement": "Regenerate CROX and AZO from frozen inputs with no unexplained material difference.",
+          "status": "PASS",
+          "evidence": "verify_baseline.py --render --pdf --pixel-compare passed 82 of 82 checks with zero failures."
+        }
+      ]
+    },
+    {
+      "session": "S02",
+      "name": "Gate 3 Eligibility and Freshness Contract",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Gate 4 consumes only the standard Gate 3 contract.",
+          "status": "PASS",
+          "evidence": "Gate4OverlayContractTests verify the loader contract and that overlay construction neither rebuilds nor modifies Gate 3."
+        },
+        {
+          "requirement": "Validate contract version, report date, financial date, market date, latest filing, subsequent events, probability validity, valuation status, and warnings.",
+          "status": "PASS",
+          "evidence": "underwriting_contract.py Gate 4 eligibility checks and Gate4EligibilityTests cover every listed input."
+        },
+        {
+          "requirement": "Return GATE_4_BLOCKED_STALE_GATE_3 when stale.",
+          "status": "PASS",
+          "evidence": "The shared status constant and stale report, market, filing, event, warning, and probability tests all suppress Gate 4 calculations."
+        },
+        {
+          "requirement": "Do not repeat or overwrite issuer analysis.",
+          "status": "PASS",
+          "evidence": "test_build_overlay_does_not_rebuild_or_modify_gate3_contract passes."
+        }
+      ]
+    },
+    {
+      "session": "S03",
+      "name": "Private Portfolio Schemas",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Provide policy, exposure, holdings, opportunity-set, and approval schemas.",
+          "status": "PASS",
+          "evidence": "user-demo/investment_decision_v2/gate4/schemas"
+        },
+        {
+          "requirement": "Support exposure-only, aggregated portfolio, and full holdings.",
+          "status": "PASS",
+          "evidence": "field_governance.json defines EXPOSURE_ONLY, AGGREGATED_PORTFOLIO, and FULL_HOLDINGS; all three modes pass independent validation tests."
+        },
+        {
+          "requirement": "Classify fields as Core Required, Conditional, Optional, or reviewer-confirmed NOT_APPLICABLE.",
+          "status": "PASS",
+          "evidence": "field_governance.json defines CORE_REQUIRED, CONDITIONAL, OPTIONAL, and REVIEWER_CONFIRMED_NOT_APPLICABLE; reviewer exceptions are schema-validated and cannot replace mandatory full-holdings fields."
+        }
+      ]
+    },
+    {
+      "session": "S04",
+      "name": "Privacy Controls and Input Diagnostics",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Use repository-external private and output directories.",
+          "status": "PASS",
+          "evidence": "The default root is ~/investment_private; repository and nested-worktree paths are blocked; inputs and outputs are separated."
+        },
+        {
+          "requirement": "Redact Git, log, cache, temp, PDF metadata, and diagnostic surfaces and scan sensitive files.",
+          "status": "PASS",
+          "evidence": "Gate4PrivacyTests cover repository scanning, notebooks, logs, cache/temp names, atomic output, PDF attachments, local paths, document info, and XMP metadata."
+        },
+        {
+          "requirement": "Private Gate 4 calculation is offline by default.",
+          "status": "PASS",
+          "evidence": "Local private modules are tested to reject network and logging clients; private calculations run through run_gate4_local_entry.py."
+        },
+        {
+          "requirement": "Missing, stale, or contradictory private inputs create a diagnostic and never receive defaults.",
+          "status": "PASS",
+          "evidence": "Private contract and privacy tests cover missing policy fields, stale Gate 3, date conflicts, reconciliation failures, empty templates, and no hidden defaults."
+        }
+      ]
+    },
+    {
+      "session": "S05",
+      "name": "Reproducible Blind-Test Baseline",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Freeze company, selection date, industry, expected stress characteristics, and pre-run commit before execution.",
+          "status": "PASS",
+          "evidence": "user-demo/investment_decision_v2/blind_tests/s05_odfl/manifest.json"
+        },
+        {
+          "requirement": "Preserve first output, errors, warnings, and diagnostics without replacing the company.",
+          "status": "PASS",
+          "evidence": "ODFL remains selected; 22 first-run artifacts pass the immutable file-set and SHA256 registry."
+        }
+      ]
+    },
+    {
+      "session": "S06",
+      "name": "Period, XBRL and Accounting Controls",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Harden quarter, YTD, FY, LTM, instant/flow, unit, currency, shares, non-calendar years, 53-week years, negative denominators, and missing XBRL tags.",
+          "status": "PASS",
+          "evidence": "Nineteen S06 dedicated positive and negative tests pass."
+        },
+        {
+          "requirement": "Place all analytical fixes in the shared Data Layer.",
+          "status": "PASS",
+          "evidence": "The authoritative selectors and validators live in build_public_company_decision_pack.py. The Investment Layer change removes duplicate selectors and delegates to the shared Data Layer; tests, schemas, and documentation contain no company-specific analytical rule."
+        }
+      ]
+    },
+    {
+      "session": "S07",
+      "name": "Notes, Sources and Subsequent Events",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Strengthen debt maturity, revolver, covenant, lease, receivable, bad debt, supplier finance, acquisition, amendment, restatement, and subsequent-event evidence.",
+          "status": "PASS",
+          "evidence": "All eleven modules are mandatory in notes/events contract version 1.1.0; twenty-five dedicated tests pass."
+        },
+        {
+          "requirement": "Do not silently resolve source conflicts or stale information.",
+          "status": "PASS",
+          "evidence": "Material same-grain conflicts create a Hard Stop; period/accession mismatches remain qualified; later events are separately dated and cannot be mixed into historical balances."
+        }
+      ]
+    },
+    {
+      "session": "S08",
+      "name": "Cross-Company Acceptance",
+      "status": "PASS",
+      "checks": [
+        {
+          "requirement": "Rerun CROX, AZO, first blind companies, and a new unfamiliar company.",
+          "status": "PASS",
+          "evidence": "CROX, AZO, ODFL, and deterministic S08 blind selection ITT all pass the final live acceptance."
+        },
+        {
+          "requirement": "Safely return validated, MISSING, NOT_APPLICABLE, Warning, or Hard Stop.",
+          "status": "PASS",
+          "evidence": "Live modules cover VALIDATED, MISSING, NOT_APPLICABLE, and WARNING; synthetic non-reliance evidence produces HARD_STOP, Gate 0, and diagnostic-only rendering."
+        },
+        {
+          "requirement": "No company-specific analytical branch.",
+          "status": "PASS",
+          "evidence": "AST governance scans five shared analytical files against fourteen fixture values and reports zero findings; S07 file hashes match the frozen shared commit."
+        }
+      ]
+    }
+  ],
+  "verification_summary": {
+    "complete_test_suite": {
+      "passed": 176,
+      "failed": 0
+    },
+    "v1_0_0_baseline": {
+      "passed": 82,
+      "failed": 0
+    },
+    "s08_live_acceptance": {
+      "passed": 4,
+      "failed": 0
+    },
+    "tracked_file_privacy_scan": {
+      "files_checked": 327,
+      "violations": 0
+    },
+    "skill_validation": "PASS",
+    "anti_hardcoding_findings": 0
+  },
+  "branch_control": {
+    "local_main_before_promotion": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+    "origin_main_before_promotion": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+    "main_modified": false,
+    "main_push_performed": false,
+    "required_next_action": "Obtain explicit user approval before merging and pushing main."
+  }
+}

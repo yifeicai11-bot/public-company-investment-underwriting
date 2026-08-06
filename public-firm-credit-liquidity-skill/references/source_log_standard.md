@@ -2,7 +2,7 @@
 
 Use this file when preparing the evidence table / source log for a public-company credit and liquidity review.
 
-The source log is the audit trail. It should let a partner understand which public evidence supports each material conclusion and where the evidence came from.
+The source log is the audit trail. It should let a user understand which public evidence supports each material conclusion and where the evidence came from.
 
 ## Table of Contents
 

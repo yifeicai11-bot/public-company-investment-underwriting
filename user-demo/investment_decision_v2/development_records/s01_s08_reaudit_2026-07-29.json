@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.1.0",
+  "document_type": "cumulative_development_audit",
+  "audit_date": "2026-07-29",
+  "branch": "codex/phase-b-cross-company",
+  "overall_status": "S01_THROUGH_S08_ACCEPTED",
+  "phase_status": {
+    "phase_a": "ACCEPTED",
+    "phase_b": "ACCEPTED"
+  },
+  "sessions": [
+    {
+      "session": "S01",
+      "status": "ACCEPTED",
+      "scope": "Freeze v1.0.0",
+      "implementation_commit": "a866e9bdfebd3d272e4ccf157d2fc1b64fececcc"
+    },
+    {
+      "session": "S02",
+      "status": "ACCEPTED",
+      "scope": "Gate 3 eligibility and freshness contract",
+      "implementation_commit": "b9bce94377bb649e078d350ad727365af82c6bd1"
+    },
+    {
+      "session": "S03",
+      "status": "ACCEPTED",
+      "scope": "Private portfolio schemas, three disclosure modes, and four field classes",
+      "implementation_commit": "c42bd39dcb0f6918d242e1509f802c6e07c59144"
+    },
+    {
+      "session": "S04",
+      "status": "ACCEPTED",
+      "scope": "Repository-external private workspaces, offline execution, redaction, sanitization, sensitive-file checks, and privacy-safe diagnostics",
+      "implementation_commit": "c42bd39dcb0f6918d242e1509f802c6e07c59144"
+    },
+    {
+      "session": "S05",
+      "status": "ACCEPTED",
+      "scope": "Preserved reproducible ODFL blind-test baseline",
+      "implementation_commit": "839e513b85ee25466247eb67dd264e6ca2661401"
+    },
+    {
+      "session": "S06",
+      "status": "ACCEPTED",
+      "scope": "Shared period, XBRL, unit, currency, share-count, fiscal-calendar, denominator, and missing-tag controls",
+      "implementation_commit": "52d1a3e3346d42b1038d4df1061f6b5e5f5cdd65"
+    },
+    {
+      "session": "S07",
+      "status": "ACCEPTED",
+      "scope": "Eleven shared notes, sources, conflict, and subsequent-event controls",
+      "implementation_commit": "009d7f1dd178c49a1a1d4fbb5aca5f5f08027034"
+    },
+    {
+      "session": "S08",
+      "status": "ACCEPTED",
+      "scope": "CROX, AZO, ODFL, ITT live acceptance, safe outcomes, Hard Stop rendering, and anti-hardcoding",
+      "implementation_commit": "ae097ace87173caa17b6e3e386367a8dffbf1cb0"
+    }
+  ],
+  "scope_alignment": {
+    "status": "PASS",
+    "checks": [
+      "S01 retains the annotated v1.0.0 tag, environment manifest, regeneration command, hashes, and CROX/AZO frozen artifacts.",
+      "S02 Gate 4 consumes only the shared Gate 3 contract and returns GATE_4_BLOCKED_STALE_GATE_3 for stale inputs without rebuilding issuer analysis.",
+      "S03 contains policy, exposure, holdings, opportunity, and approval schemas; supports exposure-only, aggregated portfolio, and full holdings; and enforces all four field classes.",
+      "S04 keeps private inputs and outputs outside Git worktrees, runs private calculation paths offline, sanitizes diagnostics and PDF metadata, scans sensitive files, and never fills missing inputs with defaults.",
+      "S05 preserves the deterministic ODFL first run and its failures, warnings, diagnostic, command, runtime, and SHA256 registry.",
+      "S06 owns period and XBRL analytical rules in the shared Data and Evidence Layer; downstream code delegates to those selectors.",
+      "S07 owns eleven first-class note/event modules and blocks silent material source conflicts or post-period mixing.",
+      "S08 owns four-company live acceptance and confirms safe failure and anti-overfitting behavior."
+    ]
+  },
+  "cumulative_verification": {
+    "complete_tests": {
+      "passed": 176,
+      "failed": 0
+    },
+    "v1_0_0_baseline_checks": {
+      "passed": 82,
+      "failed": 0
+    },
+    "s06_dedicated_tests": {
+      "passed": 19,
+      "failed": 0
+    },
+    "s07_dedicated_tests": {
+      "passed": 25,
+      "failed": 0
+    },
+    "s08_dedicated_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "s08_live_cases": {
+      "passed": 4,
+      "failed": 0
+    },
+    "skill_structure": "PASS",
+    "tracked_file_privacy_scan": {
+      "files_checked": 327,
+      "violations": 0
+    },
+    "anti_hardcoding": "PASS"
+  },
+  "main_branch_control": {
+    "local_main": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+    "origin_main": "15b328137d615ca85e84cb997f3acfc2b15ca03b",
+    "main_changed_during_audit": false,
+    "promotion_requires_user_approval": true
+  },
+  "warnings": [
+    "Live-company results are dated and must be regenerated after new filings or material events.",
+    "Acceptance of MISSING or WARNING means the conclusion was constrained correctly; it does not validate unavailable evidence.",
+    "The shared issuer core does not yet claim support for financial institutions or every specialized capital structure."
+  ],
+  "exact_next_starting_point": "Await explicit user approval before merging or pushing the completed Phase A and Phase B branch to main."
+}

@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "development_session_completion_record",
+  "phase": "D",
+  "session": "S13",
+  "name": "Portfolio Constraint Engine",
+  "status": "ACCEPTED",
+  "completion_date": "2026-07-31",
+  "branch": "codex/phase-d-gate4-s13",
+  "phase_c_main_baseline": "ba670da6aaceea17885dd8ca155cfc7df84b80c1",
+  "implementation_commit": "2dd506c4152989b735e3152eab4436eafe8e62a7",
+  "shared_contracts": {
+    "private_input_contract_version": "2.1.0",
+    "private_workspace_manifest_version": "2.1.0",
+    "portfolio_policy_version": "1.1.0",
+    "field_governance_version": "1.1.0",
+    "constraint_input_version": "1.0.0",
+    "constraint_engine_version": "1.0.0",
+    "constraint_output_version": "1.0.0",
+    "measurement_basis": "GROSS_LONG_WEIGHT",
+    "authoritative_engine": "user-demo/investment_decision_v2/scripts/gate4_constraint_engine.py",
+    "local_runner": "user-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py",
+    "renderer_recalculation_allowed": false,
+    "ticker_specific_logic_allowed": false
+  },
+  "required_scope": [
+    "Re-run Gate 3 eligibility and freshness immediately before every S13 calculation.",
+    "Calculate existing issuer, single-name, sector, country, correlated exposure, liquidity, holding-period, downside, risk-budget, opportunity-cost, and applicable hedge constraints.",
+    "Show every limit, current value, candidate value, formula, source field, missing item, escalation threshold, and binding status.",
+    "Return a null final maximum when any required constraint is missing.",
+    "Describe the calculated maximum only as a constraint ceiling, never a suggested, approved, target, or optimal position.",
+    "Keep System Portfolio Assessment NOT_EVALUATED, User Decision PENDING, approved range null, and automatic trading disabled until S14."
+  ],
+  "gate3_and_identity_controls": [
+    "The runner loads and assesses Gate 3, reloads it immediately before calculation, and assesses it again.",
+    "A report ID, schema version, or contract-hash change between checks returns GATE_4_BLOCKED_GATE_3_CHANGED_DURING_RECHECK.",
+    "The constraint input report ID and hash must match both the freshness attestation and consumed Gate 3 contract.",
+    "Candidate SEC CIK must match the Gate 3 company CIK; an equity candidate ticker must also match.",
+    "Stale or ineligible Gate 3 suppresses every private constraint, return, risk, sizing, and action calculation."
+  ],
+  "constraint_formulas": {
+    "concentration": "max(0, policy limit - current matching gross-long weight)",
+    "liquidity_exit_capacity": "ADVT * maximum daily volume participation * maximum days to exit / portfolio NAV",
+    "risk_budget": "max(0, risk budget limit - current downside-loss budget usage) / abs(validated candidate downside return)",
+    "opportunity_cost": "candidate validated return - highest comparable validated alternative return >= minimum excess return",
+    "final_incremental_ceiling": "minimum of every required numeric constraint ceiling",
+    "final_total_issuer_ceiling": "current issuer gross-long weight + final incremental ceiling"
+  },
+  "data_and_accounting_controls": [
+    "Exposure-only dimension rows must explicitly use GROSS_LONG_WEIGHT; absence is MISSING rather than zero.",
+    "Only complete aggregated or full holdings may support a derived zero existing exposure.",
+    "Exposure dimensions overlap and are never summed across issuer, sector, country, or correlation buckets.",
+    "ADVT must be dated, reviewed, in portfolio base currency, and within the explicit policy age limit.",
+    "Expected return and downside must use the same reproducible as-of date, target date, and holding period.",
+    "Public price sensitivity is prohibited as an expected-return or downside-return input.",
+    "A public probability-weighted return is accepted only when the Gate 3 formal output validates and exactly reconciles.",
+    "A public formal Bear return requires a validated formal scenario-return object; otherwise downside remains missing.",
+    "Current risk-budget usage must use the same DOWNSIDE_LOSS_BUDGET method as policy.",
+    "Missing and provisional values never receive hidden defaults."
+  ],
+  "hedge_boundary": [
+    "A proposed hedge is checked against permitted instruments, maximum ratio, effectiveness status, and reviewer chronology.",
+    "A required invalid hedge creates a zero ceiling.",
+    "S13 never increases the unhedged ceiling for assumed hedge relief."
+  ],
+  "privacy_boundary": [
+    "Real constraint inputs and results remain in a repo-external local workspace.",
+    "The initializer creates portfolio_constraint_inputs.yaml with mode 0600 and no policy defaults.",
+    "Git ignore and pre-commit scanning block exact private input and result filenames.",
+    "The local terminal prints no private values and no calculated ceiling.",
+    "The complete result is written atomically with mode 0600.",
+    "Local S13 modules import no network, telemetry, crash-reporting, or logging clients."
+  ],
+  "synthetic_acceptance": {
+    "input_mode": "FULL_HOLDINGS",
+    "candidate": "CROX synthetic private overlay",
+    "status": "GATE_4_CONSTRAINTS_CALCULATED",
+    "binding_constraint": "sector",
+    "maximum_incremental_constraint_ceiling": 0.05,
+    "single_name_ceiling": 0.1,
+    "sector_ceiling": 0.05,
+    "country_ceiling": 0.3,
+    "correlated_exposure_ceiling": 0.1,
+    "risk_budget_ceiling": 0.45,
+    "interpretation": "Synthetic values verify contract behavior only and are not portfolio facts, a suggested position, approval, or investment action."
+  },
+  "verification": {
+    "dedicated_s13_tests": {
+      "status": "PASS",
+      "passed": 22,
+      "failed": 0
+    },
+    "complete_test_suite": {
+      "status": "PASS",
+      "passed": 321,
+      "failed": 0
+    },
+    "cross_company_frozen_gate3_forward_tests": {
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AZO",
+        "CRM"
+      ],
+      "shared_engine_only": true
+    },
+    "constraint_binding_tests": {
+      "status": "PASS",
+      "covered": [
+        "single-name",
+        "sector",
+        "country",
+        "correlated exposure",
+        "liquidity exit capacity",
+        "risk budget",
+        "target return",
+        "holding period",
+        "downside",
+        "portfolio liquidity floor",
+        "opportunity cost",
+        "required hedge"
+      ]
+    },
+    "missing_and_blocking_tests": {
+      "status": "PASS",
+      "covered": [
+        "exposure-only NAV missing",
+        "explicit issuer exposure missing",
+        "risk-budget state missing",
+        "net exposure basis rejected",
+        "stale ADVT rejected",
+        "public Bear price sensitivity rejected",
+        "stale Gate 3",
+        "Gate 3 identity change",
+        "candidate issuer mismatch"
+      ]
+    },
+    "v1_0_0_frozen_delivery": {
+      "status": "PASS",
+      "companies": [
+        "CROX",
+        "AZO"
+      ],
+      "failed_checks": 0
+    },
+    "cross_industry_governance": {
+      "status": "PASS",
+      "active_companies": 7,
+      "anti_hardcoding_findings": 0
+    },
+    "skill_structure_validation": "PASS",
+    "python_compile_validation": "PASS",
+    "git_diff_whitespace_validation": "PASS",
+    "privacy_scan": {
+      "status": "PASS",
+      "files_checked": 33
+    }
+  },
+  "scope_boundary": [
+    "S13 does not issue Eligible, Eligible with Escalation, Review Required, Not Eligible, or Not Evaluated assessments; those belong to S14.",
+    "S13 does not create a recommended or approved position range.",
+    "S13 does not convert escalation thresholds into a User decision.",
+    "S13 does not generate the S14 bilingual One-Page, Full Report, Evidence Appendix, or Validation Report.",
+    "S13 never places a trade."
+  ],
+  "exact_next_starting_point": {
+    "session": "S14",
+    "name": "Gate 4 Assessment, Approval and Reports",
+    "first_action": "Consume the validated S13 output contract and define the separate System Assessment and User Decision state machines before adding bilingual synthetic reports."
+  }
+}

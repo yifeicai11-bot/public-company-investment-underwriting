@@ -40,23 +40,23 @@ jobs:
       - name: Shared unit tests
         run: >-
           python -m unittest discover
-          -s partner-demo/investment_decision_v2/tests
+          -s user-demo/investment_decision_v2/tests
           -p 'test_*.py'
           -v
 
       - name: Cross-company and valuation acceptance
         run: |
-          python partner-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
-          python partner-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
+          python user-demo/investment_decision_v2/scripts/validate_cross_industry_regression.py
+          python user-demo/investment_decision_v2/scripts/run_s12_valuation_cross_company_acceptance.py
 
       - name: Frozen baseline and synthetic Gate 4 checks
         run: |
-          python release-baselines/friday-v1/verify_baseline.py
-          python partner-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py examples/gate4-synthetic
+          python release-baselines/v1.0.0/verify_baseline.py
+          python user-demo/investment_decision_v2/scripts/validate_gate4_synthetic_delivery.py examples/gate4-synthetic
 
       - name: Repository privacy scan
         run: >-
-          python partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py
+          python user-demo/investment_decision_v2/scripts/check_private_data_boundaries.py
           --tracked
 
       - name: Skill structure validation

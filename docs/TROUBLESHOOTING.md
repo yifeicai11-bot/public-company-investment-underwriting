@@ -64,7 +64,7 @@ For private Gate 4 PDFs, do not use the public renderer directly. Follow `docs/P
 Move real policy, holdings, exposures, opportunity-set, approval, sizing, and private outputs outside the repository. Re-run:
 
 ```bash
-python partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged
+python user-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged
 ```
 
 The scanner reports file paths and rule IDs, not private values. Do not weaken the rule to make a commit pass.
@@ -76,8 +76,8 @@ Use the exact lock and run the CI-equivalent offline checks:
 ```bash
 python underwrite.py doctor --ci
 python scripts/validate_release_candidate.py
-python -m unittest discover -s partner-demo/investment_decision_v2/tests -p 'test_*.py' -v
-python partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --tracked
+python -m unittest discover -s user-demo/investment_decision_v2/tests -p 'test_*.py' -v
+python user-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --tracked
 ```
 
 CI intentionally performs no live ticker retrieval and does not select an S17 held-out company.

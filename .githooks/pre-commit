@@ -1,4 +1,4 @@
 #!/bin/sh
 set -eu
 
-exec python3 partner-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged
+exec python3 user-demo/investment_decision_v2/scripts/check_private_data_boundaries.py --staged

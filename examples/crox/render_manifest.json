@@ -1,21 +1,22 @@
 {
   "report_id": "RPT-D12C3A257792FC",
   "contract_hash": "eb20dfccfd27d71acadff5f15bcd3279fec22259fd5fbffa553209a4473c962d",
-  "contract_path": "partner-demo/investment_decision_v2/friday_v1_outputs/crox_crocs_inc/step3/underwriting_output_contract.json",
+  "contract_path": "user-demo/investment_decision_v2/v1_0_0_outputs/crox_crocs_inc/step3/underwriting_output_contract.json",
   "formal_report_blocked": false,
   "outputs": {
-    "one_page_html": "examples/crox/CROX_One_Page_Summary_Bilingual.html",
-    "full_report_html": "examples/crox/CROX_Full_Report_Bilingual.html",
-    "evidence_appendix_html": "examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.html",
-    "qa_summary_html": "examples/crox/CROX_Friday_V1_QA_Summary_Bilingual.html",
-    "one_page_pdf": "examples/crox/CROX_One_Page_Summary_Bilingual.pdf",
-    "full_report_pdf": "examples/crox/CROX_Full_Report_Bilingual.pdf",
-    "evidence_appendix_pdf": "examples/crox/CROX_Evidence_Audit_Appendix_Bilingual.pdf",
-    "qa_summary_pdf": "examples/crox/CROX_Friday_V1_QA_Summary_Bilingual.pdf"
+    "one_page_html": "CROX_One_Page_Summary_Bilingual.html",
+    "full_report_html": "CROX_Full_Report_Bilingual.html",
+    "evidence_appendix_html": "CROX_Evidence_Audit_Appendix_Bilingual.html",
+    "qa_summary_html": "CROX_V1_0_0_QA_Summary_Bilingual.html",
+    "one_page_pdf": "CROX_One_Page_Summary_Bilingual.pdf",
+    "full_report_pdf": "CROX_Full_Report_Bilingual.pdf",
+    "evidence_appendix_pdf": "CROX_Evidence_Audit_Appendix_Bilingual.pdf",
+    "qa_summary_pdf": "CROX_V1_0_0_QA_Summary_Bilingual.pdf"
   },
   "renderer_rule": "Formatting only; no analytical recalculation.",
   "contract_validation": "PASS",
   "data_gate": 3,
   "hard_stop_count": 0,
-  "warning_count": 4
+  "warning_count": 4,
+  "manifest": "render_manifest.json"
 }

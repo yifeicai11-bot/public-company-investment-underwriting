@@ -20,17 +20,17 @@
     "shared_fix_validation": "SHARED_FIX_VALIDATED_SECOND_HELD_OUT_REQUIRED",
     "final_held_out_issuer": "TNL",
     "final_held_out_result": "S17_HELD_OUT_ACCEPTED",
-    "rpm_adjudication": "partner-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix_live_after_facility_parser_fix_adjudication.json",
-    "tnl_manifest": "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/manifest.json",
-    "tnl_acceptance": "partner-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/s17_acceptance_result.json"
+    "rpm_adjudication": "user-demo/investment_decision_v2/blind_tests/s17_final_validator_after_fix/post_fix_live_after_facility_parser_fix_adjudication.json",
+    "tnl_manifest": "user-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/manifest.json",
+    "tnl_acceptance": "user-demo/investment_decision_v2/blind_tests/s17_final_evidence_after_fix/s17_acceptance_result.json"
   },
   "final_validation": {
     "shared_unit_tests": 404,
     "shared_unit_test_failures": 0,
     "cross_industry_regression": "PASS",
     "s12_valuation_acceptance": "PASS",
-    "friday_v1_baseline_pdf_pixel_checks": 82,
-    "friday_v1_baseline_pdf_pixel_failures": 0,
+    "v1_0_0_baseline_pdf_pixel_checks": 82,
+    "v1_0_0_baseline_pdf_pixel_failures": 0,
     "gate4_synthetic_delivery": "PASS",
     "privacy_scan": "PASS",
     "skill_structure": "PASS",

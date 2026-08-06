@@ -1,17 +1,17 @@
 ---
 name: public-firm-credit-liquidity
-description: Use this skill to build auditable public-company issuer underwriting from public data, including evidence normalization, receivables and credit-loss risk, cash conversion, working capital, liquidity, debt, leases, covenants, refinancing, decision debates, and gated valuation/scenario support. Use it for a listed-company credit/liquidity review, investment-underwriting memo, bilingual partner output, source log, validation report, or reusable public-company research workflow.
+description: Use this skill to build auditable public-company issuer underwriting from public data, including evidence normalization, receivables and credit-loss risk, cash conversion, working capital, liquidity, debt, leases, covenants, refinancing, decision debates, and gated valuation/scenario support. Use it for a listed-company credit/liquidity review, investment-underwriting memo, bilingual user output, source log, validation report, or reusable public-company research workflow.
 ---
 
 # Public Firm Credit & Liquidity Research Support
 
 ## Purpose
 
-This skill builds a reusable issuer-level public-company underwriting system. Its partner-ready product name is `Public-Data Issuer Underwriting and IC Pre-Read System - Friday V1`. It separates data and evidence, issuer underwriting, valuation/scenarios, rendering, and portfolio decisions. It is not a credit rating, complete investment-decision system, fair-value engine, or automatic buy/sell tool.
+This skill builds a reusable issuer-level public-company underwriting system. Its user-ready product name is `Public-Data Issuer Underwriting and IC Pre-Read System - v1.0.0`. It separates data and evidence, issuer underwriting, valuation/scenarios, rendering, and portfolio decisions. It is not a credit rating, complete investment-decision system, fair-value engine, or automatic buy/sell tool.
 
-The review should identify key highlights, red flags, positive signals, missing information, and follow-up questions using public sources only. When the user or partner wants investment usefulness, the output must shorten the path from information to decision: what is binding, what is not binding, what would change the view, and what must be monitored next.
+The review should identify key highlights, red flags, positive signals, missing information, and follow-up questions using public sources only. When the user wants investment usefulness, the output must shorten the path from information to decision: what is binding, what is not binding, what would change the view, and what must be monitored next.
 
-Default output should be bilingual in English and Chinese for partner-ready use. Use English first for professional finance/accounting terminology, followed by concise Chinese explanation. Do not create two completely separate reports unless requested.
+Default output should be bilingual in English and Chinese for user-ready use. Use English first for professional finance/accounting terminology, followed by concise Chinese explanation. Do not create two completely separate reports unless requested.
 
 For company-specific reviews, write as a direct research support output. Do not describe the company as a "sample," "test case," "baseline," "stress case," or "useful for testing" in Executive Highlights or Detailed Analysis.
 
@@ -39,15 +39,15 @@ Use public sources only unless the user explicitly provides internal materials a
 
 Preferred public sources include annual reports, 10-K/10-Q filings, HKEX filings, earnings releases, investor presentations, company websites, publicly available rating commentary, exchange announcements, and relevant public news.
 
-Apply the formal source hierarchy: Level 1 regulatory filings, Level 2 official company investor materials, Level 3 partner-approved market/reference feeds, Level 4 institutional research/consensus, and Level 5 other public sources. Analyst-owned assumptions use Level 0 and require a named reviewer plus linked evidence where applicable.
+Apply the formal source hierarchy: Level 1 regulatory filings, Level 2 official company investor materials, Level 3 user-approved market/reference feeds, Level 4 institutional research/consensus, and Level 5 other public sources. Analyst-owned assumptions use Level 0 and require a named reviewer plus linked evidence where applicable.
 
-For source handling, read `references/source_policy.md` when preparing an evidence-backed output. For partner-ready evidence tables, read `references/source_log_standard.md`.
+For source handling, read `references/source_policy.md` when preparing an evidence-backed output. For user-ready evidence tables, read `references/source_log_standard.md`.
 
 ## Investment Decision Upgrade Rules
 
 When the requested output is meant to support an investment judgment, read `references/investment_decision_upgrade.md` before drafting. Treat it as binding for data integrity, validation gates, memo structure, and action-language limits.
 
-Read `references/friday_v1_output_standard.md` before creating or changing any partner-facing One-Page, Full Report, Evidence Appendix, QA Summary, output contract, or renderer. Its horizon language, FCF naming, dual statuses, valuation status, share-count proxy, priced-in, confidence, evidence-display, and portfolio-boundary rules are binding.
+Read `references/v1_0_0_output_standard.md` before creating or changing any user-facing One-Page, Full Report, Evidence Appendix, QA Summary, output contract, or renderer. Its horizon language, FCF naming, dual statuses, valuation status, share-count proxy, priced-in, confidence, evidence-display, and portfolio-boundary rules are binding.
 
 Read `references/system_architecture_and_contract.md` before changing any script, schema, gate, or renderer. Its system-wide applicability, supported-universe, source hierarchy, output-contract, Hard Stop, and testing requirements are binding.
 
@@ -64,13 +64,13 @@ Read `references/forward_operating_bridges.md` whenever creating, validating, or
 
 Read `references/valuation_cross_company_acceptance.md` before changing the aggregate Valuation Status, adding a business-model driver, or claiming that valuation logic generalizes across companies. Overall `PARTIALLY_VALIDATED` requires a validated driver forecast, forward share bridge, and independent cross-check together. Overall `MULTI_METHOD_VALIDATED` additionally requires the validated S09 horizon, reverse valuation, complete S11 multi-method context, and human review. One-sided support remains `RANGE_ONLY`.
 
-When the user or partner wants the memo to help make an investment decision, read `references/investment_committee_layer.md` after the investment decision upgrade rules. Use it to structure bull/bear debate, risk review, portfolio fit, and final action view without replacing validation or valuation evidence.
+When the user wants the memo to help make an investment decision, read `references/investment_committee_layer.md` after the investment decision upgrade rules. Use it to structure bull/bear debate, risk review, portfolio fit, and final action view without replacing validation or valuation evidence.
 
 When using any third-party library, GitHub skill, MCP server, market-data source, or hosted API to support the review, read `references/external_tool_policy.md`. External tools may accelerate data extraction, market data retrieval, note reading, or portfolio analytics, but they must not bypass source logging, period validation, provider labeling, or investment-gate limits.
 
 Before handling any fund policy, holdings, opportunity-set, approval, or portfolio-sizing context, read `references/gate4_private_data_workflow.md`. Never request that real portfolio data be pasted into chat or uploaded to an external model. Use only the local private workspace and privacy-safe diagnostic workflow.
 
-After S13 produces a validated constraint result, read `references/gate4_assessment_and_approval.md` before issuing a System Portfolio Assessment, recording a Partner decision, or rendering Gate 4 reports. Its five-state assessment priority, assessment-hash binding, Partner approval rules, report contract, and constraint-ceiling language are binding.
+After S13 produces a validated constraint result, read `references/gate4_assessment_and_approval.md` before issuing a System Portfolio Assessment, recording a User decision, or rendering Gate 4 reports. Its five-state assessment priority, assessment-hash binding, User approval rules, report contract, and constraint-ceiling language are binding.
 
 Read `references/monitoring_and_update_mode.md` before comparing two issuer
 contracts or updating a thesis. S15 may compare only immutable validated
@@ -95,7 +95,7 @@ For a repository checkout, prefer the supported S16 entry point:
 
 `python underwrite.py analyze "<ticker or company name>" --output-root outputs`
 
-Run `python underwrite.py doctor --live` first, and add `--pdf` to both commands when PDFs are required. The entry point may build lower-gate contracts and diagnostics, but it renders partner-ready reports only after Gate 3 and independent validation pass. Use the generated `analyst_input_template.json` for the next public-research iteration. Never pass Gate 4 portfolio inputs through this public command.
+Run `python underwrite.py doctor --live` first, and add `--pdf` to both commands when PDFs are required. The entry point may build lower-gate contracts and diagnostics, but it renders user-ready reports only after Gate 3 and independent validation pass. Use the generated `analyst_input_template.json` for the next public-research iteration. Never pass Gate 4 portfolio inputs through this public command.
 
 1. Clarify the target company, ticker, exchange, period, and desired depth if not already provided.
 2. Gather public source documents for the latest annual period and, when available, the latest interim/quarterly period.
@@ -120,15 +120,15 @@ Run `python underwrite.py doctor --live` first, and add `--pdf` to both commands
 
 When working with SEC-reporting companies, use the generic decision-support builder when available:
 
-`partner-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py "<ticker or company name>"`
+`user-demo/investment_decision_v2/scripts/build_public_company_decision_pack.py "<ticker or company name>"`
 
 This creates a period-aware normalized data table, validation report, and investment-support data pack. Use `scripts/sec_metric_pack.py <ticker>` only as a lighter starting point or fallback. In both cases, read the relevant filing notes for debt maturity, facility availability, receivable aging, covenant, lease, acquisition, or disclosure nuance when those issues are material.
 
 When the user wants Step 3 investment decision support, run the generic investment-layer builder after or instead of the Step 2 command:
 
-`partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker or company name>"`
+`user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker or company name>"`
 
-This rebuilds the data/evidence pack, adds dated public market observations, trailing valuation observations, issuer-underwriting status, Investment Question, Key Debates, Decision Confidence, partner input templates, and the shared versioned output contract.
+This rebuilds the data/evidence pack, adds dated public market observations, trailing valuation observations, issuer-underwriting status, Investment Question, Key Debates, Decision Confidence, user input templates, and the shared versioned output contract.
 
 In public-data-only mode, do not auto-create scenario probabilities, exit multiples, formal targets, or expected returns from historical growth, trailing multiples, leverage, price momentum, or 52-week range position. Without validated analyst inputs for the Public-Data FCF Underwriting Base, valuation, and scenarios, stop at Gate 1 or Gate 2.5. Validated scenario implied prices may reach Gate 3 without probabilities. Without a complete valuation horizon, forecast period, metric period, explicit dividend, forward share basis, and exit basis, label percentages `Price Change vs Current Price`; Base-Case Return and Probability-Weighted Return remain `NOT_EVALUATED`.
 
@@ -136,9 +136,9 @@ For a driver-based forward FCF, complete `forward_valuation` in the generated an
 
 To supply analyst-owned assumptions, use:
 
-`partner-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker>" --research-input "<validated input json>"`
+`user-demo/investment_decision_v2/scripts/build_public_company_investment_layer.py "<ticker>" --research-input "<validated input json>"`
 
-Start from the generated `analyst_input_template.json`. Scenario implied prices are allowed only when the selected positive multiple-based metric has a validated, dated, currency-matched, evidence-linked basis; the valuation method, Bear/Base/Bull inputs, growth bridge, sensitivity, falsification triggers, and reviewer ownership must also pass Gate 3. The Public-Data FCF Underwriting Base is the default shared metric, while another metric requires its own explicit `scenario_model.metric_basis`. Base-Case Return additionally requires the full S09 dated horizon, controlled period/dividend/exit semantics, and forward share basis. Probability-Weighted Return additionally requires a validated probability method, linked evidence, review dates, sensitivity, freshness, and explicit human approval. Keep Partner Internal Return disabled until the repo-external private Gate 4 workflow.
+Start from the generated `analyst_input_template.json`. Scenario implied prices are allowed only when the selected positive multiple-based metric has a validated, dated, currency-matched, evidence-linked basis; the valuation method, Bear/Base/Bull inputs, growth bridge, sensitivity, falsification triggers, and reviewer ownership must also pass Gate 3. The Public-Data FCF Underwriting Base is the default shared metric, while another metric requires its own explicit `scenario_model.metric_basis`. Base-Case Return additionally requires the full S09 dated horizon, controlled period/dividend/exit semantics, and forward share basis. Probability-Weighted Return additionally requires a validated probability method, linked evidence, review dates, sensitivity, freshness, and explicit human approval. Keep User Internal Return disabled until the repo-external private Gate 4 workflow.
 
 For S11, complete `valuation_cross_checks` in the same analyst input. Do not
 mark peer, historical, reverse valuation, or independent DCF complete with a
@@ -150,37 +150,37 @@ historical range, and a three-to-ten-period Gordon-growth DCF with explicit
 valuation date, and the per-share denominator must declare a validated
 current-outstanding, current-diluted, or forward-diluted basis with a matching
 date and exact evidence. Preserve incomparable rows in the audit object while
-suppressing their values in partner-facing output. A complete S11 contract
+suppressing their values in user-facing output. A complete S11 contract
 does not by itself authorize a target price, expected return, or trade.
 
 Use `external_evidence` for public facts that are not already extracted from SEC XBRL, such as guidance, investor-presentation details, consensus, covenant terms, and industry evidence. Give each item a unique `external_key`, full source hierarchy metadata, as-of/publication/retrieval dates, source locator, and reviewer. Issuer modules and Key Debates may reference `evidence_keys`; the engine resolves them into stable evidence IDs.
 
-When partner/fund-specific context is available, choose one explicit local
+When user/fund-specific context is available, choose one explicit local
 input mode: `EXPOSURE_ONLY`, `AGGREGATED_PORTFOLIO`, or `FULL_HOLDINGS`.
 Initialize the local Gate 4 workspace with the least-granular mode that supports
 the intended decision:
 
-`partner-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py --input-mode "<mode>"`
+`user-demo/investment_decision_v2/scripts/initialize_gate4_private_workspace.py --input-mode "<mode>"`
 
 Complete the files under `~/investment_private` locally, then run:
 
-`partner-demo/investment_decision_v2/scripts/run_gate4_local_entry.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
+`user-demo/investment_decision_v2/scripts/run_gate4_local_entry.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
 
 For S13 constraint calculations, read
 `references/portfolio_constraint_engine.md`, complete
 `portfolio_constraint_inputs.yaml`, and run:
 
-`partner-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
+`user-demo/investment_decision_v2/scripts/run_gate4_constraint_engine.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
 
 For S14 assessment, approval validation, and the four bilingual local reports,
 run:
 
-`partner-demo/investment_decision_v2/scripts/run_gate4_assessment.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
+`user-demo/investment_decision_v2/scripts/run_gate4_assessment.py "<path to underwriting_output_contract.json or its Step 3 directory>" --manifest "~/investment_private/gate4_private_workspace_manifest.json"`
 
 For S15 ongoing monitoring, use two exact issuer contracts plus an approved
 monitoring policy and explicit as-of date:
 
-`partner-demo/investment_decision_v2/scripts/run_monitoring_update.py --previous "<prior contract>" --current "<current contract>" --policy "<monitoring policy yaml>" --as-of-date "YYYY-MM-DD" --output-dir "<local output directory>"`
+`user-demo/investment_decision_v2/scripts/run_monitoring_update.py --previous "<prior contract>" --current "<current contract>" --policy "<monitoring policy yaml>" --as-of-date "YYYY-MM-DD" --output-dir "<local output directory>"`
 
 S15 records FACT, CALC, JUDGMENT, evidence, Warning, Hard Stop, KPI, scenario,
 and probability-freshness changes. It does not rebuild either issuer analysis,
@@ -193,7 +193,7 @@ Apply the shared field-governance contract. JSON-Schema-required fields are
 `REVIEWER_CONFIRMED_NOT_APPLICABLE`. Never waive a core field. Accept a blank
 not-applicable field only with one dated, row-specific reviewer record.
 
-If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; structurally validated inputs return `GATE_4_INPUTS_VALIDATED`. S13 must reload and recheck Gate 3 immediately before calculation, show every limit, formula, missing item, and binding constraint, and return `GATE_4_CONSTRAINTS_INCOMPLETE` when any required ceiling is missing. Exposure-only or aggregated inputs must never be described as security-level liquidity evidence. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. A calculated maximum is a constraint ceiling, never a system-owned position range. S14 must keep System Assessment and Partner Decision separate, require the current assessment hash for every completed non-pending decision, require exact escalation acknowledgement for approvals and modifications, and leave trade execution disabled.
+If a newer earnings filing or unreviewed material event is known, a required date is stale, or a non-absent probability set has expired, return `GATE_4_BLOCKED_STALE_GATE_3` and suppress portfolio calculations. Data-integrity Hard Stops cannot be escalated. Missing or invalid private inputs return `GATE_4_PRIVATE_INPUTS_REQUIRED`; structurally validated inputs return `GATE_4_INPUTS_VALIDATED`. S13 must reload and recheck Gate 3 immediately before calculation, show every limit, formula, missing item, and binding constraint, and return `GATE_4_CONSTRAINTS_INCOMPLETE` when any required ceiling is missing. Exposure-only or aggregated inputs must never be described as security-level liquidity evidence. Illustrative data can demonstrate the interface but cannot unlock a real portfolio decision. A calculated maximum is a constraint ceiling, never a system-owned position range. S14 must keep System Assessment and User Decision separate, require the current assessment hash for every completed non-pending decision, require exact escalation acknowledgement for approvals and modifications, and leave trade execution disabled.
 
 Direct private PDF writes are prohibited. To create a private PDF, use
 `sanitize_gate4_private_pdf.py` inside the local workspace and require its
@@ -201,10 +201,10 @@ metadata, XMP, attachment, page-count, and permission verification to pass.
 
 Do not tune the Step 3 builder to a single regression company. PFGC may be used to catch regressions, but the rules must remain company-agnostic and usable for any SEC-reporting public company resolved from a ticker or company name.
 
-If a company-specific regression script exists in `partner-demo/investment_decision_v2/scripts/`, run it before using that company as a partner demo. For PFGC, run `build_pfgc_step2_dataset.py` and inspect the validation report before drafting.
+If a company-specific regression script exists in `user-demo/investment_decision_v2/scripts/`, run it before using that company as a user demo. For PFGC, run `build_pfgc_step2_dataset.py` and inspect the validation report before drafting.
 
 Before a major release, validate
-`partner-demo/investment_decision_v2/regression/cross_industry_matrix.json`
+`user-demo/investment_decision_v2/regression/cross_industry_matrix.json`
 and `safe_failure_taxonomy.json` with
 `scripts/validate_cross_industry_regression.py`, then run
 `tests/run_company_regression.py`. Treat `ACTIVE` coverage as tested and
@@ -223,8 +223,8 @@ When the target company is not pre-classified by the user:
 - If a module is not material, say so briefly and explain why.
 - Do not force red flags into every module.
 - Highlight the two or three most decision-relevant issues, not every metric extracted.
-- Mention "sample" or "testing" only in separate validation notes, never in the partner-facing company review.
-- If the company was selected through random screening or validation, keep that context outside the company review file. The company review itself should read as if the partner directly asked for that company.
+- Mention "sample" or "testing" only in separate validation notes, never in the user-facing company review.
+- If the company was selected through random screening or validation, keep that context outside the company review file. The company review itself should read as if the user directly asked for that company.
 
 ## Company Review Voice
 
@@ -255,13 +255,13 @@ Always structure the output in this order unless the user requests another forma
 
 For exact output templates, read `references/output_templates.md`.
 
-For partner-ready concise outputs, create a one-page summary using `references/one_page_partner_summary.md`. If a full review is also requested, place the one-page summary before the full memo.
+For user-ready concise outputs, create a one-page summary using `references/one_page_user_summary.md`. If a full review is also requested, place the one-page summary before the full memo.
 
-For sector or firm-type nuance, read `references/sector_overlays.md` after the core review is drafted. Use overlays to adjust interpretation and follow-up questions, not to override evidence. In partner-ready outputs, make the overlay visible through a short Firm Type Context section instead of leaving it implicit.
+For sector or firm-type nuance, read `references/sector_overlays.md` after the core review is drafted. Use overlays to adjust interpretation and follow-up questions, not to override evidence. In user-ready outputs, make the overlay visible through a short Firm Type Context section instead of leaving it implicit.
 
 ## Bilingual Output Guidance
 
-For partner-ready outputs:
+For user-ready outputs:
 
 - Write section headings in English with Chinese in parentheses where helpful.
 - Provide Executive Highlights in both English and Chinese.
@@ -273,7 +273,7 @@ For partner-ready outputs:
 
 ## Follow-Up Question Purpose
 
-Follow-up questions are not extra work for the partner. They clarify what public data cannot prove and turn uncertainty into specific diligence actions. Use them to show which assumptions should be verified with management, internal data, broker materials, industry context, or later filings.
+Follow-up questions are not extra work for the user. They clarify what public data cannot prove and turn uncertainty into specific diligence actions. Use them to show which assumptions should be verified with management, internal data, broker materials, industry context, or later filings.
 
 ## Rating Guidance
 

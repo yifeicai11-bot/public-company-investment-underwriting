@@ -1,6 +1,6 @@
 # Investment Committee Layer
 
-Use this reference when the user or partner wants the output to support an investment judgment, not only a credit/liquidity screen.
+Use this reference when the user or user wants the output to support an investment judgment, not only a credit/liquidity screen.
 
 This layer adapts the useful multi-role decision structure from trading-agent frameworks, but keeps this skill's discipline: public sources, period-aware data, source logs, validation gates, valuation/scenario evidence, and explicit confidence limits.
 

@@ -14,7 +14,7 @@ For every material figure or claim sourced through an external tool, record:
 - retrieval date
 - original public source if available
 - whether the output is official, unofficial, calculated, vendor-derived, or manual
-- whether the field is acceptable for partner demo, prototype only, or blocked
+- whether the field is acceptable for user demo, prototype only, or blocked
 - confidence level
 
 ## Allowed Uses
@@ -59,7 +59,7 @@ Do not treat extracted data as analyst-verified until it reconciles against the 
 
 ### Market Data Tools
 
-Unofficial or free market-data tools may be useful for prototypes, but partner-ready valuation should show the provider and retrieval date. If data terms restrict use, label the output as prototype only.
+Unofficial or free market-data tools may be useful for prototypes, but user-ready valuation should show the provider and retrieval date. If data terms restrict use, label the output as prototype only.
 
 ### Commercial APIs
 
