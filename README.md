@@ -36,32 +36,14 @@ The One-Page Summary presents the investment question, public-data view, what is
 
 摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。
 
-## Frozen v1.0.0 Baseline / 已冻结的 v1.0.0 基线
+## Version and Reproducibility / 版本与可复现性
 
-The v1.0.0 baseline is preserved at immutable commit
-`15b328137d615ca85e84cb997f3acfc2b15ca03b`. The baseline manifest records the
-runtime, contract and renderer versions, source dates, frozen-input hashes,
-submitted-output hashes, rounding rules, and regeneration command.
+The current public release is `v1.1.0`. A frozen `v1.0.0` baseline is preserved
+for reproducibility and regression testing. Detailed verification records are
+available in [`release-baselines/v1.0.0/`](release-baselines/v1.0.0/)。
 
-v1.0.0 基线已冻结在不可变 commit `15b328137d615ca85e84cb997f3acfc2b15ca03b`。后续开发不会静默改变该版本；
-基线文件保存了运行环境、contract 和 renderer 版本、来源日期、输入与输出 hash、显示舍入规则和复现命令。
-
-Verify the frozen files without network access:
-
-```bash
-python3 release-baselines/v1.0.0/verify_baseline.py
-```
-
-Regenerate CROX and AZO from the frozen contracts and compare HTML, PDF page
-counts, and rendered pixels:
-
-```bash
-python3 release-baselines/v1.0.0/verify_baseline.py \
-  --render --pdf --pixel-compare
-```
-
-See [`release-baselines/v1.0.0/baseline_manifest.json`](release-baselines/v1.0.0/baseline_manifest.json)
-for the authoritative baseline record.
+当前公开版本为 `v1.1.0`。我们保留了冻结的 `v1.0.0` 基线，用于结果复现和回归测试；
+详细验证记录见 [`release-baselines/v1.0.0/`](release-baselines/v1.0.0/)。
 
 ## Quick Start / 快速开始
 
