@@ -8,22 +8,27 @@ A bilingual public-company issuer-underwriting skill and research-support engine
 
 > This repository contains public-data research demonstrations only. It contains no fund holdings, client information, live position sizes, or user-specific portfolio constraints. Portfolio Overlay is disabled in the included examples. / 本仓库只包含公开资料研究示例，不包含基金持仓、客户信息、真实仓位或组合约束；示例中的组合叠加层均未启用。
 
-## Choose Your Output / 选择输出路径
+## Choose Your Analysis / 选择分析类型
 
-**No portfolio provided -> Gate 3. Portfolio provided locally -> Gate 4.**
+**No portfolio provided -> Gate 3. A portfolio provided locally -> Gate 4.**
+**不提供 portfolio -> Gate 3；在本地提供 portfolio -> Gate 4。**
 
-| Input | Output | Boundary |
+| What you provide / 你提供什么 | What you receive / 你会得到什么 | What it does not include / 不包括什么 |
 |---|---|---|
-| Company ticker/name plus public information only | Gate 3 issuer underwriting, valuation/scenario review, bilingual One-Page Summary, Full Report, Evidence Appendix, and Validation Report | `Portfolio Overlay: Disabled`; no position sizing or portfolio action |
-| The same Gate 3 contract plus a locally completed private portfolio workspace | Gate 4 constraint matrix, system assessment, and bilingual Gate 4 reports | Private inputs stay outside GitHub and hosted chats; human approval remains separate from system assessment |
+| Company name or ticker plus public information only  <br>公司名称或股票代码，以及公开资料 | Gate 3 company review: business, earnings quality, working capital, cash flow, liquidity, debt, refinancing, valuation and scenarios, plus bilingual One-Page Summary, Full Report, Evidence Appendix and Validation Report.  <br>Gate 3 公司分析：业务、盈利质量、营运资金、现金流、流动性、债务、再融资、估值和情景分析，以及中英文一页摘要、完整报告、证据附录和验证报告。 | This reviews the company itself. It does not determine how much of your portfolio should be invested in the company, and it does not generate a portfolio action.  <br>这一模式只分析公司本身，不判断组合中应配置多少，也不生成组合操作建议。 |
+| A Gate 3 result plus portfolio information completed and stored locally  <br>Gate 3 结果，以及已在本地填写完成的 portfolio 资料 | Gate 4 portfolio review: existing holdings, concentration, liquidity, risk budget, downside, opportunity cost and other portfolio constraints, plus bilingual Gate 4 reports.  <br>Gate 4 组合分析：现有持仓、集中度、流动性、风险预算、下行风险、机会成本及其他组合约束，并生成中英文 Gate 4 报告。 | Portfolio data stays on your computer and is not uploaded to GitHub or a hosted chat. Human approval is still required; the system does not automatically trade.  <br>Portfolio 资料只保存在本地，不上传到 GitHub 或托管聊天。仍需人工审批，系统不会自动交易。 |
 
-Gate 4 does not replace Gate 3. It first checks that the exact Gate 3 contract is
-fresh and eligible, then evaluates portfolio constraints. Without a valid local
-portfolio workspace, Gate 4 returns a diagnostic and does not invent limits,
-holdings, or a position. See [`docs/AGENT_INSTRUCTIONS.md`](docs/AGENT_INSTRUCTIONS.md)
-for copy-ready instructions for both paths. / 
-Gate 4 不会替代 Gate 3，而是在确认 Gate 3 contract 最新且合格后，再分析组合约束。没有有效的本地 portfolio workspace
-时，Gate 4 只返回诊断，不会虚构限制、持仓或仓位。
+Gate 4 uses Gate 3 first; it does not replace Gate 3. If no portfolio is
+provided, the system generates Gate 3 only. If portfolio information is
+missing, outdated or incomplete, Gate 4 returns a diagnostic instead of
+inventing holdings, limits or a position. See
+[`docs/AGENT_INSTRUCTIONS.md`](docs/AGENT_INSTRUCTIONS.md) for copy-ready
+instructions for both paths.
+
+Gate 4 会先使用 Gate 3 的结果，不会替代 Gate 3。如果没有提供 portfolio，系统只生成
+Gate 3。如果 portfolio 资料缺失、过期或不完整，Gate 4 会返回诊断结果，不会虚构持仓、
+限制或仓位。两种模式的具体指令见
+[`docs/AGENT_INSTRUCTIONS.md`](docs/AGENT_INSTRUCTIONS.md)。
 
 ## User Demo / 演示文件
 
