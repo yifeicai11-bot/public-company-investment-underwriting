@@ -1,6 +1,6 @@
 # Public-Company Investment Underwriting
 
-An auditable, bilingual public-company issuer-underwriting skill and research-support engine. / 一套可审计、可复用、支持中英文输出的上市公司基本面与投资研究框架。
+A bilingual public-company issuer-underwriting skill and research-support engine. 
 
 - **Release:** `v1.1.0` final; S17 true held-out acceptance completed
 - **Current scope:** SEC-reporting, US GAAP, non-financial public companies
@@ -21,8 +21,8 @@ Gate 4 does not replace Gate 3. It first checks that the exact Gate 3 contract i
 fresh and eligible, then evaluates portfolio constraints. Without a valid local
 portfolio workspace, Gate 4 returns a diagnostic and does not invent limits,
 holdings, or a position. See [`docs/AGENT_INSTRUCTIONS.md`](docs/AGENT_INSTRUCTIONS.md)
-for copy-ready instructions for both paths. / Gate 4 不会替代 Gate 3，而是在确认
-Gate 3 contract 最新且合格后，再分析组合约束。没有有效的本地 portfolio workspace
+for copy-ready instructions for both paths. / 
+Gate 4 不会替代 Gate 3，而是在确认 Gate 3 contract 最新且合格后，再分析组合约束。没有有效的本地 portfolio workspace
 时，Gate 4 只返回诊断，不会虚构限制、持仓或仓位。
 
 ## User Demo / 演示文件
@@ -34,7 +34,7 @@ Gate 3 contract 最新且合格后，再分析组合约束。没有有效的本�
 
 The One-Page Summary presents the investment question, public-data view, what is priced in, scenario price sensitivity, key debates, decision boundaries, and the next evidence required. The Full Report expands the same validated contract into issuer underwriting, earnings quality, working capital, cash conversion, liquidity, debt and refinancing, valuation, scenarios, decision rules, and source records.
 
-一页摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。两者来自同一个 validated contract，不独立重算数字或结论。
+摘要用于快速判断是否值得继续研究；完整报告则展开业务、盈利质量、营运资金、现金转化、流动性、债务与再融资、估值、情景、决策规则和来源记录。
 
 ## Frozen v1.0.0 Baseline / 已冻结的 v1.0.0 基线
 
@@ -133,6 +133,7 @@ Copy this prompt into Codex:
 11. 使用完成后的 research-input 重新运行 investment layer，并在当前 Data Gate 允许的范围内生成报告。随后运行 renderer 和独立 validation script。
 12. 只有在 contract validation 通过、没有 Hard Stop 且当前 Data Gate 允许时，才生成正式 One-Page、Full Report 和 Evidence Appendix；否则生成 Diagnostic Report，并明确列出缺失资料和修复要求。
 13. 最终在聊天框中列出所有生成文件的路径、Data Gate、Decision Confidence、Hard Stop 数量、Warning 数量和 validation 结果。
+
 ```
 
 The initial public-only run may stop below Gate 3 when analyst-owned research inputs are incomplete. A user-ready report requires sourced public research and human review of the Investment Question, Key Debates, FCF normalization, market expectations, valuation assumptions, and scenarios. / 当分析师输入尚不完整时，首次 public-only 运行可能停在 Gate 3 以下。User-ready 报告仍需要对投资问题、核心争议、FCF 标准化、市场预期、估值假设和情景进行公开资料研究与人工复核。
